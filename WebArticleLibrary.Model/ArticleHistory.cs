@@ -6,13 +6,13 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace WebArticleLibrary.Model
 {
-	[Table("ARTICLE_HISTORY")]
+	[Table("ArticleHistory")]
 	[DataContract]
-	public class ARTICLE_HISTORY
+	public class ArticleHistory
 	{
-		public ARTICLE_HISTORY()
+		public ArticleHistory()
 		{
-			USER_NOTIFICATION = new HashSet<USER_NOTIFICATION>();
+			UserNotifications = new List<UserNotification>();
 		}
 
 		[Key]
@@ -21,43 +21,42 @@ namespace WebArticleLibrary.Model
 		public Int32 ID { get; set; }
 		
 		[Required]
-		[ForeignKey("ARTICLE")]
 		[DataMember(Name = "articleId")]
-		public Int32 ARTICLE_ID { get; set; }
+		public Int32 ArticleId { get; set; }
 
 		[Required]
-		[ForeignKey("AUTHOR")]
 		[DataMember(Name = "authorId")]
-		public Int32 AUTHOR_ID { get; set; }
+		public Int32 AuthorId { get; set; }
 
 		[Required]
 		[DataMember(Name = "object")]
-		public String OBJECT { get; set; }
+		public String Object { get; set; }
 
 		[Required]
 		[DataMember(Name = "insertDate")]
-		public DateTime INSERT_DATE { get; set; }
+		public DateTime InsertDate { get; set; }
 		
 		[DataMember(Name = "oldValue")]
-		public String OLD_VALUE { get; set; }
+		public String OldValue { get; set; }
 
 		[DataMember(Name = "newValue")]
-		public String NEW_VALUE { get; set; }
+		public String NewValue { get; set; }
 
 		[DataMember(Name = "objectId")]
-		public Int32? OBJECT_ID { get; set; }
+		public Int32? ObjectId { get; set; }
 		
 		[DataMember(Name = "objectType")]
-		public HISTORY_OBJECT_TYPE OBJECT_TYPE { get; set; }
+		public HistoryObjectType ObjectType { get; set; }
 
-		public virtual USER AUTHOR { get; set; }
+		public User Author { get; set; }
 
-		public virtual ARTICLE ARTICLE { get; set; }
+		public Article Article { get; set; }
 
-		public virtual ICollection<USER_NOTIFICATION> USER_NOTIFICATION { get; set; }
+        [InverseProperty("ArticleHistory")]
+		public ICollection<UserNotification> UserNotifications { get; set; }
 	}
 
-	public enum HISTORY_OBJECT_TYPE
+	public enum HistoryObjectType
 	{
 		ARTICLE,
 		AMENDMENT,

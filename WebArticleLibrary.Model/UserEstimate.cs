@@ -1,42 +1,40 @@
-﻿using System;
+using System;
 using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace WebArticleLibrary.Model
 {
-	[Table("USER_ESTIMATE")]
+	[Table("UserEstimate")]
 	[DataContract]
-	public class USER_ESTIMATE
+	public class UserEstimate
 	{	
 		[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 		[Key]
 		[DataMember(Name = "id")]
-		public int ID { get; set; }
+		public int Id { get; set; }
 
-		[ForeignKey("AUTHOR")]
 		[DataMember(Name = "authorId")]
 		[Required]
-		public int AUTHOR_ID { get; set; }
+		public int AuthorId { get; set; }
 		
-		[ForeignKey("ARTICLE")]
 		[DataMember(Name = "articleId")]
-		public int ARTICLE_ID { get; set; }
+		public int ArticleId { get; set; }
 		
 		[Required]
 		[DataMember(Name = "estimate")]
-		public ESTIMATE_TYPE ESTIMATE { get; set; }
+		public EstimateType Estimate { get; set; }
 
 		[Required]
 		[DataMember(Name = "insertDate")]
-		public DateTime INSERT_DATE { get; set; }
+		public DateTime InsertDate { get; set; }
 		
-		public virtual USER AUTHOR { get; set; }
+		public User Author { get; set; }
 
-		public virtual ARTICLE ARTICLE { get; set; }		
+		public Article Article { get; set; }		
 	}
 
-	public enum ESTIMATE_TYPE {
+	public enum EstimateType {
 		NONE,
 		POSITIVE,
 		NEGATIVE
