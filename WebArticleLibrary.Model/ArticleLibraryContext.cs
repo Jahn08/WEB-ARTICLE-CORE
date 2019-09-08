@@ -3,6 +3,7 @@ namespace WebArticleLibrary.Model
 	using System;
 	using Microsoft.EntityFrameworkCore;
 	using System.Linq;
+    using Microsoft.Extensions.Configuration;
 
 	public partial class ArticleLibraryContext : DbContext, IDisposable
 	{
@@ -15,7 +16,8 @@ namespace WebArticleLibrary.Model
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer("name=WebArticleLib_DBConnection");
+            if (!optionsBuilder.IsConfigured)
+                optionsBuilder.UseNpgsql("User ID=postgres;Password=postgres;Host=localhost;Port=5432;Database=weblibrary;");
         }
 
 		public delegate void OnNotificationAdded(UserNotification[] etities);
