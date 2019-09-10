@@ -35,9 +35,6 @@ namespace WebArticleLibrary
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            new ConfigurationBuilder().SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json").Build();
-
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -50,6 +47,9 @@ namespace WebArticleLibrary
 
             app.UseHttpsRedirection();
             app.UseMvc();
+
+            app.UseRouter(builder =>
+                builder.MapRoute("default", "api/{controller}/{action}/{id?}"));
         }
     }
 }
