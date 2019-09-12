@@ -53,7 +53,7 @@ namespace WebArticleLibrary.Model
 		
 		public DateTime? ExpirationDate { get; set; }
 
-		public Guid? ConfirmationDate { get; set; }
+		public Guid? ConfirmationId { get; set; }
 
 		public String NewEmail { get; set; }
 
