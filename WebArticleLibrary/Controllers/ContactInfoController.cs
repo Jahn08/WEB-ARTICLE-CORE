@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Authorization;
 
-
 namespace WebArticleLibrary.Controllers
 {
 	[ApiController]
@@ -11,6 +10,7 @@ namespace WebArticleLibrary.Controllers
 	public class ContactInfoController: ControllerBase
 	{
 		IConfigurationSection _contactInfoSection;
+        
 		public ContactInfoController(IConfiguration config)
 		{
             _contactInfoSection = config.GetSection("ContactInfo");

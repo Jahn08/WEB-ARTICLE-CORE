@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebArticleLibrary.Model;
 using WebArticleLibrary.Helpers;
+using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Http.Headers;
 
 namespace WebArticleLibrary.Controllers
 {
@@ -13,9 +15,13 @@ namespace WebArticleLibrary.Controllers
 	{
 		private ArticleLibraryContext _dbContext;
 
-		public AuthenticationController(ArticleLibraryContext dbContext)
+		private IConfiguration _config;
+
+		public AuthenticationController(ArticleLibraryContext dbContext, IConfiguration config)
 		{
 			_dbContext = dbContext;
+
+            _config = config;
 		}
 
 		[AllowAnonymous]
@@ -76,9 +82,8 @@ namespace WebArticleLibrary.Controllers
 
                 try
                 {
-					// TODO: Uncomment after adding the respective email helper
-                    // MailHelper.SendConfirmationEmail("Registration", Properties.Resources.Authentication_Register_Message,
-                    //     "confirmuser", user, confirmationId);
+                    new MailHelper(_config).SendRegistrationConfirmation
+                        (new RequestHeaders(Request.Headers).Referer, user, confirmationId);
                 }
                 catch {
                     userStore.DeleteAsync(user).Wait();
