@@ -3,7 +3,7 @@
 
 	angular.module('ArticleLibraryApp').controller('HeaderCtrl', ['$scope', '$uibModal', 'AuthReqFactory', 'AuthService', 'ErrorService', 'ArticleReqFactory', '$state', 'section', 'MODAL_CLICK_MSG',
 		function ($scope, $uibModal, AuthReqFactory, AuthService, ErrorService, ArticleReqFactory, $state, section, MODAL_CLICK_MSG) {
-			var hubServer;
+			let hubServer;
 			var userId;
 			
 			var onRequest = function (end) {
@@ -42,9 +42,13 @@
 						ArticleReqFactory.getNotifications(userId).then(function (data) {
 							$scope.notifications = data;
 
-							//************* SIGNALR **************//
-							var hub = $.connection.notificationHub;
-							hub.client.notify = function (newEvents) {
+                            //************* SIGNALR **************//
+                            const connection = new signalR.HubConnectionBuilder()
+                                .withUrl("/notificationHub")
+                                .configureLogging(signalR.LogLevel.Information)
+                                .build();
+
+                            connection.on('notify', newEvents => {
 								if ($scope.notifications)
 								{
 									$scope.notifications = $scope.notifications.concat(newEvents);
@@ -56,27 +60,26 @@
 								}
 								else
 									$scope.notifications = newEvents;
-							};
-							hub.client.clear = function (removedEvents) {
-								var active = $scope.notifications.filter(function (val) {
+                            });
+
+                            connection.on('clear', removedEvents => {
+								const active = $scope.notifications.filter(function (val) {
 									return !removedEvents.find(function (v) { return v.id == val.id });
 								});
 								$scope.$apply(function () { $scope.notifications = active; });
-							};
-
-							hubServer = hub.server;
-							
-							$.connection.hub.disconnected(function () {
-								hubServer = null;
 							});
 
-							hub.client.close = function () {
-								$.connection.hub.stop();
-							};
+							connection.on('close', () => $.connection.hub.stop());
 
-							$.connection.hub.start().done(function () {
-								hubServer.signUp(userId)
-							});
+                            connection.start().then(function () {
+                                console.log("connected");
+                            
+                                hubServer.invoke('SignUp', userId);
+                            });
+
+							hubServer = connection;
+
+							connection.onClose(() => hubServer = null);
 							//************* SIGNALR **************//
 							
 							$scope.openNotificationModal = function () {
@@ -133,8 +136,8 @@
 					AuthService.logOut();
 					$scope.showUser = false;
 
-					if (hubServer && userId)
-						hubServer.signOut(userId);
+                    if (hubServer && userId)
+                        hubServer.invoke('SignOut', userId);
 
 					reloadPage();
 				}, function (data) {
