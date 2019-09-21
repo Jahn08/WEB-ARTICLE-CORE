@@ -86,10 +86,10 @@
 	.factory('InfoReqFactory', ['$resource', 'baseUrl', function ($resource, baseUrl) {
 		var obj = {
 			getBasicInfo: function() {
-				return $resource(baseUrl + 'Info/GetBasicInfo').get().$promise;
+				return $resource(baseUrl + 'ContactInfo').get().$promise;
 			},
 			getAboutUsInfo: function() {
-				return $resource(baseUrl + 'Info/GetAboutUsInfo').get().$promise;
+				return $resource(baseUrl + 'ContactInfo/AboutUs').get().$promise;
 			}
 		};
 
@@ -99,7 +99,8 @@
 		var obj = {
 
 			getUserInfo: function(userId, getPhoto) {
-				return $resource(baseUrl + 'UserInfo/GetInfo').get({ userId: (userId ? userId : ''), getPhoto: getPhoto == true }).$promise;
+                return $resource(baseUrl + 'UserInfo')
+                    .get({ userId: (userId ? userId : ''), getPhoto: getPhoto == true }).$promise;
 			},
 
 			getUsers: function(page, colIndex, asc, filterOptions) {
@@ -110,18 +111,18 @@
 				filterOptions.colIndex = colIndex;
 				filterOptions.asc = asc;
 
-				return $resource(baseUrl + 'UserInfo/GetUsers').get(filterOptions).$promise;
+				return $resource(baseUrl + 'UserInfo/All').get(filterOptions).$promise;
 			},
 
 			setUserStatus: function(userId, status) {
-				return $resource(baseUrl + 'UserInfo/SetUserStatus').get({
+				return $resource(baseUrl + 'UserInfo/Status').save({
 					userId: userId,
 					status: status
 				}).$promise;
 			},
 		
 			saveUserInfo: function(userInfo) {
-				return $resource(baseUrl + 'UserInfo/SaveInfo').save(userInfo).$promise;
+				return $resource(baseUrl + 'UserInfo').save(userInfo).$promise;
 			},
 
 			confirmEmail: function(confirmationId) {
@@ -155,7 +156,7 @@
 				return [this.ST_APPROVED,
 					this.ST_BANNED,
 					this.ST_ADMIN];
-			},
+			}
 		}
 
 		return obj;
@@ -171,7 +172,7 @@
 	.factory('ArticleReqFactory', ['$resource', 'baseUrl', 'ConverterService', '$window', '$q',
 		function ($resource, baseUrl, ConverterService, $window, $q) {
 
-		var _searching = function (method, page, colIndex, asc, filterOptions) {
+		const _searching = function (page, colIndex, asc, filterOptions, method = null) {
 			if (!filterOptions)
 				filterOptions = {};
 
@@ -179,7 +180,8 @@
 			filterOptions.colIndex = colIndex;
 			filterOptions.asc = asc;
 
-			return $resource(baseUrl + 'Article/' + method).get(filterOptions).$promise;
+            const methodPath = method ? '/' + method: '';
+			return $resource(baseUrl + 'Article' + methodPath).get(filterOptions).$promise;
 		};
 
 		var obj = {
@@ -191,32 +193,31 @@
 					
 				article.content = ConverterService.strToBytes(article.content);
 				article.tags = article.tempTags.join(' ');
-				return $resource(baseUrl + 'Article/UpdateArticle').save(article).$promise;
+				return $resource(baseUrl + 'Article').save(article).$promise;
 			},
             createVersion: function(id) {
-				return $resource(baseUrl + 'Article/CreateArticleVersion').get({ id: id }).$promise;
+				return $resource(baseUrl + 'Article/NewVersion').get({ id: id }).$promise;
 			},
             removeArticle: function(ids) {
-                return $resource(baseUrl + 'Article/RemoveArticle').remove({ ids: ids }).$promise;
+                return $resource(baseUrl + 'Article').remove({ ids: ids }).$promise;
 			},
             getArticleHistory: function(id) {
-				return $resource(baseUrl + 'Article/GetArticleHistory').query({ id: id }).$promise;
+				return $resource(baseUrl + 'History').query({ id: id }).$promise;
 			},
             getNotifications: function(userId) {
-                return $resource(baseUrl + 'Article/GetNotifications').query({ userId: userId }).$promise;
+                return $resource(baseUrl + 'Notification').query({ userId: userId }).$promise;
 			},
             clearNotifications: function(ids) {
-				return $resource(baseUrl + 'Article/ClearNotifications').remove({ ids: ids }).$promise;
+				return $resource(baseUrl + 'Notification').remove({ ids: ids }).$promise;
 			},			
             getDefaultCategories: function() {
-				const methodName = 'GetDefaultCategories';
+				const methodName = 'Categories';
 				var tagStr = $window.localStorage.getItem(methodName);
 				
 				var deffered = $q.defer();
 
-				if (tagStr) {
+				if (tagStr)
 					deffered.resolve(JSON.parse(tagStr));
-				}
 				else {
 					$resource(baseUrl + 'Article/' + methodName).query().$promise.then(function (data) {
 						$window.localStorage.setItem(methodName, JSON.stringify(data));
@@ -229,19 +230,18 @@
 				return deffered.promise;
 			},
             getArticleTitles: function() {
-				return $resource(baseUrl + 'Article/GetArticleTitles').get().$promise;
+				return $resource(baseUrl + 'Article/Titles').get().$promise;
 			},
             viewArticle: function(id, userId) {
-				return $resource(baseUrl + 'Article/ViewArticle').get({
-					id: id,
+				return $resource(baseUrl + `Article/${id}`).get({
 					userId: userId
 				}).$promise;
 			},
             getAllArticles: function(page, colIndex, asc, filterOptions) {
-				return _searching('GetArticles', page, colIndex, asc, filterOptions);
+				return _searching(page, colIndex, asc, filterOptions, 'All');
 			},
             searchArticles: function(page, colIndex, asc, filterOptions) {
-				return _searching('SearchArticles', page, colIndex, asc, filterOptions);
+				return _searching(page, colIndex, asc, filterOptions);
 			},
 			get ST_DRAFT() { return 0; },
 
@@ -289,25 +289,29 @@
 				}
 			},
             assignArticle: function(id) {
-				return $resource(baseUrl + 'Article/SetArticleAssignment').get({ id: id, assign: true }).$promise;
-			},
+                this._setArticleAssignment(id, true);
+            },
+            _setArticleAssignment(id, shouldAssign) {
+                return $resource(baseUrl + 'Article/Assignment')
+                    .get({ id: id, assign: shouldAssign }).$promise;
+            },
             unassignArticle: function(id) {
-				return $resource(baseUrl + 'Article/SetArticleAssignment').get({ id: id, assign: false }).$promise;
+                this._setArticleAssignment(id, false);
 			},
 
 			//*** AMENDMENTS ***
             getAmendments: function(id) {
-				return $resource(baseUrl + 'Article/GetAmendments').query({ articleId: id }).$promise;
+				return $resource(baseUrl + 'Amendment').query({ articleId: id }).$promise;
 			},
             updateAmendment: function(amendments) {
-				return $resource(baseUrl + 'Article/UpdateAmendment').save(amendments).$promise;
+				return $resource(baseUrl + 'Amendment').save(amendments).$promise;
 			},
             removeAmendment: function(amendmentIds) {
-				return $resource(baseUrl + 'Article/RemoveAmendment').remove({ ids: amendmentIds }).$promise;
+				return $resource(baseUrl + 'Amendment').remove({ ids: amendmentIds }).$promise;
 			},
             createAmendment: function(articleId, amendment) {
 				amendment.articleId = articleId;
-				return $resource(baseUrl + 'Article/CreateAmendment').save(amendment).$promise;
+				return $resource(baseUrl + 'Amendment/New').save(amendment).$promise;
 			},
 			
 			//*** COMMENTS ***
@@ -317,7 +321,7 @@
             createComment: function(articleId, comment) {
 				comment.articleId = articleId;
 				comment.content = ConverterService.strToBytes(comment.content);
-				return $resource(baseUrl + 'Article/CreateComment').save(comment).$promise;
+				return $resource(baseUrl + 'Comment').save(comment).$promise;
 			},
             getComments: function(page, colIndex, asc, userId, all, parentId, filterOptions) {
 				if (!filterOptions)
@@ -330,10 +334,10 @@
 				filterOptions.all = all;
 				filterOptions.parentId = parentId;
 
-				return $resource(baseUrl + 'Article/GetComments').get(filterOptions).$promise;
+				return $resource(baseUrl + 'Comment').get(filterOptions).$promise;
 			},
             updateCommentStatus: function(id, status) {
-				return $resource(baseUrl + 'Article/UpdateCommentStatus').get({ id: id, status: status }).$promise;
+				return $resource(baseUrl + 'Comment/Status').save({ id: id, status: status }).$promise;
 			},
             getCommentStatusCaption: function(statusId) {
 				switch (statusId) {
@@ -350,7 +354,8 @@
 
 			//*** ESTIMATES ***
             assessArticle: function(id, positive) {
-				return $resource(baseUrl + 'Article/AssessArticle').get({ id: id, estimate: positive ? 1 : 2 }).$promise;
+                return $resource(baseUrl + 'Estimate').save({ id: id, estimate: positive ? 1 : 2 })
+                    .$promise;
 			},
             getEstimates: function(page, colIndex, asc, userId, filterOptions) {
 				if (!filterOptions)
@@ -361,7 +366,7 @@
 				filterOptions.asc = asc;
 				filterOptions.userId = userId;
 
-				return $resource(baseUrl + 'Article/GetEstimates').get(filterOptions).$promise;
+				return $resource(baseUrl + 'Estimate').get(filterOptions).$promise;
 			},
 			get EST_POSITIVE() {
 				return 1;
@@ -385,7 +390,7 @@
 
 			//*** COMPLAINTS ***
             createComplaint: function(complaint) {
-				return $resource(baseUrl + 'Article/CreateComplaint').save(complaint).$promise;
+				return $resource(baseUrl + 'Complaint').save(complaint).$promise;
 			},
             getComplaints: function(page, colIndex, asc, filterOptions) {
 				if (!filterOptions)
@@ -395,20 +400,24 @@
 				filterOptions.colIndex = colIndex;
 				filterOptions.asc = asc;
 				
-				return $resource(baseUrl + 'Article/GetComplaints').get(filterOptions).$promise;
+				return $resource(baseUrl + 'Complaint').get(filterOptions).$promise;
 			},
             setComplaintStatus: function(id, status, response) {
-				return $resource(baseUrl + 'Article/SetComplaintStatus').get({
+				return $resource(baseUrl + 'Complaint/Status').save({
 					id: id,
 					status: status,
 					response: response
 				}).$promise;
 			},
             assignCmpl: function(id) {
-				return $resource(baseUrl + 'Article/SetComplaintAssignment').get({ id: id, assign: true }).$promise;
-			},
+                return this._setCmplAssignment(id, true);
+            },
+            _setCmplAssignment: function (id, shouldAssign) {
+                return $resource(baseUrl + 'Complaint/Assignment')
+                    .save({ id: id, assign: shouldAssign }).$promise;
+            },
             unassignCmpl: function(id) {
-				return $resource(baseUrl + 'Article/SetComplaintAssignment').get({ id: id, assign: false }).$promise;
+                return this._setCmplAssignment(id, false);
 			},
             getComplaintEntityTypeEnum: function() {
 				return [{value: 0, name:"comment"},

@@ -1,0 +1,46 @@
+using System;
+using System.Linq;
+using WebArticleLibrary.Model;
+using Microsoft.AspNetCore.Mvc;
+
+namespace WebArticleLibrary.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+	public class NotificationController: SignallingController
+	{
+		public NotificationController(ArticleLibraryContext dbContext): base(dbContext) 
+		{
+		}
+
+		[HttpGet]
+		public ActionResult GetNotifications(Int32 userId)
+		{
+			var data = dbContext.UserNotification.Where(a => a.RecipientId == userId);
+
+			return Ok(data.OrderByDescending(h => h.InsertDate).Select(n => new
+			{
+				id = n.Id,
+				date = n.InsertDate,
+				recipientID = n.RecipientId,
+				text = n.Text,
+				historyId = n.ArticleHistoryId,
+				articleId = n.ArticleHistory.ArticleId
+			}).ToArray());
+		}
+
+		[HttpDelete]
+		public ActionResult ClearNotifications([ModelBinder]Int32[] ids)
+		{
+			var removedData = dbContext.UserNotification.Where(a => ids.Contains(a.Id))
+                .ToArray();
+			dbContext.UserNotification.RemoveRange(removedData);
+
+			dbContext.SaveChanges();
+
+            RemoveNotifications(removedData);
+
+			return Ok();
+		}
+	}
+}

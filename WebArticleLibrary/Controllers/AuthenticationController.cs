@@ -11,27 +11,25 @@ using Microsoft.AspNetCore.Http.Headers;
 namespace WebArticleLibrary.Controllers
 {
 	[ApiController]
-	public class AuthenticationController: ControllerBase
+    [Route("api/[controller]")]
+	public class AuthenticationController: LibraryControllerBase
 	{
-		private ArticleLibraryContext _dbContext;
-
 		private IConfiguration _config;
 
-		public AuthenticationController(ArticleLibraryContext dbContext, IConfiguration config)
+		public AuthenticationController(ArticleLibraryContext dbContext, IConfiguration config): 
+            base(dbContext)
 		{
-			_dbContext = dbContext;
-
             _config = config;
 		}
 
 		[AllowAnonymous]
-		[HttpPost]
+		[HttpPost("LogIn")]
 		public ActionResult LogIn(UserInfo user)
 		{
 			UserInfo u;
 			String cookie;
 
-			using (var userStore = new UserStore(_dbContext))
+			using (var userStore = new UserStore(dbContext))
 			{
 				if (Request.Cookies.TryGetValue(CustomAuthorizationAttribute.AUTH_USER_COOKIE, out cookie))
 					return Ok(userStore.GetCurrentUserInfo(User.Identity));
@@ -59,7 +57,7 @@ namespace WebArticleLibrary.Controllers
 		}
 
 		[AllowAnonymous]
-		[HttpGet]
+		[HttpGet("LogOut")]
 		public ActionResult LogOut()
 		{
 			String cookie;
@@ -71,12 +69,12 @@ namespace WebArticleLibrary.Controllers
 		}
 
 		[AllowAnonymous]
-		[HttpPost]
+		[HttpPost("Register")]
 		public ActionResult Register(UserInfo user)
 		{
 			var confirmationId = Guid.NewGuid();
 
-            using (var userStore = new UserStore(_dbContext))
+            using (var userStore = new UserStore(dbContext))
             {
                 userStore.CreateAsync(user, confirmationId).Wait();
 
@@ -95,10 +93,10 @@ namespace WebArticleLibrary.Controllers
 		}
 
 		[AllowAnonymous]
-		[HttpGet]
+		[HttpGet("Confirm")]
 		public ActionResult Confirm(Guid confirmationId)
 		{
-			using (var userStore = new UserStore(_dbContext))
+			using (var userStore = new UserStore(dbContext))
 			{ 
 				if (!userStore.ConfirmUser(confirmationId))
 					return BadRequest("Either this account expired or it does not exist");

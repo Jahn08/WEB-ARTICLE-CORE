@@ -12,29 +12,25 @@ using Microsoft.AspNetCore.Http.Headers;
 namespace WebArticleLibrary.Controllers
 {
     [ApiController]
-    public class UserInfoController : ControllerBase
+    [Route("api/[controller]")]
+    public class UserInfoController : LibraryControllerBase
     {
-		private const Int32 pageLength = 10;
-
-		private ArticleLibraryContext _dbContext;
-
 		private IConfiguration _config;
 
-        UserInfoController(ArticleLibraryContext dbContext, IConfiguration config)
+        UserInfoController(ArticleLibraryContext dbContext, IConfiguration config):
+            base(dbContext)
         {
-            _dbContext = dbContext;
-
             _config = config;
         }
 
 		[AllowAnonymous]
-		[HttpGet]
+		[HttpGet("ResetPassword")]
 		public ActionResult ResetPassword(String email)
 		{
 			Guid confirmationId;
 			UserInfo user;
 
-			using (var store = new UserStore(this._dbContext))
+			using (var store = new UserStore(this.dbContext))
 				user = store.MarkForResettingPassword(email, out confirmationId);
 
             new MailHelper(_config)
@@ -49,10 +45,10 @@ namespace WebArticleLibrary.Controllers
         }
 		
 		[AllowAnonymous]
-		[HttpPost]
+		[HttpPost("ReplacePassword")]
 		public ActionResult ReplacePassword(ReplacePasswordForm formData)
 		{
-			using (var store = new UserStore(this._dbContext))
+			using (var store = new UserStore(this.dbContext))
 			{
 				if (!store.ResetPassword(formData.newPassword, formData.confirmationId))
 					return BadRequest("Either this link expired or the password does not need to be resetted");
@@ -61,7 +57,7 @@ namespace WebArticleLibrary.Controllers
 			return Ok();
 		}
 
-		[HttpGet]
+		[HttpGet("All")]
 		public ActionResult GetUsers(Int32 page = 1, String name = null, String login = null,
 			String email = null, UserStatus? Status = null, 
 			ColumnIndex colIndex = ColumnIndex.NAME, Boolean asc = true)
@@ -111,7 +107,7 @@ namespace WebArticleLibrary.Controllers
 
 				users = OrderUsers(users, colIndex, asc);
 				dataCount = users.Count();
-				users = users.Skip((page - 1) * pageLength).Take(pageLength);
+				users = users.Skip((page - 1) * PAGE_LENGTH).Take(PAGE_LENGTH);
 
 				cmntNumber = (from uc in db.UserComment.Where(c => c.Status != CommentStatus.DELETED)
 							 join uId in users.Select(us => us.Id) on uc.AuthorId equals uId
@@ -131,7 +127,7 @@ namespace WebArticleLibrary.Controllers
 				dataCount = dataCount,
 				cmntNumber = cmntNumber,
 				artNumber = artNumber,
-				pageLength = pageLength
+				pageLength = PAGE_LENGTH
 			});
 		}
 
@@ -152,13 +148,13 @@ namespace WebArticleLibrary.Controllers
 			return source;
 		}
 
-		[HttpGet]
+		[HttpPost("{userId}/Status")]
 		[CustomAuthorization(CustomAuthorizationAttribute.ADMIN_ROLE)]
 		public ActionResult SetUserStatus(String userId, Model.UserStatus Status)
 		{
 			UserInfo userForUpd;
 
-			using (UserStore store = new UserStore(this._dbContext))
+			using (UserStore store = new UserStore(this.dbContext))
 			{
 				userForUpd = store.FindByIdAsync(userId).Result;
 
@@ -184,7 +180,7 @@ namespace WebArticleLibrary.Controllers
 		{
 			UserInfo user;
 
-			using (var store = new UserStore(this._dbContext))
+			using (var store = new UserStore(this.dbContext))
 			{
 				if ((user = GetInfoInternally(store, userId)) == null)
 					return BadRequest("No user was found");
@@ -210,7 +206,7 @@ namespace WebArticleLibrary.Controllers
 		{
 			Guid? confirmationId;
 			
-			using (var store = new UserStore(this._dbContext))
+			using (var store = new UserStore(this.dbContext))
 				confirmationId = store.Update(userInfo);
 
 			// Is it a bid to change email address?
@@ -222,10 +218,10 @@ namespace WebArticleLibrary.Controllers
 		}
 
 		[AllowAnonymous]
-		[HttpGet]
+		[HttpGet("ConfirmEmail")]
 		public ActionResult ConfirmEmail(Guid confirmationId)
 		{
-			using (var userStore = new UserStore(this._dbContext))
+			using (var userStore = new UserStore(this.dbContext))
 			{ 		
 				if (!userStore.ConfirmNewEmail(confirmationId))
 					return BadRequest("Either this link expired or the email does not need to be confirmed");

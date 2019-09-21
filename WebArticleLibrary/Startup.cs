@@ -50,9 +50,6 @@ namespace WebArticleLibrary
             app.UseSignalR(route => {
                 route.MapHub<NotificationHub>("/notificationHub");
             });
-
-            app.UseRouter(builder =>
-                builder.MapRoute("default", "api/{controller}/{action}/{id?}"));
         }
     }
 }

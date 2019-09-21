@@ -1,57 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using WebArticleLibrary.Helpers;
 using WebArticleLibrary.Models;
 using WebArticleLibrary.Model;
-using WebArticleLibrary.Hubs;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.Authorization;
 
 namespace WebArticleLibrary.Controllers
 {
     [ApiController]
-	public class ArticleController: ControllerBase, IDisposable
+    [Route("api/[controller]")]
+	public class ArticleController: SignallingController
 	{
-		private ArticleLibraryContext _dbContext;
+        private readonly String[] defaultCategories;
 
-        private NotificationHub notificationHub;
-
-		public ArticleController(ArticleLibraryContext dbContext, 
-            IHubContext<NotificationHub> hub)
-		{
-            _dbContext = dbContext;
-
-			_dbContext.OnNotificationAddedEvent += OnNotificationAddedEvent;
-
-            notificationHub = new NotificationHub();
-		}
-
-		private void OnNotificationAddedEvent(UserNotification[] etities)
-		{
-			notificationHub.AddNotifications(etities);
-		}
-
-		public void Dispose()
-		{
-			if (_dbContext != null)
-				_dbContext.OnNotificationAddedEvent -= OnNotificationAddedEvent;
-		
-            notificationHub?.Dispose();
+		public ArticleController(ArticleLibraryContext dbContext): base(dbContext)
+		{ 
+    		defaultCategories = new[] { "science", "politics", "literature", "travelling", "financies" };
         }
 
-		const Int32 pageLength = 10;
-		String[] defaultCategories = { "science", "politics", "literature", "travelling", "financies" };
-
-		[HttpGet]
+		[HttpGet("Categories")]
 		[AllowAnonymous]
 		public ActionResult GetDefaultCategories()
 		{
 			return Ok(defaultCategories);
 		}
-
-		#region Article
 
 		[HttpPost]
 		public ActionResult UpdateArticle(Article article)
@@ -70,11 +43,11 @@ namespace WebArticleLibrary.Controllers
 				curArt.AuthorId = curUserId;
 				curArt.InsertDate = now;
 			
-				_dbContext.Article.Add(curArt);
+				dbContext.Article.Add(curArt);
             }
 			else
 			{
-				curArt = _dbContext.Article.FirstOrDefault(a => a.Id == article.Id);
+				curArt = dbContext.Article.FirstOrDefault(a => a.Id == article.Id);
 
 				if (curArt == null)
 					return BadRequest("The requested article does not exist in the data base");
@@ -121,9 +94,7 @@ namespace WebArticleLibrary.Controllers
 					if (curArt.Amendments.Any())
 					{
 						foreach (var am in curArt.Amendments)
-						{
 							am.Archived = true;
-						}
 
 						AddHistory(curArt.Id, curUserId, "Amendment.Archived", null, null, now);
 					}
@@ -178,30 +149,25 @@ namespace WebArticleLibrary.Controllers
 					history, curArt.AssignedToId.Value);
 			}
 
-			_dbContext.SaveChanges();
+			dbContext.SaveChanges();
 
 			if (newArticle && article.Status != ArticleStatus.DRAFT)
 			{
-				history = AddHistory(curArt.Id, curUserId, "CREATED", null, null, null);
+				history = AddHistory(curArt.Id, curUserId, "Created", null, null, null);
 				curArt.Status = article.Status;
 
 				AddNotification($"{curUser.name} has added a new article '{curArt.Name}'", history, true);
-				_dbContext.SaveChanges();
+				dbContext.SaveChanges();
 			}
 
 			return Ok();
 		}
 
-        private UserInfo GetUserInfo()
-        {
-            return new UserStore(_dbContext).GetCurrentUserInfo(User.Identity);
-        }
-
-		[HttpGet]
+		[HttpPost("Assignment")]
 		[CustomAuthorization(CustomAuthorizationAttribute.ADMIN_ROLE)]
 		public ActionResult SetArticleAssignment(Int32 id, Boolean assign)
 		{
-			Article curArt = _dbContext.Article.FirstOrDefault(a => a.Id == id);
+			Article curArt = dbContext.Article.FirstOrDefault(a => a.Id == id);
 
 			if (curArt == null)
 				return BadRequest("The requested article does not exist in the data base");
@@ -235,7 +201,7 @@ namespace WebArticleLibrary.Controllers
 				curArt.AssignedToId = null;
 			}
 
-			_dbContext.SaveChanges();
+			dbContext.SaveChanges();
 
 			return Ok();
 		}
@@ -244,23 +210,23 @@ namespace WebArticleLibrary.Controllers
 		public ActionResult RemoveArticle([ModelBinder]Int32[] ids)
 		{
 			var curUser = GetUserInfo();
-			var arts = _dbContext.Article.Where(a => ids.Contains(a.Id));
+			var arts = dbContext.Article.Where(a => ids.Contains(a.Id));
 
 			foreach (var curArt in arts)
 			{
 				if (curArt.AuthorId != curUser.id)
 					return BadRequest("Only authors can delete their own articles");
 
-				_dbContext.Article.Remove(curArt);
+				dbContext.Article.Remove(curArt);
 			}
 
-			_dbContext.SaveChanges();
+			dbContext.SaveChanges();
 
 			return GetArticles();
 		}
 
 
-		[HttpGet]
+		[HttpGet("All")]
 		public ActionResult GetArticles(ArticleStatus? status = null,
 			String assignedTo = null, String author = null, String tags = null, String text = null,
 			DateTime? dateStart = null, DateTime? dateEnd = null, Int32 page = 1,
@@ -269,7 +235,7 @@ namespace WebArticleLibrary.Controllers
 			var curUser = GetUserInfo();
 			var curUserId = curUser?.id;
 
-			IQueryable<Article> articles = _dbContext.Article.AsQueryable();
+			IQueryable<Article> articles = dbContext.Article.AsQueryable();
 
 			if (dateStart != null)
 			{
@@ -309,7 +275,7 @@ namespace WebArticleLibrary.Controllers
 			if (author != null)
 			{
 				author = author.ToUpper();
-				var ids = _dbContext.User.Where(u => u.Login.ToUpper().Contains(author))
+				var ids = dbContext.User.Where(u => u.Login.ToUpper().Contains(author))
                     .Select(u => u.Id);
 				articles = articles.Where(a => ids.Contains(a.AuthorId));
 			}
@@ -326,10 +292,10 @@ namespace WebArticleLibrary.Controllers
 				description = a.Description
 			}).ToArray();
 			var privateDataCount = privateData.Count();
-			var skip = (page - 1) * pageLength;
-			privateData = privateData.Skip(skip).Take(pageLength).ToArray();
+			var skip = (page - 1) * PAGE_LENGTH;
+			privateData = privateData.Skip(skip).Take(PAGE_LENGTH).ToArray();
 
-			var users = from u in _dbContext.User.Select(iu => new { iu.Id, iu.Login })
+			var users = from u in dbContext.User.Select(iu => new { iu.Id, iu.Login })
 						join a in privateData.Select(p => p.assignedToId).Distinct() on u.Id equals a
 						select u;
 
@@ -353,21 +319,21 @@ namespace WebArticleLibrary.Controllers
 					description = a.Description
 				});
 				publicDataCount = publicData.Count();
-				publicData = publicData.Skip(skip).Take(pageLength).ToArray();
+				publicData = publicData.Skip(skip).Take(PAGE_LENGTH).ToArray();
 
-				users = users.Union(from u in _dbContext.User.Select(iu => new { iu.Id, iu.Login })
+				users = users.Union(from u in dbContext.User.Select(iu => new { iu.Id, iu.Login })
 									join a in publicData.SelectMany(p => new Int32[] { p.assignedToId ?? 0, p.authorId }).Distinct() on u.Id equals a
 									select u);
 			}
 
 			var unionData = publicData == null ? privateData : privateData.Concat(publicData);
 			var estimates = (from Int32 a in unionData.Select(d => d.id)
-							 join est in _dbContext.UserEstimate
+							 join est in dbContext.UserEstimate
                                     .Select(e => new { e.ArticleId, e.Estimate }) 
                                 on a equals est.ArticleId
 							 select est).GroupBy(a => a.ArticleId);
 			var commentNums = (from Int32 a in unionData.Select(d => d.id)
-							   join est in _dbContext.UserComment.Select(e => new { e.ArticleId }) on a equals est.ArticleId
+							   join est in dbContext.UserComment.Select(e => new { e.ArticleId }) on a equals est.ArticleId
 							   select est).GroupBy(a => a.ArticleId);
 
 			return Ok(new
@@ -376,7 +342,7 @@ namespace WebArticleLibrary.Controllers
 				privateDataCount = privateDataCount,
 				publicData = publicData,
 				publicDataCount = publicDataCount,
-				pageLength = pageLength,
+				pageLength = PAGE_LENGTH,
 				userNames = users.ToDictionary(k => k.Id, v => v.Login),
 				estimates = estimates.ToDictionary(k => k.Key,
 					v => v.Count(iv => iv.Estimate == EstimateType.POSITIVE) - 
@@ -394,7 +360,7 @@ namespace WebArticleLibrary.Controllers
 			var curUser = GetUserInfo();
 			var curUserId = curUser?.id;
 
-			IQueryable<Article> articles = _dbContext.Article.Where(a => a.Status == ArticleStatus.APPROVED);
+			IQueryable<Article> articles = dbContext.Article.Where(a => a.Status == ArticleStatus.APPROVED);
 
 			if (dateStart != null)
 			{
@@ -423,7 +389,7 @@ namespace WebArticleLibrary.Controllers
 			if (author != null)
 			{
 				author = author.ToUpper();
-				var ids = _dbContext.User.Where(u => u.Login.ToUpper().Contains(author)).Select(u => u.Id);
+				var ids = dbContext.User.Where(u => u.Login.ToUpper().Contains(author)).Select(u => u.Id);
 				articles = articles.Where(a => ids.Contains(a.AuthorId));
 			}
 
@@ -438,22 +404,22 @@ namespace WebArticleLibrary.Controllers
 				authorId = a.AuthorId
 			}).ToArray();
 			var dataCount = data.Count();
-			var skip = (page - 1) * pageLength;
-			data = data.Skip(skip).Take(pageLength).ToArray();
+			var skip = (page - 1) * PAGE_LENGTH;
+			data = data.Skip(skip).Take(PAGE_LENGTH).ToArray();
 
-			var users = from u in _dbContext.User.Select(iu => new { iu.Id, iu.Login })
+			var users = from u in dbContext.User.Select(iu => new { iu.Id, iu.Login })
 						join a in data.Select(p => p.authorId).Distinct() on u.Id equals a
 						select u;
 
 			var estimates = (from Int32 a in data.Select(d => d.id)
-							 join est in _dbContext.UserEstimate.Select(e => new { e.ArticleId, e.Estimate }) on a equals est.ArticleId
+							 join est in dbContext.UserEstimate.Select(e => new { e.ArticleId, e.Estimate }) on a equals est.ArticleId
 							 select est).GroupBy(a => a.ArticleId);
 
 			return Ok(new
 			{
 				articles = data,
 				articleCount = dataCount,
-				pageLength = pageLength,
+				pageLength = PAGE_LENGTH,
 				userNames = users.ToDictionary(k => k.Id, v => v.Login),
 				estimates = estimates.ToDictionary(k => k.Key,
 					v => v.Count(iv => iv.Estimate == EstimateType.POSITIVE) - v.Count(iv => iv.Estimate == EstimateType.NEGATIVE))
@@ -494,10 +460,10 @@ namespace WebArticleLibrary.Controllers
 			return source;
 		}
 
-		[HttpGet]
-		public ActionResult CreateArticleVersion(Int32 id)
+		[HttpGet("NewVersion")]
+		public ActionResult CreateVersion(Int32 id)
 		{
-			var curArt = _dbContext.Article.FirstOrDefault(a => a.Id == id);
+			var curArt = dbContext.Article.FirstOrDefault(a => a.Id == id);
 
 			if (curArt == null)
 				return BadRequest("The requested article does not exist in the data base");
@@ -520,23 +486,23 @@ namespace WebArticleLibrary.Controllers
 			newArt.Tags = curArt.Tags;
 			newArt.Description = curArt.Description;
 
-            _dbContext.Article.Add(newArt);
+            dbContext.Article.Add(newArt);
 
-			_dbContext.SaveChanges();
+			dbContext.SaveChanges();
 
 			AddHistory(curArt.Id, curUserId, "CHILD VERSION", null, null, now, newArt.Id);
 			AddHistory(newArt.Id, curUserId, "PARENT VERSION", null, null, now, curArt.Id);
 
-			_dbContext.SaveChanges();
+			dbContext.SaveChanges();
 
 			return Ok(new { id = newArt.Id });
 		}
 
-		[HttpGet]
+		[HttpGet("Titles")]
 		[AllowAnonymous]
 		public ActionResult GetArticleTitles()
 		{
-			var articles = _dbContext.Article.Where(art => art.Status == ArticleStatus.APPROVED &&
+			var articles = dbContext.Article.Where(art => art.Status == ArticleStatus.APPROVED &&
 					defaultCategories.Any(c => art.Tags.Contains(c)))
 				.Select(art => new
 				{
@@ -553,7 +519,7 @@ namespace WebArticleLibrary.Controllers
 				.Take(15).ToArray();
 
 			var userNames = (from a in articles
-							 join user in _dbContext.User.Where(u => u.Status != UserStatus.BANNED)
+							 join user in dbContext.User.Where(u => u.Status != UserStatus.BANNED)
 								 .Select(u => new { id = u.Id, login = u.Login })
 							 on a.authorId equals user.id
 							 select user).Distinct().ToDictionary(k => k.id, v => v.login);
@@ -566,11 +532,11 @@ namespace WebArticleLibrary.Controllers
 		}
 
 		[AllowAnonymous]
-		[HttpGet]
+		[HttpGet("{id}")]
 		public ActionResult ViewArticle(Int32 id, Int32? userId = null)
 		{
-			var article = _dbContext.Article.FirstOrDefault(a => a.Id == id);
-			var comments = userId.HasValue ? _dbContext.UserComment.Where(c => c.ArticleId == article.Id)
+			var article = dbContext.Article.FirstOrDefault(a => a.Id == id);
+			var comments = userId.HasValue ? dbContext.UserComment.Where(c => c.ArticleId == article.Id)
 				.OrderBy(c => c.InsertDate).ToArray() : null;
 
 			Dictionary<Int32, Byte[]> photos = new Dictionary<Int32, Byte[]>();
@@ -578,7 +544,7 @@ namespace WebArticleLibrary.Controllers
 
 			if (comments != null)
 			{
-				var userInfos = (from u in _dbContext.User.Select(u => new
+				var userInfos = (from u in dbContext.User.Select(u => new
 				{
 					id = u.Id,
 					photo = u.Photo,
@@ -596,7 +562,7 @@ namespace WebArticleLibrary.Controllers
 			}
 			else
 			{
-				var _author = _dbContext.User.Where(a => a.Id == article.AuthorId)
+				var _author = dbContext.User.Where(a => a.Id == article.AuthorId)
 					.Select(u => new
 					{
 						id = u.Id,
@@ -610,7 +576,7 @@ namespace WebArticleLibrary.Controllers
 			return Ok(new
 			{
 				article = article,
-				updatedDate = _dbContext.ArticleHistory.Where(h => h.ArticleId == article.Id)
+				updatedDate = dbContext.ArticleHistory.Where(h => h.ArticleId == article.Id)
 					.Select(h => h.InsertDate)
 					.OrderByDescending(h => h)
 					.FirstOrDefault(),
@@ -618,975 +584,11 @@ namespace WebArticleLibrary.Controllers
 				userNames = names,
 				userPhotos = photos,
 				estimate = article.GetFinalEstimate(),
-				curEstimate = _dbContext.UserEstimate
+				curEstimate = dbContext.UserEstimate
                     .Where(e => e.AuthorId == userId && e.ArticleId == id)
 					.Select(e => e.Estimate)
 					.FirstOrDefault()
 			});
 		}
-
-		#endregion
-
-		#region COMMENT
-
-		[HttpPost]
-		public ActionResult CreateComment(UserComment comment)
-		{
-			var articleId = comment.ArticleId;
-			var article = _dbContext.Article.FirstOrDefault(a => a.Id == articleId);
-
-			if (article == null)
-				return BadRequest("The requested article does not exist in the data base");
-
-			// If a user can create a comment according to a current status of an article
-			if (article.Status != ArticleStatus.APPROVED)
-				return BadRequest("The article ought to be approved to have comments");
-
-			var curUser = GetUserInfo();
-			var curUserId = curUser.id;
-
-            var entity = new UserComment();
-			entity.InsertDate = DateTime.Now;
-			entity.ArticleId = article.Id;
-			entity.AuthorId = curUserId;
-			entity.Content = comment.Content;
-			entity.Status = CommentStatus.CREATED;
-			entity.ResponseToId = comment.ResponseToId;
-
-			_dbContext.UserComment.Add(entity);
-
-			_dbContext.SaveChanges();
-
-			var history = AddHistory(articleId, curUserId, "COMMENT CREATED", null, null, null, entity.Id);
-
-			if (curUserId != article.AuthorId)
-				AddNotification($"{curUser.name} has added a comment #{entity.Id.ToString()} for an article '{article.Name}'",
-					history, article.AuthorId);
-
-			_dbContext.SaveChanges();
-			return Ok(entity);
-		}
-
-		[HttpGet]
-		public ActionResult UpdateCommentStatus(Int32 id, CommentStatus status)
-		{
-			var entity = _dbContext.UserComment.FirstOrDefault(c => c.Id == id);
-
-			if (entity == null)
-				return BadRequest("The requested comment does not exist in the data base");
-
-			var curUser = GetUserInfo();
-
-			var now = DateTime.Now;
-			var history = AddHistory(entity.ArticleId, curUser.id, "COMMENT.Status", status.ToString(),
-				entity.Status.ToString(), now, entity.Id);
-
-			if (status == CommentStatus.DELETED)
-			{
-				if (entity.AuthorId != curUser.id)
-					return BadRequest("A comment can only be removed by its author");
-
-				var artName = entity.Article.Name;
-				List<Int32> participants = new List<Int32>();
-
-				foreach (var cmpln in entity.UserComplaints)
-				{
-					participants.Add(cmpln.AuthorId);
-
-					if (cmpln.AssignedToId.HasValue)
-						participants.Add(cmpln.AssignedToId.Value);
-				}
-
-				AddNotification($"A comment #{entity.Id.ToString()} for an article '{artName}' was removed by his author",
-					history, true, participants.ToArray());
-
-				// Doesn't have a cascade removal
-				_dbContext.UserComplaint.RemoveRange(entity.UserComplaints);
-
-				if (entity.RelatedComments.Any())
-					entity.Status = CommentStatus.DELETED;
-				else
-					RemoveComment(entity, now);
-			}
-			else
-			{
-				if (curUser.status != UserStatus.ADMINISTRATOR)
-					return BadRequest("You does not have rights to change statuses of comments");
-
-				var art = entity.Article;
-
-				var participants = new List<Int32>();
-				participants.Add(entity.AuthorId);
-
-				if (entity.AuthorId != art.AuthorId)
-					participants.Add(art.AuthorId);
-
-				AddNotification($"The administrator {curUser.name} has blocked a comment #{entity.Id.ToString()} for an article '{art.Name}'",
-					history, true, participants.ToArray());
-
-				entity.Status = status;
-			}
-
-			_dbContext.SaveChanges();
-
-			return Ok();
-		}
-
-		[HttpGet]
-		public ActionResult GetComments(Int32 page = 1, ColumnIndex colIndex = ColumnIndex.DATE,
-			Boolean asc = false, String id = null, String articleName = null,
-			DateTime? dateStart = null, DateTime? dateEnd = null, CommentStatus? status = null,
-			Int32? userId = null, Int32? parentId = null, Boolean all = false)
-		{
-			IQueryable<UserComment> cmnts = _dbContext.UserComment
-				.Where(c => c.Article.Status == ArticleStatus.APPROVED);
-
-			if (userId != null)
-			{
-				cmnts = cmnts.Where(c => c.AuthorId == userId);
-			}
-
-			if (parentId != null)
-			{
-				cmnts = cmnts.Where(c => c.ResponseToId == parentId);
-			}
-
-			if (dateStart != null)
-			{
-				cmnts = cmnts.Where(c => c.InsertDate >= dateStart);
-			}
-
-			if (dateEnd != null)
-			{
-				var filterDate = dateEnd.Value.Date.AddDays(1);
-				cmnts = cmnts.Where(c => c.InsertDate < filterDate);
-			}
-
-			if (status != null)
-			{
-				cmnts = cmnts.Where(c => c.Status == status);
-			}
-
-			if (id != null)
-			{
-				cmnts = cmnts.Where(c => c.Id.ToString().Contains(id));
-			}
-
-			if (articleName != null)
-			{
-				var filterVal = articleName.ToUpper();
-				cmnts = cmnts.Where(c => c.Article.Name.ToUpper().Contains(filterVal));
-			}
-
-			Int32 dataCount = cmnts.Count();
-
-			cmnts = OrderComments(cmnts, colIndex, asc);
-			UserComment[] cmntData = (all ? cmnts : cmnts.Skip((page - 1) * pageLength).Take(pageLength)).ToArray();
-
-			return Ok(new
-			{
-				data = cmntData,
-				dataCount = dataCount,
-				articleNames = cmntData.Select(c => new
-				{
-					artId = c.Article.Id,
-					artName = c.Article.Name
-				}).Distinct().ToDictionary(k => k.artId, v => v.artName),
-				userNames = cmntData.Select(c => new
-				{
-					authorId = c.AuthorId,
-					authorLogin = c.Author.Login,
-				}).Distinct().ToDictionary(k => k.authorId, v => v.authorLogin),
-				complaintNumber = cmntData
-					.Where(c => c.UserComplaints.Any()).ToDictionary(k => k.Id, v => v.UserComplaints.Count),
-				relatedCmntNumber = cmntData
-					.Where(c => c.RelatedComments.Any()).ToDictionary(k => k.Id, v => v.RelatedComments.Count),
-				pageLength = pageLength
-			});
-		}
-
-		private IQueryable<UserComment> OrderComments(IQueryable<UserComment> source, ColumnIndex colIndex, Boolean asc)
-		{
-			switch (colIndex)
-			{
-				case ColumnIndex.DATE:
-					source = asc ? source.OrderBy(s => s.InsertDate) : source.OrderByDescending(s => s.InsertDate);
-					break;
-				case ColumnIndex.STATUS:
-					source = asc ? source.OrderBy(s => s.Status) : source.OrderByDescending(s => s.Status);
-					break;
-				case ColumnIndex.ID:
-					source = asc ? source.OrderBy(s => s.Id) : source.OrderByDescending(s => s.Id);
-					break;
-				case ColumnIndex.ARTICLE:
-					source = asc ? source.OrderBy(s => s.Article.Name) : source.OrderByDescending(s => s.Article.Name);
-					break;
-			}
-
-			return source;
-		}
-
-		private void RemoveComment(UserComment cmnt, DateTime now)
-		{
-			var parentId = cmnt.ResponseToId;
-
-			AddHistory(cmnt.ArticleId, cmnt.AuthorId, "COMMENT REMOVED", null, null,
-				now, cmnt.Id);
-			_dbContext.UserComment.Remove(cmnt);
-				
-			if (parentId != null)
-			{
-				// There might be other parental comments waited to be deleted
-				UserComment parentalEntity = _dbContext.UserComment.FirstOrDefault(c => c.Id == parentId);
-
-				if (parentalEntity != null && parentalEntity.Status == CommentStatus.DELETED &&
-					!parentalEntity.RelatedComments.Any())
-					RemoveComment(parentalEntity, now);
-			}
-		}
-
-		#endregion
-
-		#region Complaint
-
-		[HttpPost]
-		public ActionResult CreateComplaint(UserComplaint complaint)
-		{
-			var curUser = GetUserInfo();
-			var curUserId = curUser.id;
-
-            var entity = new UserComplaint();
-
-			Int32 articleId;
-			String notificationStr = null;
-
-			var recipients = new List<Int32>();
-
-			if (complaint.UserCommentId.HasValue)
-			{
-				var commentId = complaint.UserCommentId;
-				var comment = _dbContext.UserComment.FirstOrDefault(a => a.Id == commentId);
-
-				if (comment == null)
-					return BadRequest("The requested comment does not exist in the data base");
-
-				var article = comment.Article;
-
-				// If a user can create a comment according to a current status of an article
-				if (article.Status != ArticleStatus.APPROVED)
-					return BadRequest("The article ought to be approved to have complaints");
-
-				entity.UserCommentId = commentId;
-				entity.ArticleId = articleId = article.Id;
-
-				recipients.Add(article.AuthorId);
-
-				if (comment.AuthorId != article.AuthorId)
-					recipients.Add(comment.AuthorId);
-
-				notificationStr = $"{curUser.name} has complained about a comment #{commentId} for an article '{article.Name}'";
-			}
-			else
-			{
-				articleId = complaint.ArticleId;
-				var article = _dbContext.Article.FirstOrDefault(a => a.Id == articleId);
-
-				if (article == null)
-					return BadRequest("The requested article does not exist in the data base");
-
-				// If a user can create a comment according to a current status of an article
-				if (article.Status != ArticleStatus.APPROVED)
-					return BadRequest("The article ought to be approved to have complaints");
-
-				entity.ArticleId = articleId;
-
-				recipients.Add(article.AuthorId);
-				notificationStr = $"{curUser.name} has complained about an article '{article.Name}'";
-			}
-
-			entity.InsertDate = DateTime.Now;
-			entity.AuthorId = curUserId;
-			entity.Text = complaint.Text;
-			entity.Status = ComplaintStatus.CREATED;
-
-			_dbContext.UserComplaint.Add(entity);
-
-			_dbContext.SaveChanges();
-
-			var history = AddHistory(articleId, curUserId, "Complaint CREATED", null, null, null, entity.Id);
-			AddHistory(articleId, curUserId, "Complaint.Content", entity.Text, null, null, entity.Id);
-
-			AddNotification(notificationStr, history, true, recipients.ToArray());
-
-			_dbContext.SaveChanges();
-			return Ok(entity);
-		}
-
-		[HttpGet]
-		[CustomAuthorization(CustomAuthorizationAttribute.ADMIN_ROLE)]
-		public ActionResult SetComplaintStatus(Int32 id, ComplaintStatus status, String response)
-		{
-			var entity = _dbContext.UserComplaint.FirstOrDefault(c => c.Id == id);
-
-			if (entity == null)
-				return BadRequest("The requested complaint does not exist in the data base");
-
-			var curUser = GetUserInfo();
-			var now = DateTime.Now;
-
-			String notificationStr = null;
-			var recipients = new List<Int32>();
-
-			var art = entity.Article;
-
-			if (status == ComplaintStatus.APPROVED)
-			{
-				if (entity.UserCommentId.HasValue)
-				{
-					var cmnt = entity.UserComment;
-					cmnt.Status = CommentStatus.BLOCKED;
-
-					notificationStr = $"A complaint about a comment #{entity.UserCommentId.Value.ToString()}" +
-						$" for an article '{art.Name}' has been approved by {curUser.name} and the comment has been blocked" +
-						$" with a response: '{response}'";
-
-					recipients.Add(cmnt.AuthorId);
-					recipients.Add(entity.AuthorId);
-
-					if (entity.AuthorId != art.AuthorId && cmnt.AuthorId != art.AuthorId)
-						recipients.Add(art.AuthorId);
-				}
-				else
-				{
-					art.Status = ArticleStatus.ON_EDIT;
-
-					Amendment amd = new Amendment();
-					art.AssignedToId = curUser.id;
-
-					amd.AuthorId = curUser.id;
-					amd.Content = response;
-					amd.InsertDate = now;
-
-					art.Amendments.Add(amd);
-
-					_dbContext.SaveChanges();
-
-					AddHistory(entity.ArticleId, curUser.id, "Amendment CREATED", null, null, null, amd.Id);
-					AddHistory(entity.ArticleId, curUser.id, "Amendment.Content", amd.Content, null, null, amd.Id);
-
-					notificationStr = $"A complaint about an article '{art.Name}' has been approved" +
-						$" by {curUser.name} and the article has been sent to be edited";
-
-					recipients.Add(entity.AuthorId);
-					recipients.Add(art.AuthorId);
-				}
-			}
-			else
-			{
-				if (entity.UserCommentId.HasValue)
-				{
-					var cmnt = entity.UserComment;
-
-					recipients.Add(cmnt.AuthorId);
-					recipients.Add(entity.AuthorId);
-
-					if (entity.AuthorId != art.AuthorId && cmnt.AuthorId != art.AuthorId)
-						recipients.Add(art.AuthorId);
-
-					notificationStr = $"A complaint about a comment #{entity.UserCommentId.Value.ToString()}" +
-						$" for an article '{art.Name}' has been declined by {curUser.name} with a response: '{response}'";
-				}
-				else
-				{
-					recipients.Add(entity.AuthorId);
-					recipients.Add(art.AuthorId);
-
-					notificationStr = $"A complaint about an article '{art.Name}' has been declined" +
-						$" by {curUser.name} with a response: '{response}'";
-				}
-			}
-
-			var history = AddHistory(entity.ArticleId, curUser.id,
-				"Complaint.Status", status.ToString(), entity.Status.ToString(), now, entity.Id);
-			AddHistory(entity.ArticleId, curUser.id, "Complaint.RESPONSE", response,
-				null, now, entity.Id);
-
-			AddNotification(notificationStr, history, recipients.ToArray());
-
-			entity.Status = status;
-
-			AddHistory(entity.ArticleId, curUser.id, "Complaint.AssignedTo", null,
-				entity.AssignedTo.Login, now, entity.Id);
-
-			entity.AssignedToId = null;
-			_dbContext.SaveChanges();
-
-			return Ok();
-		}
-
-		[HttpGet]
-		[CustomAuthorization(CustomAuthorizationAttribute.ADMIN_ROLE)]
-		public ActionResult SetComplaintAssignment(Int32 id, Boolean assign)
-		{
-			var entity = _dbContext.UserComplaint.FirstOrDefault(a => a.Id == id);
-
-			if (entity == null)
-				return BadRequest("The requested complaint does not exist in the data base");
-
-			var curUser = GetUserInfo();
-			var curUserId = curUser.id;
-
-			const String eventName = "Complaint.AssignedTo";
-			var now = DateTime.Now;
-
-			ArticleHistory history;
-			List<Int32> recipients = new List<Int32>();
-
-			String notificationStr = "A complaint about ";
-
-			var art = entity.Article;
-
-			if (entity.UserCommentId.HasValue)
-				notificationStr += $"a comment #{entity.UserCommentId.Value.ToString()} for ";
-
-			notificationStr += $"an article '{art.Name}' ";
-
-			if (assign)
-			{
-				entity.AssignedToId = curUserId;
-				history = AddHistory(entity.ArticleId, curUserId, eventName, curUser.name, null,
-					now, entity.Id);
-				notificationStr += $"has been assigned to {curUser.name}";
-			}
-			else
-			{
-				history = AddHistory(entity.ArticleId, curUserId, eventName, null, entity.AssignedTo.Login,
-					now, entity.Id);
-				entity.AssignedToId = null;
-				notificationStr += $"has been removed from the {curUser.name}'s assignments";
-			}
-
-			recipients.Add(entity.AuthorId);
-
-			if (entity.UserCommentId.HasValue)
-			{
-				Int32 cmntAuthorId = entity.UserComment.AuthorId;
-				recipients.Add(cmntAuthorId);
-
-				Int32 artAuthorId = art.AuthorId;
-				if (entity.AuthorId != artAuthorId && cmntAuthorId != artAuthorId)
-					recipients.Add(artAuthorId);
-			}
-			else
-			{
-				recipients.Add(entity.Article.AuthorId);
-			}
-
-			AddNotification(notificationStr, history, true, recipients.ToArray());
-			_dbContext.SaveChanges();
-
-			return Ok();
-		}
-
-		[HttpGet]
-		[CustomAuthorization(CustomAuthorizationAttribute.ADMIN_ROLE)]
-		public ActionResult GetComplaints(Int32 page = 1, ColumnIndex colIndex = ColumnIndex.DATE,
-			Boolean asc = false, String text = null, ComplaintStatus? status = null,
-			String author = null, String assignedTo = null,
-			DateTime? dateStart = null, DateTime? dateEnd = null,
-			ComplaintEntityType? entityType = null, String entity = null)
-		{
-			var curUser = GetUserInfo();
-			IQueryable<UserComplaint> data = _dbContext.UserComplaint
-				.Where(c => c.Article.Status == ArticleStatus.APPROVED);
-
-			if (dateStart != null)
-			{
-				var filter = dateStart.Value.Date;
-				data = data.Where(c => c.InsertDate > filter);
-			}
-
-			if (dateEnd != null)
-			{
-				var filter = dateEnd.Value.Date.AddDays(1);
-				data = data.Where(c => c.InsertDate < filter);
-			}
-
-			if (status != null)
-			{
-				data = data.Where(c => c.Status == status);
-			}
-
-			if (entityType != null)
-			{
-				if (entityType == ComplaintEntityType.ARTICLE)
-					data = data.Where(c => c.UserCommentId == null);
-				else
-					data = data.Where(c => c.UserCommentId != null);
-			}
-
-			if (entity != null)
-			{
-				var filter = entity.ToUpper();
-				data = data.Where(c => (c.UserCommentId == null ? c.Article.Name.ToUpper() :
-					c.UserCommentId.ToString()).Contains(filter));
-			}
-
-			if (assignedTo != null)
-			{
-				var filter = assignedTo.ToUpper();
-				data = data.Where(c => c.AssignedToId != null && c.AssignedTo.Login.ToUpper().Contains(filter));
-			}
-
-			if (author != null)
-			{
-				var filter = author.ToUpper();
-				data = data.Where(c => c.Author.Login.ToUpper().Contains(filter));
-			}
-
-			if (text != null)
-			{
-				var filter = text.ToUpper();
-				data = data.Where(c => c.Text.ToUpper().Contains(filter));
-			}
-
-			Int32 dataCount = data.Count();
-			var cmplns = OrderComplaints(data, colIndex, asc)
-				.Skip((page - 1) * pageLength)
-				.Take(pageLength);
-
-			var users = from u in _dbContext.User.Select(iu => new { iu.Id, iu.Login })
-						join a in cmplns.SelectMany(p => new Int32[] { p.AssignedToId ?? 0, p.AuthorId }).Distinct() on u.Id equals a
-						select u;
-
-			var articles = from a in _dbContext.Article.Select(a => new { a.Id, a.Name })
-						   join c in cmplns.Select(p => p.ArticleId).Distinct() on a.Id equals c
-						   select a;
-
-			var comments = from e in _dbContext.UserComment.Select(d => new { d.Id, d.Content })
-						   join c in cmplns.Where(p => p.UserCommentId != null)
-								.Select(p => p.UserCommentId).Distinct() on e.Id equals c
-						   select e;
-
-			return Ok(new
-			{
-				data = cmplns.Select(c => new
-				{
-					authorId = c.AuthorId,
-					assignedToId = c.AssignedToId,
-					articleId = c.ArticleId,
-					insertDate = c.InsertDate,
-					id = c.Id,
-					status = c.Status,
-					text = c.Text,
-					userCommentId = c.UserCommentId,
-					cmntAuthorId = c.UserComment == null ? null : (Int32?)c.UserComment.AuthorId,
-					articleAuthorId = c.Article.AuthorId
-				}).ToArray(),
-				dataCount = dataCount,
-				userNames = users.ToDictionary(k => k.Id, v => v.Login),
-				articleNames = articles.ToDictionary(k => k.Id, v => v.Name),
-				comments = comments.ToDictionary(k => k.Id, v => v.Content),
-				pageLength = pageLength
-			});
-		}
-
-		private IQueryable<UserComplaint> OrderComplaints(IQueryable<UserComplaint> source, ColumnIndex colIndex, Boolean asc)
-		{
-			switch (colIndex)
-			{
-				case ColumnIndex.TEXT:
-					source = asc ? source.OrderBy(s => s.Text) : source.OrderByDescending(s => s.Text);
-					break;
-				case ColumnIndex.DATE:
-					source = asc ? source.OrderBy(s => s.InsertDate) : source.OrderByDescending(s => s.InsertDate);
-					break;
-				case ColumnIndex.AUTHOR:
-					source = asc ? source.OrderBy(s => s.Author.Login) : source.OrderByDescending(s => s.Author.Login);
-					break;
-				case ColumnIndex.STATUS:
-					source = asc ? source.OrderBy(s => s.Status) : source.OrderByDescending(s => s.Status);
-					break;
-				case ColumnIndex.ASSIGNED_TO:
-					source = asc ? source.OrderBy(s => s.AssignedTo == null ? null : s.AssignedTo.Login) :
-						source.OrderByDescending(s => s.AssignedTo == null ? null : s.AssignedTo.Login);
-					break;
-				case ColumnIndex.ID:
-					source = asc ? source.OrderBy(s => s.UserCommentId == null ? s.UserCommentId : s.ArticleId) :
-						source.OrderByDescending(s => s.UserCommentId == null ? s.UserCommentId : s.ArticleId);
-					break;
-			}
-
-			return source;
-		}
-
-		#endregion
-
-		#region Estimate
-
-		[HttpGet]
-		public ActionResult GetEstimates(Int32 page = 1, ColumnIndex colIndex = ColumnIndex.DATE,
-			Boolean asc = false, Int32? userId = null,
-			EstimateType? estimate = null, String article = null,
-			DateTime? dateStart = null, DateTime? dateEnd = null)
-		{
-			var curUser = GetUserInfo();
-			IQueryable<UserEstimate> data = _dbContext.UserEstimate.Where(c => (userId == null || c.AuthorId == userId))
-				.Where(e => e.Article.Status == ArticleStatus.APPROVED);
-
-			if (dateStart != null)
-			{
-				var filter = dateStart.Value.Date;
-				data = data.Where(c => c.InsertDate > filter);
-			}
-
-			if (dateEnd != null)
-			{
-				var filter = dateEnd.Value.Date.AddDays(1);
-				data = data.Where(c => c.InsertDate < filter);
-			}
-
-			if (estimate != null)
-			{
-				data = data.Where(c => c.Estimate == estimate);
-			}
-
-			if (article != null)
-			{
-				var filter = article.ToUpper();
-				data = data.Where(c => c.Article.Name.ToUpper().Contains(filter));
-			}
-
-			Int32 dataCount = data.Count();
-			var ests = OrderEstimates(data, colIndex, asc)
-				.Skip((page - 1) * pageLength).Take(pageLength).ToArray();
-
-			return Ok(new
-			{
-				data = ests,
-				dataCount = dataCount,
-				articleNames = ests.Select(c => c.Article).Distinct().ToDictionary(k => k.Id, v => v.Name),
-				userNames = ests.Select(c => c.Author).Distinct().ToDictionary(k => k.Id, v => v.Login),
-				pageLength = pageLength
-			});
-		}
-		
-		private IQueryable<UserEstimate> OrderEstimates(IQueryable<UserEstimate> source, ColumnIndex colIndex, Boolean asc)
-		{
-			switch (colIndex)
-			{
-				case ColumnIndex.DATE:
-					source = asc ? source.OrderBy(s => s.InsertDate) : source.OrderByDescending(s => s.InsertDate);
-					break;
-				case ColumnIndex.STATUS:
-					source = asc ? source.OrderByDescending(s => s.Estimate) : source.OrderBy(s => s.Estimate);
-					break;
-				case ColumnIndex.ID:
-					source = asc ? source.OrderBy(s => s.Id) : source.OrderByDescending(s => s.Id);
-					break;
-				case ColumnIndex.ARTICLE:
-					source = asc ? source.OrderBy(s => s.Article.Name) : source.OrderByDescending(s => s.Article.Name);
-					break;
-			}
-
-			return source;
-		}
-
-		[HttpGet]
-		public ActionResult AssessArticle(Int32 id, EstimateType estimate)
-		{
-			var article = _dbContext.Article.FirstOrDefault(a => a.Id == id);
-
-			if (article == null)
-				return BadRequest("The requested article does not exist in the data base");
-
-			// If a user can create a comment according to a current status of an article
-			if (article.Status != ArticleStatus.APPROVED)
-				return BadRequest("The article ought to be approved to have comments");
-
-			var curUser = GetUserInfo();
-			var curUserId = curUser.id;
-
-			var entity = _dbContext.UserEstimate.FirstOrDefault(e => e.ArticleId == id && e.AuthorId == curUserId);
-			DateTime now = DateTime.Now;
-
-			if (entity == null)
-			{
-                entity = new UserEstimate();
-				entity.ArticleId = article.Id;
-				entity.AuthorId = curUserId;
-
-                _dbContext.UserEstimate.Add(entity);
-			}
-
-			var history = AddHistory(id, curUserId, "Estimate.Estimate", estimate.ToString(), entity.Estimate.ToString(),
-				now, entity.Id);
-			entity.Estimate = estimate;
-			entity.InsertDate = DateTime.Now;
-
-			AddNotification($"A user {curUser.name} has assessed an article '{article.Name}'", history, article.AuthorId);
-
-			_dbContext.SaveChanges();
-
-			return Ok(new { estimate = article.GetFinalEstimate() });
-		}
-
-		#endregion
-
-		#region Amendment
-
-		[HttpGet]
-		public ActionResult GetAmendments(Int32 articleId)
-		{
-			var article = _dbContext.Article.FirstOrDefault(a => a.Id == articleId);
-
-			if (article == null)
-				return BadRequest("The requested article does not exist in the data base");
-
-			var curUser = GetUserInfo();
-
-			// If the user has the rights to get amendments
-			if (article.AuthorId != curUser.id && article.AssignedToId != curUser.id)
-				return BadRequest("The user cannot see requested amendments");
-
-			return Ok(article.Amendments);
-		}
-
-		[HttpPost]
-		[CustomAuthorization(CustomAuthorizationAttribute.ADMIN_ROLE)]
-		public ActionResult CreateAmendment(Amendment amendment)
-		{
-			var articleId = amendment.ArticleId;
-			var article = _dbContext.Article.FirstOrDefault(a => a.Id == articleId);
-
-			if (article == null)
-				return BadRequest("The requested article does not exist in the data base");
-
-			var curUser = GetUserInfo();
-
-			// If the user has the rights to create amendments
-			if (article.AuthorId != curUser.id && article.AssignedToId != curUser.id)
-				return BadRequest("The user cannot create amendments");
-
-            var entity = new Amendment();
-			entity.InsertDate = DateTime.Now;
-			entity.ArticleId = article.Id;
-			entity.AuthorId = curUser.id;
-			entity.Content = amendment.Content;
-			entity.Resolved = amendment.Resolved;
-
-			_dbContext.Amendment.Add(entity);
-
-			_dbContext.SaveChanges();
-
-			var history = AddHistory(amendment.ArticleId, curUser.id, "Amendment CREATED", null, null, null, entity.Id);
-			AddHistory(amendment.ArticleId, curUser.id, "Amendment.Content", entity.Content, null, null, entity.Id);
-
-			AddNotification($"An amendment has been added to an article '{article.Name}' by {curUser.name}",
-				history, article.AuthorId);
-
-			_dbContext.SaveChanges();
-
-			return Ok(entity);
-		}
-
-		[HttpPost]
-		public ActionResult UpdateAmendment(Amendment[] amendments)
-		{
-			if (!amendments.Any())
-				throw new Exception("The request is empty");
-
-			var articleId = amendments.First().ArticleId;
-			var article = _dbContext.Article.FirstOrDefault(a => a.Id == articleId);
-
-			if (article == null)
-				return BadRequest("The requested article does not exist in the data base");
-
-			var curUser = GetUserInfo();
-
-			// If the user has the rights to get amendments
-			if (article.AuthorId != curUser.id && article.AssignedToId != curUser.id)
-				return BadRequest("The user cannot deal with these amendments");
-
-			var ids = amendments.Select(am => am.Id).ToArray();
-			DateTime now = DateTime.Now;
-
-			ArticleHistory history = null;
-
-			foreach (var entity in _dbContext.Amendment.Where(am => ids.Contains(am.Id)))
-			{
-				var amendment = amendments.First(am => am.Id == entity.Id);
-
-				if (entity.Content != amendment.Content)
-					history = AddHistory(amendment.ArticleId, curUser.id, "Amendment.Content",
-						amendment.Content, entity.Content, now, amendment.Id);
-
-				entity.Content = amendment.Content;
-
-				if (entity.Resolved != amendment.Resolved)
-					history = AddHistory(amendment.ArticleId, curUser.id, "Amendment.Resolved",
-						null, null, now, amendment.Id);
-
-				entity.Resolved = amendment.Resolved;
-			}
-
-			if (history != null)
-			{
-				var recipient = curUser.id == article.AuthorId ?
-					(article.AssignedToId.HasValue ? article.AssignedToId : null) : article.AuthorId;
-
-				if (recipient.HasValue)
-					AddNotification($"There have been changes to the amendments of an article '{article.Name}' by {curUser.name}",
-						history, recipient.Value);
-			}
-
-			_dbContext.SaveChanges();
-			return Ok();
-		}
-
-		[HttpDelete]
-		[CustomAuthorization(CustomAuthorizationAttribute.ADMIN_ROLE)]
-        public ActionResult RemoveAmendment([ModelBinder]Int32[] ids)
-		{
-			var amendments = _dbContext.Amendment.Where(a => ids.Contains(a.Id));
-			DateTime now = DateTime.Now;
-
-			ArticleHistory history = null;
-			Article art = null;
-
-			var curUser = GetUserInfo();
-
-			foreach (var amendment in amendments)
-			{
-				if (art == null)
-					art = amendment.Article;
-
-				if (curUser.status == UserStatus.ADMINISTRATOR && amendment.AuthorId != curUser.id)
-					return BadRequest("Only authors can delete their own amendments");
-
-				history = AddHistory(amendment.ArticleId, curUser.id, "Amendment REMOVED", null, null,
-					now, amendment.Id);
-				_dbContext.Amendment.Remove(amendment);
-			}
-
-			if (history != null)
-			{
-				AddNotification($"Some amendments for an article '{art.Name}' have been removed  by {curUser.name}",
-					history, art.AuthorId);
-			}
-
-			_dbContext.SaveChanges();
-			return Ok();
-		}
-
-		#endregion
-
-		#region HISTORY
-
-		private void AddNotification(String text, ArticleHistory history, 
-			Boolean includeAdmins, params Int32[] recipientIds)
-		{
-			if (includeAdmins)
-			{
-				recipientIds = _dbContext.User.Where(u => u.Status == UserStatus.ADMINISTRATOR)
-					.Select(u => u.Id).Union(recipientIds).ToArray();
-			}
-
-			var curUserId = GetUserInfo().id;
-			List<UserNotification> notifications = new List<UserNotification>();
-
-			foreach (var recipientId in recipientIds.Distinct())
-			{
-				if (recipientId != curUserId)
-				{
-					var notification = new UserNotification();
-
-					notification.Text = text;
-					notification.RecipientId = recipientId;
-					notification.InsertDate = DateTime.Now;
-					notification.ArticleHistory = history;
-
-					notifications.Add(notification);
-				}
-			}
-
-			_dbContext.UserNotification.AddRange(notifications);
-		}
-
-		private void AddNotification(String text, ArticleHistory history, 
-			params Int32[] recipientIds)
-		{
-			if (recipientIds.Any())
-				AddNotification(text, history, false, recipientIds);
-		}
-
-		[HttpGet]
-		public ActionResult GetNotifications(Int32 userId)
-		{
-			var data = _dbContext.UserNotification.Where(a => a.RecipientId == userId);
-
-			return Ok(data.OrderByDescending(h => h.InsertDate).Select(n => new
-			{
-				id = n.Id,
-				date = n.InsertDate,
-				recipientID = n.RecipientId,
-				text = n.Text,
-				historyId = n.ArticleHistoryId,
-				articleId = n.ArticleHistory.ArticleId
-			}).ToArray());
-		}
-
-		[HttpDelete]
-		public ActionResult ClearNotifications([ModelBinder]Int32[] ids)
-		{
-			var removedData = _dbContext.UserNotification.Where(a => ids.Contains(a.Id))
-                .ToArray();
-			_dbContext.UserNotification.RemoveRange(removedData);
-
-			_dbContext.SaveChanges();
-
-			notificationHub.RemoveNotifications(removedData);
-			return Ok();
-		}
-
-		[HttpGet]
-		public ActionResult GetArticleHistory(Int32 id)
-		{
-			var curArt = _dbContext.Article.FirstOrDefault(a => a.Id == id);
-
-			if (curArt == null)
-				return BadRequest("The requested article does not exist in the data base");
-
-			return Ok(curArt.ArticleHistory
-				.GroupBy(h => h.InsertDate).OrderByDescending(h => h.Key)
-				.Select(g => new
-				{
-					date = g.Key,
-					author = g.First().Author.Login,
-					history = g
-				}).ToArray());
-		}
-		
-		private ArticleHistory AddHistory(Int32 artId, Int32 authorId, String obj, 
-			String newVal, String oldVal, DateTime? insDate = null, Int32? objId = null)
-		{
-			var history = new ArticleHistory();
-
-			history.ArticleId = artId;
-			history.AuthorId = authorId;
-			history.Object = obj;
-			history.NewValue = newVal;
-			history.OldValue = oldVal;
-			history.ObjectId = objId;
-
-			var date = (insDate ?? DateTime.Now);
-			history.InsertDate = new DateTime(date.Year, date.Month, date.Day, 
-				date.Hour, date.Minute, date.Second);
-
-            _dbContext.ArticleHistory.Add(history);
-			return history;
-		}
-
-		#endregion
 	}
 }

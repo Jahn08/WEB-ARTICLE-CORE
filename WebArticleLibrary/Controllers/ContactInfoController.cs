@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace WebArticleLibrary.Controllers
 {
+    [Route("api/[controller]")]
 	[ApiController]
     [AllowAnonymous]
 	public class ContactInfoController: ControllerBase
@@ -28,7 +29,7 @@ namespace WebArticleLibrary.Controllers
 			});
 		}
 
-		[HttpGet]
+		[HttpGet("AboutUs")]
 		public ActionResult GetAboutUsInfo()
 		{
 			return Ok(new {

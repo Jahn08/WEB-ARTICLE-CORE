@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Linq;
 using Microsoft.AspNetCore.SignalR;
@@ -12,7 +13,7 @@ namespace WebArticleLibrary.Hubs
 		static ConcurrentDictionary<String, Int32> storage = 
 			new ConcurrentDictionary<String, Int32>();
 
-		public void AddNotifications(UserNotification[] entities)
+		public void AddNotifications(IEnumerable<UserNotification> entities)
 		{
 			foreach (var g in entities.GroupBy(e => e.RecipientId))
 			{
@@ -34,7 +35,7 @@ namespace WebArticleLibrary.Hubs
 			}			
 		}
 
-		public void RemoveNotifications(UserNotification[] entities)
+		public void RemoveNotifications(IEnumerable<UserNotification> entities)
 		{
 			foreach (var g in entities.GroupBy(e => e.RecipientId))
 			{
