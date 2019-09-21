@@ -2,7 +2,7 @@
 	'use strict';
 
 	angular.module('ArticleLibraryApp', ['ui.router', 'ui.bootstrap', 'ngResource', 'ngCookies', 'ngSanitize'])
-		.constant('NO_PHOTO_FILE_URL', 'images/NoPhoto.png')
+		.constant('NO_PHOTO_FILE_URL', 'images/noPhoto.png')
 		.constant('MODAL_CLICK_MSG', 'backdrop click')	
 		.config(function ($stateProvider, $urlRouterProvider, $locationProvider) {
 
