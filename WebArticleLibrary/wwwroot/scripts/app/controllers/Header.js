@@ -85,7 +85,7 @@
 							$scope.openNotificationModal = function () {
 								if ($scope.notifications) {
 									$uibModal.open({
-										templateUrl: "Views/ModalDialogs/NotificationModal.html",
+										templateUrl: "views/modalDialogs/NotificationModal.html",
 										controller: "NotificationModalCtrl",
 										resolve: {
 											data: {
@@ -170,7 +170,7 @@
 
 			$scope.openModal = function () {
 				$uibModal.open({
-					templateUrl: "Views/ModalDialogs/RegisterModal.html",
+					templateUrl: "views/modalDialogs/RegisterModal.html",
 					controller: "RegisterModalCtrl",
 					resolve: {
 						userData: {
@@ -183,7 +183,7 @@
 			
 			$scope.resetPasswordModal = function () {
 				$uibModal.open({
-					templateUrl: "Views/ModalDialogs/MarkPasswordForResettingModal.html",
+					templateUrl: "views/modalDialogs/MarkPasswordForResettingModal.html",
 					controller: ['$scope', 'UserReqFactory', 'ErrorService', '$state', '$uibModalInstance',
 						function ($scope, UserReqFactory, ErrorService, $state, $uibModalInstance) {
 							$scope.closeModal = function () {

@@ -139,7 +139,7 @@
 			var setStatus = function (_st) {
 				if ($scope.selectedCmpl) {
 					$uibModal.open({
-						templateUrl: "Views/ModalDialogs/ResponseModal.html",
+						templateUrl: "views/modalDialogs/ResponseModal.html",
 						controller: "ResponseModalCtrl"
 					}).result.then(function (data) {
 						if (!data.content)

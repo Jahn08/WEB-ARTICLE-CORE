@@ -44,6 +44,8 @@ namespace WebArticleLibrary
                 app.UseHsts();
             }
 
+            app.UseFileServer();
+
             app.UseHttpsRedirection();
             app.UseMvc();
 

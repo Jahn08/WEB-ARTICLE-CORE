@@ -58,7 +58,7 @@
 
 								var openHistoryModal = function (data) {
 									$uibModal.open({
-										templateUrl: "Views/ModalDialogs/ArticleHistoryModal.html",
+										templateUrl: "views/modalDialogs/ArticleHistoryModal.html",
 										controller: "ArticleHistoryModalCtrl",
 										resolve: {
 											data: {
@@ -121,7 +121,7 @@
 									onRequest();
 
 									$uibModal.open({
-										templateUrl: "Views/ModalDialogs/ComplaintModal.html",
+										templateUrl: "views/modalDialogs/ComplaintModal.html",
 										controller: "ComplaintModalCtrl",
 										resolve: {
 											data: {
@@ -199,7 +199,7 @@
 										onRequest();
 
 										$uibModal.open({
-											templateUrl: "Views/ModalDialogs/AmendmentModal.html",
+											templateUrl: "views/modalDialogs/AmendmentModal.html",
 											controller: "AmendmentModalCtrl",
 											resolve: {
 												data: {

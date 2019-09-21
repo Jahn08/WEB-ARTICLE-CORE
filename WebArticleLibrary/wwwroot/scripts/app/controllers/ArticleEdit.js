@@ -288,7 +288,7 @@
 						var amendment = $scope.amendments[selIndex];
 
 						$uibModal.open({
-							templateUrl: "Views/ModalDialogs/AmendmentModal.html",
+							templateUrl: "views/modalDialogs/AmendmentModal.html",
 							controller: "AmendmentModalCtrl",
 							resolve: {
 								data: {

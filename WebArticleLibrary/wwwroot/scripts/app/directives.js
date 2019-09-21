@@ -35,7 +35,7 @@
 				fnClick: '=',
 				curColIndex: '='
 			},						
-			templateUrl: 'Views/Directives/SortBtn.html'
+			templateUrl: 'views/directives/SortBtn.html'
 		};
 	})
 	.directive('pagination', function () {
@@ -47,7 +47,7 @@
 				fnNextPage: '=',
 				addParam: '='
 			},						
-			templateUrl: 'Views/Directives/Pagination.html'
+			templateUrl: 'views/directives/Pagination.html'
 		};
 	})
 	.directive('breadcrumb', function () {
@@ -62,7 +62,7 @@
 					return { name: vals[0], state: vals.length > 1 ? vals[1]: null };
 				});
 			},
-			templateUrl: 'Views/Directives/Breadcrumb.html'
+			templateUrl: 'views/directives/Breadcrumb.html'
 		};
 	})
 	.directive('loading', function () {
@@ -73,7 +73,7 @@
 				isError: '=',
 				sending: '='
 			},
-			templateUrl: 'Views/Directives/Loading.html'
+			templateUrl: 'views/directives/Loading.html'
 		};
 	});
 })();

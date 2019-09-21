@@ -245,7 +245,7 @@
 			$scope.showHistory = function (art) {
 				var openHistoryModal = function (data) {
 					$uibModal.open({
-						templateUrl: "Views/ModalDialogs/ArticleHistoryModal.html",
+						templateUrl: "views/modalDialogs/ArticleHistoryModal.html",
 						controller: "ArticleHistoryModalCtrl",
 						resolve: {
 							data: {

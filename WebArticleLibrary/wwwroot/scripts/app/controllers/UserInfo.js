@@ -152,7 +152,7 @@
 
 				ArticleReqFactory.getComments(null, null, true, user.id, true).then(function (data) {
 					$uibModal.open({
-						templateUrl: "Views/ModalDialogs/CommentModal.html",
+						templateUrl: "views/modalDialogs/CommentModal.html",
 						controller: "CommentModalCtrl",
 						resolve: {
 							data: {

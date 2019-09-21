@@ -12,15 +12,15 @@
 				url: '/',
 				views: {
 					'header': {
-						templateUrl: 'Views/Header.html',
+						templateUrl: 'views/Header.html',
 						controller: 'HeaderCtrl'
 					},
 					'content': {
-						templateUrl: 'Views/Home.html',
+						templateUrl: 'views/Home.html',
 						controller: "HomeCtrl"
 					},
 					'footer': {
-						templateUrl: 'Views/Footer.html',
+						templateUrl: 'views/Footer.html',
 						controller: "FooterCtrl"
 					}
 				},
@@ -70,7 +70,7 @@
 				url: 'userinfo',
 				views: {
 					'content@': {
-						templateUrl: 'Views/UserInfo.html',
+						templateUrl: 'views/UserInfo.html',
 						controller: 'UserInfoCtrl'
 					}
 				},
@@ -82,7 +82,7 @@
 				url: 'complaintinfo',
 				views: {
 					'content@': {
-						templateUrl: 'Views/ComplaintInfo.html',
+						templateUrl: 'views/ComplaintInfo.html',
 						controller: 'ComplaintInfoCtrl'
 					}
 				},
@@ -94,7 +94,7 @@
 				url: 'articleinfo',
 				views: {
 					'content@': {
-						templateUrl: 'Views/ArticleInfo.html',
+						templateUrl: 'views/ArticleInfo.html',
 						controller: 'ArticleInfoCtrl'
 					}
 				},
@@ -106,7 +106,7 @@
 				url: 'commentinfo',
 				views: {
 					'content@': {
-						templateUrl: 'Views/CommentInfo.html',
+						templateUrl: 'views/CommentInfo.html',
 						controller: 'CommentInfoCtrl'
 					}
 				},
@@ -118,7 +118,7 @@
 				url: 'estimateinfo',
 				views: {
 					'content@': {
-						templateUrl: 'Views/EstimateInfo.html',
+						templateUrl: 'views/EstimateInfo.html',
 						controller: 'EstimateInfoCtrl'
 					}
 				},
@@ -130,7 +130,7 @@
 				url: 'properties/:confirmEmail',
 				views: {
 					'content@': {
-						templateUrl: 'Views/Properties.html',
+						templateUrl: 'views/Properties.html',
 						controller: 'PropertiesCtrl'
 					}
 				},
@@ -142,7 +142,7 @@
 				url: 'resetpassword/:id',
 				views: {
 					'content@': {
-						templateUrl: 'Views/ResetPassword.html',
+						templateUrl: 'views/ResetPassword.html',
 						controller: 'ResetPasswordCtrl'
 					}
 				}
@@ -151,11 +151,11 @@
 				url: "aboutus",
 				views: {
 					'content@': {
-						templateUrl: 'Views/AboutUs.html',
+						templateUrl: 'views/AboutUs.html',
 						controller: 'AboutUsCtrl'
 					},
 					'header@': {
-						templateUrl: 'Views/Header.html',
+						templateUrl: 'views/Header.html',
 						controller: 'HeaderCtrl',
 					}
 				},
@@ -169,11 +169,11 @@
 				url: "editarticle/:id/:category",
 				views: {
 					'content@': {
-						templateUrl: 'Views/ArticleEdit.html',
+						templateUrl: 'views/ArticleEdit.html',
 						controller: 'ArticleEditCtrl'
 					},
 					'header@': {
-						templateUrl: 'Views/Header.html',
+						templateUrl: 'views/Header.html',
 						controller: 'HeaderCtrl',
 					}
 				},
@@ -190,7 +190,7 @@
 				url: "viewarticle/:id/:commentId/:historyId",
 				views: {
 					'content@': {
-						templateUrl: 'Views/ArticleView.html',
+						templateUrl: 'views/ArticleView.html',
 						controller: 'ArticleViewCtrl'
 					}
 				}
@@ -199,11 +199,11 @@
 				url: "searcharticle/:category/:author",
 				views: {
 					'content@': {
-						templateUrl: 'Views/ArticleSearch.html',
+						templateUrl: 'views/ArticleSearch.html',
 						controller: "ArticleSearchCtrl"
 					},
 					'header@': {
-						templateUrl: 'Views/Header.html',
+						templateUrl: 'views/Header.html',
 						controller: 'HeaderCtrl',
 					}
 				},
