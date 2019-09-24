@@ -1,11 +1,15 @@
 ﻿using System;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace WebArticleLibrary.Model.Migrations
 {
     public partial class Initialisation : Migration
     {
+        private const string USER_REMOVAL_TRIGGER_NAME = "OnUserRemoval";
+
+        private const string COMMENT_REMOVAL_TRIGGER_NAME = "OnCommentRemoval";
+
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
@@ -13,7 +17,7 @@ namespace WebArticleLibrary.Model.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn),
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     Login = table.Column<string>(maxLength: 10, nullable: false),
                     FirstName = table.Column<string>(maxLength: 50, nullable: false),
                     LastName = table.Column<string>(maxLength: 50, nullable: false),
@@ -22,7 +26,7 @@ namespace WebArticleLibrary.Model.Migrations
                     Hash = table.Column<string>(maxLength: 250, nullable: false),
                     InsertDate = table.Column<DateTime>(nullable: false),
                     ExpirationDate = table.Column<DateTime>(nullable: true),
-                    ConfirmationDate = table.Column<Guid>(nullable: true),
+                    ConfirmationId = table.Column<Guid>(nullable: true),
                     NewEmail = table.Column<string>(nullable: true),
                     NewEmailExpirationDate = table.Column<DateTime>(nullable: true),
                     ResetPasswordExpirationDate = table.Column<DateTime>(nullable: true),
@@ -40,7 +44,7 @@ namespace WebArticleLibrary.Model.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn),
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     AuthorId = table.Column<int>(nullable: false),
                     AssignedToId = table.Column<int>(nullable: true),
                     Name = table.Column<string>(maxLength: 200, nullable: false),
@@ -59,21 +63,30 @@ namespace WebArticleLibrary.Model.Migrations
                         column: x => x.AssignedToId,
                         principalTable: "User",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
                         name: "FK_Article_User_AuthorId",
                         column: x => x.AuthorId,
                         principalTable: "User",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
+
+            migrationBuilder.Sql(String.Format(@"CREATE TRIGGER [{0}] ON [User]
+                AFTER DELETE
+                AS
+                BEGIN
+                    SET NOCOUNT ON;
+
+                    DELETE [Article] WHERE [AuthorId] IN (SELECT [Id] FROM deleted);
+                END", USER_REMOVAL_TRIGGER_NAME));
 
             migrationBuilder.CreateTable(
                 name: "Amendment",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn),
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     AuthorId = table.Column<int>(nullable: false),
                     ArticleId = table.Column<int>(nullable: false),
                     Content = table.Column<string>(nullable: false),
@@ -95,7 +108,7 @@ namespace WebArticleLibrary.Model.Migrations
                         column: x => x.AuthorId,
                         principalTable: "User",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -103,7 +116,7 @@ namespace WebArticleLibrary.Model.Migrations
                 columns: table => new
                 {
                     ID = table.Column<int>(nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn),
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     ArticleId = table.Column<int>(nullable: false),
                     AuthorId = table.Column<int>(nullable: false),
                     Object = table.Column<string>(nullable: false),
@@ -127,7 +140,7 @@ namespace WebArticleLibrary.Model.Migrations
                         column: x => x.AuthorId,
                         principalTable: "User",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -135,7 +148,7 @@ namespace WebArticleLibrary.Model.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn),
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     AuthorId = table.Column<int>(nullable: false),
                     ResponseToId = table.Column<int>(nullable: true),
                     ArticleId = table.Column<int>(nullable: false),
@@ -157,7 +170,7 @@ namespace WebArticleLibrary.Model.Migrations
                         column: x => x.AuthorId,
                         principalTable: "User",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_UserComment_UserComment_ResponseToId",
                         column: x => x.ResponseToId,
@@ -166,12 +179,25 @@ namespace WebArticleLibrary.Model.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
+            migrationBuilder.Sql(String.Format(@"CREATE TRIGGER [{0}] ON [UserComment]
+                AFTER DELETE
+                AS
+                BEGIN
+                    SET NOCOUNT ON;
+
+                    UPDATE [UserComment] SET [ResponseToId] = NULL
+                        WHERE [ResponseToId] IN (SELECT [Id] FROM deleted);
+                    
+                    UPDATE [UserComplaint] SET [UserCommentId] = NULL
+                        WHERE [UserCommentId] IN (SELECT [Id] FROM deleted);
+                END", COMMENT_REMOVAL_TRIGGER_NAME));
+
             migrationBuilder.CreateTable(
                 name: "UserEstimate",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn),
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     AuthorId = table.Column<int>(nullable: false),
                     ArticleId = table.Column<int>(nullable: false),
                     Estimate = table.Column<int>(nullable: false),
@@ -191,7 +217,7 @@ namespace WebArticleLibrary.Model.Migrations
                         column: x => x.AuthorId,
                         principalTable: "User",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -199,7 +225,7 @@ namespace WebArticleLibrary.Model.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn),
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     Text = table.Column<string>(maxLength: 250, nullable: false),
                     InsertDate = table.Column<DateTime>(nullable: false),
                     RecipientId = table.Column<int>(nullable: false),
@@ -219,7 +245,7 @@ namespace WebArticleLibrary.Model.Migrations
                         column: x => x.RecipientId,
                         principalTable: "User",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -227,7 +253,7 @@ namespace WebArticleLibrary.Model.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn),
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     AuthorId = table.Column<int>(nullable: false),
                     AssignedToId = table.Column<int>(nullable: true),
                     UserCommentId = table.Column<int>(nullable: true),
@@ -250,13 +276,13 @@ namespace WebArticleLibrary.Model.Migrations
                         column: x => x.AssignedToId,
                         principalTable: "User",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
                         name: "FK_UserComplaint_User_AuthorId",
                         column: x => x.AuthorId,
                         principalTable: "User",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_UserComplaint_UserComment_UserCommentId",
                         column: x => x.UserCommentId,
@@ -353,6 +379,10 @@ namespace WebArticleLibrary.Model.Migrations
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            foreach (var trigger in new [] { 
+                COMMENT_REMOVAL_TRIGGER_NAME, USER_REMOVAL_TRIGGER_NAME })
+                migrationBuilder.Sql($"DROP TRIGGER [{trigger}]");
+
             migrationBuilder.DropTable(
                 name: "Amendment");
 

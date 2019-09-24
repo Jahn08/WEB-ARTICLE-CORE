@@ -2,8 +2,8 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using WebArticleLibrary.Model;
 
 namespace WebArticleLibrary.Model.Migrations
@@ -15,14 +15,15 @@ namespace WebArticleLibrary.Model.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn)
                 .HasAnnotation("ProductVersion", "2.2.6-servicing-10079")
-                .HasAnnotation("Relational:MaxIdentifierLength", 63);
+                .HasAnnotation("Relational:MaxIdentifierLength", 128)
+                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
             modelBuilder.Entity("WebArticleLibrary.Model.Amendment", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<bool>("Archived");
 
@@ -49,7 +50,8 @@ namespace WebArticleLibrary.Model.Migrations
             modelBuilder.Entity("WebArticleLibrary.Model.Article", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<int?>("AssignedToId");
 
@@ -87,7 +89,8 @@ namespace WebArticleLibrary.Model.Migrations
             modelBuilder.Entity("WebArticleLibrary.Model.ArticleHistory", b =>
                 {
                     b.Property<int>("ID")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<int>("ArticleId");
 
@@ -118,9 +121,10 @@ namespace WebArticleLibrary.Model.Migrations
             modelBuilder.Entity("WebArticleLibrary.Model.User", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<Guid?>("ConfirmationDate");
+                    b.Property<Guid?>("ConfirmationId");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -169,7 +173,8 @@ namespace WebArticleLibrary.Model.Migrations
             modelBuilder.Entity("WebArticleLibrary.Model.UserComment", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<int>("ArticleId");
 
@@ -198,7 +203,8 @@ namespace WebArticleLibrary.Model.Migrations
             modelBuilder.Entity("WebArticleLibrary.Model.UserComplaint", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<int>("ArticleId");
 
@@ -231,7 +237,8 @@ namespace WebArticleLibrary.Model.Migrations
             modelBuilder.Entity("WebArticleLibrary.Model.UserEstimate", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<int>("ArticleId");
 
@@ -253,7 +260,8 @@ namespace WebArticleLibrary.Model.Migrations
             modelBuilder.Entity("WebArticleLibrary.Model.UserNotification", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<int>("ArticleHistoryId");
 
@@ -284,19 +292,20 @@ namespace WebArticleLibrary.Model.Migrations
                     b.HasOne("WebArticleLibrary.Model.User", "Author")
                         .WithMany("Amendments")
                         .HasForeignKey("AuthorId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("WebArticleLibrary.Model.Article", b =>
                 {
                     b.HasOne("WebArticleLibrary.Model.User", "AssignedTo")
                         .WithMany("AssignedArticles")
-                        .HasForeignKey("AssignedToId");
+                        .HasForeignKey("AssignedToId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("WebArticleLibrary.Model.User", "Author")
                         .WithMany("Articles")
                         .HasForeignKey("AuthorId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("WebArticleLibrary.Model.ArticleHistory", b =>
@@ -309,7 +318,7 @@ namespace WebArticleLibrary.Model.Migrations
                     b.HasOne("WebArticleLibrary.Model.User", "Author")
                         .WithMany("ArticleHistory")
                         .HasForeignKey("AuthorId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("WebArticleLibrary.Model.UserComment", b =>
@@ -322,11 +331,12 @@ namespace WebArticleLibrary.Model.Migrations
                     b.HasOne("WebArticleLibrary.Model.User", "Author")
                         .WithMany("UserComments")
                         .HasForeignKey("AuthorId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("WebArticleLibrary.Model.UserComment", "ResponseTo")
                         .WithMany("RelatedComments")
-                        .HasForeignKey("ResponseToId");
+                        .HasForeignKey("ResponseToId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("WebArticleLibrary.Model.UserComplaint", b =>
@@ -338,16 +348,18 @@ namespace WebArticleLibrary.Model.Migrations
 
                     b.HasOne("WebArticleLibrary.Model.User", "AssignedTo")
                         .WithMany("AssignedUserComplaints")
-                        .HasForeignKey("AssignedToId");
+                        .HasForeignKey("AssignedToId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("WebArticleLibrary.Model.User", "Author")
                         .WithMany("UserComplaints")
                         .HasForeignKey("AuthorId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("WebArticleLibrary.Model.UserComment", "UserComment")
                         .WithMany("UserComplaints")
-                        .HasForeignKey("UserCommentId");
+                        .HasForeignKey("UserCommentId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("WebArticleLibrary.Model.UserEstimate", b =>
@@ -360,7 +372,7 @@ namespace WebArticleLibrary.Model.Migrations
                     b.HasOne("WebArticleLibrary.Model.User", "Author")
                         .WithMany("UserEstimates")
                         .HasForeignKey("AuthorId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("WebArticleLibrary.Model.UserNotification", b =>
@@ -373,7 +385,7 @@ namespace WebArticleLibrary.Model.Migrations
                     b.HasOne("WebArticleLibrary.Model.User", "Recipient")
                         .WithMany("UserNotifications")
                         .HasForeignKey("RecipientId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 #pragma warning restore 612, 618
         }

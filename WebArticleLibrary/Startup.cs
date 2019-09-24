@@ -26,7 +26,7 @@ namespace WebArticleLibrary
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
             services.AddDbContext<ArticleLibraryContext>(options => 
-                options.UseNpgsql(Configuration.GetConnectionString("WebArticle")));
+                options.UseSqlServer(Configuration.GetConnectionString("WebArticle")));
         
             services.AddSignalR();
         }
