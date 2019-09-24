@@ -76,16 +76,14 @@ namespace WebArticleLibrary.Controllers
 
             using (var userStore = new UserStore(dbContext))
             {
-                userStore.CreateAsync(user, confirmationId).Wait();
-
-                try
+                using (var trans = dbContext.Database.BeginTransaction())
                 {
+                    userStore.CreateAsync(user, confirmationId).Wait();
+
                     new MailHelper(_config).SendRegistrationConfirmation
                         (new RequestHeaders(Request.Headers).Referer, user, confirmationId);
-                }
-                catch {
-                    userStore.DeleteAsync(user).Wait();
-                    throw;
+
+                    trans.Commit();
                 }
             }
             			
