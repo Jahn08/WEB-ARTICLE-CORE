@@ -79,7 +79,7 @@
 
 							hubServer = connection;
 
-							connection.onClose(() => hubServer = null);
+							connection.onclose(() => hubServer = null);
 							//************* SIGNALR **************//
 							
 							$scope.openNotificationModal = function () {
