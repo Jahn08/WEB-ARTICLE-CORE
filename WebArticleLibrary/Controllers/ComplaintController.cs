@@ -4,6 +4,8 @@ using WebArticleLibrary.Model;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using WebArticleLibrary.Models;
+using WebArticleLibrary.Security;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebArticleLibrary.Controllers
 {
@@ -89,7 +91,7 @@ namespace WebArticleLibrary.Controllers
 		}
 
 		[HttpPost("Status")]
-		[CustomAuthorization(CustomAuthorizationAttribute.ADMIN_ROLE)]
+		[Authorize(SecurityConfigurator.ADMIN_POLICY_NAME)]
 		public ActionResult SetComplaintStatus(Int32 id, ComplaintStatus status, String response)
 		{
 			var entity = dbContext.UserComplaint.FirstOrDefault(c => c.Id == id);
@@ -193,7 +195,7 @@ namespace WebArticleLibrary.Controllers
 		}
 
 		[HttpPost("Assignment")]
-		[CustomAuthorization(CustomAuthorizationAttribute.ADMIN_ROLE)]
+		[Authorize(SecurityConfigurator.ADMIN_POLICY_NAME)]
 		public ActionResult SetComplaintAssignment(Int32 id, Boolean assign)
 		{
 			var entity = dbContext.UserComplaint.FirstOrDefault(a => a.Id == id);
@@ -257,7 +259,7 @@ namespace WebArticleLibrary.Controllers
 		}
 
 		[HttpGet]
-		[CustomAuthorization(CustomAuthorizationAttribute.ADMIN_ROLE)]
+		[Authorize(SecurityConfigurator.ADMIN_POLICY_NAME)]
 		public ActionResult GetComplaints(Int32 page = 1, ColumnIndex colIndex = ColumnIndex.DATE,
 			Boolean asc = false, String text = null, ComplaintStatus? status = null,
 			String author = null, String assignedTo = null,

@@ -8,6 +8,9 @@ using Microsoft.Extensions.DependencyInjection;
 using WebArticleLibrary.Model;
 using Microsoft.EntityFrameworkCore;
 using WebArticleLibrary.Hubs;
+using WebArticleLibrary.Security;
+using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebArticleLibrary
 {
@@ -20,10 +23,20 @@ namespace WebArticleLibrary
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddSingleton<IAuthorizationHandler, StatusAuthorizationHandler>();
+
+            services.AddMvc(options => options.Filters.Add(
+                new AuthorizeFilter(SecurityConfigurator.BuildUserPolicy()))
+            ).SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+
+            services.AddCookieAuthenticationScheme();
+
+            services.AddAuthorization(options => {
+                options.AddAdministratorPolicy();
+                options.AddUserPolicy();
+            });
 
             services.AddDbContext<ArticleLibraryContext>(options => 
                 options.UseSqlServer(Configuration.GetConnectionString("WebArticle")));
@@ -31,7 +44,6 @@ namespace WebArticleLibrary
             services.AddSignalR();
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             if (env.IsDevelopment())
@@ -47,6 +59,9 @@ namespace WebArticleLibrary
             app.UseFileServer();
 
             app.UseHttpsRedirection();
+            
+            app.UseAuthentication();
+            
             app.UseMvc();
 
             app.UseSignalR(route => {

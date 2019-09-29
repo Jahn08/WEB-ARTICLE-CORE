@@ -2,6 +2,8 @@ using System;
 using System.Linq;
 using WebArticleLibrary.Model;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using WebArticleLibrary.Security;
 
 namespace WebArticleLibrary.Controllers
 {
@@ -31,7 +33,7 @@ namespace WebArticleLibrary.Controllers
 		}
 
 		[HttpPost("New")]
-		[CustomAuthorization(CustomAuthorizationAttribute.ADMIN_ROLE)]
+		[Authorize(SecurityConfigurator.ADMIN_POLICY_NAME)]
 		public ActionResult CreateAmendment(Amendment amendment)
 		{
 			var articleId = amendment.ArticleId;
@@ -123,7 +125,7 @@ namespace WebArticleLibrary.Controllers
 		}
 
 		[HttpDelete]
-		[CustomAuthorization(CustomAuthorizationAttribute.ADMIN_ROLE)]
+		[Authorize(SecurityConfigurator.ADMIN_POLICY_NAME)]
         public ActionResult RemoveAmendment([ModelBinder]Int32[] ids)
 		{
 			var amendments = dbContext.Amendment.Where(a => ids.Contains(a.Id));

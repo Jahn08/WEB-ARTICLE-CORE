@@ -5,6 +5,7 @@ using WebArticleLibrary.Models;
 using WebArticleLibrary.Model;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using WebArticleLibrary.Security;
 
 namespace WebArticleLibrary.Controllers
 {
@@ -164,8 +165,8 @@ namespace WebArticleLibrary.Controllers
 		}
 
 		[HttpPost("Assignment")]
-		[CustomAuthorization(CustomAuthorizationAttribute.ADMIN_ROLE)]
-		public ActionResult SetArticleAssignment(Int32 id, Boolean assign)
+    	[Authorize(SecurityConfigurator.ADMIN_POLICY_NAME)]
+    	public ActionResult SetArticleAssignment(Int32 id, Boolean assign)
 		{
 			Article curArt = dbContext.Article.FirstOrDefault(a => a.Id == id);
 
@@ -224,7 +225,6 @@ namespace WebArticleLibrary.Controllers
 
 			return GetArticles();
 		}
-
 
 		[HttpGet("All")]
 		public ActionResult GetArticles(ArticleStatus? status = null,

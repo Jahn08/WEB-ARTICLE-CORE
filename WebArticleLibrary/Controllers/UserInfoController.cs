@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Http.Headers;
+using WebArticleLibrary.Security;
 
 namespace WebArticleLibrary.Controllers
 {
@@ -149,7 +150,7 @@ namespace WebArticleLibrary.Controllers
 		}
 
 		[HttpPost("{userId}/Status")]
-		[CustomAuthorization(CustomAuthorizationAttribute.ADMIN_ROLE)]
+		[Authorize(SecurityConfigurator.ADMIN_POLICY_NAME)]
 		public ActionResult SetUserStatus(String userId, Model.UserStatus Status)
 		{
 			UserInfo userForUpd;

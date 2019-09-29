@@ -215,6 +215,7 @@ namespace WebArticleLibrary.Helpers
 				List<Claim> claims = new List<Claim>();
 				claims.Add(new Claim(ClaimTypes.NameIdentifier, user.UserName));
 				claims.Add(new Claim(ClaimTypes.Sid, user.Id.ToString()));
+				claims.Add(new Claim(ClaimTypes.Role, user.status.ToString()));
 
 				return (IList<Claim>)claims;
 			});

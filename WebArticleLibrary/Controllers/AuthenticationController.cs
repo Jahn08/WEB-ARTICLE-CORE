@@ -7,6 +7,7 @@ using WebArticleLibrary.Model;
 using WebArticleLibrary.Helpers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Http.Headers;
+using WebArticleLibrary.Security;
 
 namespace WebArticleLibrary.Controllers
 {
@@ -31,7 +32,8 @@ namespace WebArticleLibrary.Controllers
 
 			using (var userStore = new UserStore(dbContext))
 			{
-				if (Request.Cookies.TryGetValue(CustomAuthorizationAttribute.AUTH_USER_COOKIE, out cookie))
+				if (Request.Cookies.TryGetValue(SecurityConfigurator.DEFAULT_COOKIE_NAME, 
+                    out cookie))
 					return Ok(userStore.GetCurrentUserInfo(User.Identity));
 
 				u = userStore.FindByNameAsync(user.name).Result;
@@ -46,8 +48,8 @@ namespace WebArticleLibrary.Controllers
 
 				if (pHasher.VerifyHashedPassword(u.GetHash(), user.password) == PasswordVerificationResult.Success)
 				{
-					Response.Cookies.Append(CustomAuthorizationAttribute.AUTH_USER_COOKIE, 
-						CustomAuthorizationAttribute.EncryptId(u.id));
+                    CookieAuthenticationHandler.AppendAuthenticationCookie(Response.Cookies, u.id, 
+                        SecurityConfigurator.DEFAULT_COOKIE_NAME);
 					
 					return Ok(u);
 				}
@@ -62,8 +64,9 @@ namespace WebArticleLibrary.Controllers
 		{
 			String cookie;
 
-			if (Request.Cookies.TryGetValue(CustomAuthorizationAttribute.AUTH_USER_COOKIE, out cookie))
-				Response.Cookies.Delete(CustomAuthorizationAttribute.AUTH_USER_COOKIE);
+			if (Request.Cookies.TryGetValue(SecurityConfigurator.DEFAULT_COOKIE_NAME, 
+                out cookie))
+				Response.Cookies.Delete(SecurityConfigurator.DEFAULT_COOKIE_NAME);
 
 			return Ok();
 		}
