@@ -211,7 +211,7 @@ namespace WebArticleLibrary.Controllers
 		}
 
 		[HttpDelete]
-		public ActionResult RemoveArticle([ModelBinder]Int32[] ids)
+		public ActionResult RemoveArticle([FromQuery]Int32[] ids)
 		{
 			var curUser = GetUserInfo();
 			var arts = dbContext.Article.Where(a => ids.Contains(a.Id));

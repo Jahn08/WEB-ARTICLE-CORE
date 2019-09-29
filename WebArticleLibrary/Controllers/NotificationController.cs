@@ -33,7 +33,7 @@ namespace WebArticleLibrary.Controllers
 		}
 
 		[HttpDelete]
-		public ActionResult ClearNotifications([ModelBinder]Int32[] ids)
+		public ActionResult ClearNotifications([FromQuery]Int32[] ids)
 		{
 			var removedData = dbContext.UserNotification.Where(a => ids.Contains(a.Id))
                 .ToArray();

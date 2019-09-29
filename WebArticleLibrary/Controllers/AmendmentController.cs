@@ -129,7 +129,7 @@ namespace WebArticleLibrary.Controllers
 
 		[HttpDelete]
 		[Authorize(SecurityConfigurator.ADMIN_POLICY_NAME)]
-        public ActionResult RemoveAmendment([ModelBinder]Int32[] ids)
+        public ActionResult RemoveAmendment([FromQuery]Int32[] ids)
 		{
 			var amendments = dbContext.Amendment.Where(a => ids.Contains(a.Id));
 			DateTime now = DateTime.Now;
