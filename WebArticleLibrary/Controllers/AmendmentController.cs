@@ -4,6 +4,8 @@ using WebArticleLibrary.Model;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using WebArticleLibrary.Security;
+using Microsoft.AspNetCore.SignalR;
+using WebArticleLibrary.Hubs;
 
 namespace WebArticleLibrary.Controllers
 {
@@ -11,7 +13,8 @@ namespace WebArticleLibrary.Controllers
     [Route("api/[controller]")]
 	public class AmendmentController: SignallingController
 	{
-		public AmendmentController(ArticleLibraryContext dbContext): base(dbContext) 
+		public AmendmentController(ArticleLibraryContext dbContext,
+            IHubContext<NotificationHub> hubContext): base(dbContext, hubContext) 
 		{
         }
 

@@ -2,6 +2,8 @@ using System;
 using System.Linq;
 using WebArticleLibrary.Model;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using WebArticleLibrary.Hubs;
 
 namespace WebArticleLibrary.Controllers
 {
@@ -9,7 +11,8 @@ namespace WebArticleLibrary.Controllers
     [Route("api/[controller]")]
 	public class NotificationController: SignallingController
 	{
-		public NotificationController(ArticleLibraryContext dbContext): base(dbContext) 
+        public NotificationController(ArticleLibraryContext dbContext,
+            IHubContext<NotificationHub> hubContext): base(dbContext, hubContext)
 		{
 		}
 

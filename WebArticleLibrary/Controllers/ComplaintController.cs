@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using WebArticleLibrary.Models;
 using WebArticleLibrary.Security;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
+using WebArticleLibrary.Hubs;
 
 namespace WebArticleLibrary.Controllers
 {
@@ -13,8 +15,9 @@ namespace WebArticleLibrary.Controllers
     [Route("api/[controller]")]
 	public class ComplaintController: SignallingController
 	{
-		public ComplaintController(ArticleLibraryContext dbContext): base(dbContext) 
-		{
+		public ComplaintController(ArticleLibraryContext dbContext,
+            IHubContext<NotificationHub> hubContext): base(dbContext, hubContext)
+        {
         }
 
 		[HttpPost]

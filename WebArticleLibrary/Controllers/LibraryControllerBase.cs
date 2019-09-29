@@ -21,5 +21,11 @@ namespace WebArticleLibrary.Controllers
         {
             return new UserStore(dbContext).GetCurrentUserInfo(User.Identity);
         }
+
+        protected Int32 GetCurrentUserId()
+        {
+            Int32 id;
+            return Int32.TryParse(UserStore.GetCurrentUserId(User.Identity), out id) ? id: 0;
+        }
     }
 }

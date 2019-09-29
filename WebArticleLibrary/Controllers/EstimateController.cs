@@ -4,6 +4,8 @@ using WebArticleLibrary.Model;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using WebArticleLibrary.Models;
+using Microsoft.AspNetCore.SignalR;
+using WebArticleLibrary.Hubs;
 
 namespace WebArticleLibrary.Controllers
 {
@@ -11,7 +13,8 @@ namespace WebArticleLibrary.Controllers
     [Route("api/[controller]")]
 	public class EstimateController: SignallingController
 	{
-		public EstimateController(ArticleLibraryContext dbContext): base(dbContext) 
+        public EstimateController(ArticleLibraryContext dbContext,
+            IHubContext<NotificationHub> hubContext): base(dbContext, hubContext)
 		{
         }
 

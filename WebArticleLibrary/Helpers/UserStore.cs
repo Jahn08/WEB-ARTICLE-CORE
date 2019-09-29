@@ -24,15 +24,21 @@ namespace WebArticleLibrary.Helpers
 
 		public UserInfo GetCurrentUserInfo(IIdentity identity)
 		{
+            var userId = GetCurrentUserId(identity);
+            return userId == null ? null: this.FindByIdAsync(userId).Result;
+		}
+
+        public static String GetCurrentUserId(IIdentity identity)
+        {
 			ClaimsIdentity claimsIdentity;
 			Claim claim = null;
 
-			if ((claimsIdentity = identity as ClaimsIdentity) != null &&
-				(claim = claimsIdentity.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Sid)) != null)
-				return this.FindByIdAsync(claim.Value).Result;
+            if ((claimsIdentity = identity as ClaimsIdentity) == null ||
+				(claim = claimsIdentity.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Sid)) == null)
+				return null;
 
-			return null;
-		}
+            return claim.Value;
+        }
 
 		public Task AddClaimAsync(UserInfo user, Claim claim)
 		{

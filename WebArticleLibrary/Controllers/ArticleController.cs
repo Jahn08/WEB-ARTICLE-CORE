@@ -6,6 +6,8 @@ using WebArticleLibrary.Model;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using WebArticleLibrary.Security;
+using Microsoft.AspNetCore.SignalR;
+using WebArticleLibrary.Hubs;
 
 namespace WebArticleLibrary.Controllers
 {
@@ -15,8 +17,9 @@ namespace WebArticleLibrary.Controllers
 	{
         private readonly String[] defaultCategories;
 
-		public ArticleController(ArticleLibraryContext dbContext): base(dbContext)
-		{ 
+		public ArticleController(ArticleLibraryContext dbContext,
+            IHubContext<NotificationHub> hubContext): base(dbContext, hubContext)
+        { 
     		defaultCategories = new[] { "science", "politics", "literature", "travelling", "financies" };
         }
 
@@ -468,11 +471,10 @@ namespace WebArticleLibrary.Controllers
 			if (curArt == null)
 				return BadRequest("The requested article does not exist in the data base");
 
-			Int32 curUserId = GetUserInfo().id;
+			var curUserId = GetCurrentUserId();
 
 			if (curArt.AuthorId != curUserId)
 				return BadRequest("Only authors can create new versions of their articles");
-
 
 			var newArt = new Article();
 

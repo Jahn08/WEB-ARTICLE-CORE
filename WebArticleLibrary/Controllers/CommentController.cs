@@ -4,15 +4,18 @@ using WebArticleLibrary.Model;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using WebArticleLibrary.Models;
+using Microsoft.AspNetCore.SignalR;
+using WebArticleLibrary.Hubs;
 
 namespace WebArticleLibrary.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
 	public class CommentController: SignallingController
-	{
-		public CommentController(ArticleLibraryContext dbContext): base(dbContext) 
-		{
+	{	
+        public CommentController(ArticleLibraryContext dbContext,
+            IHubContext<NotificationHub> hubContext): base(dbContext, hubContext)
+        {
         }
 
 		[HttpPost]

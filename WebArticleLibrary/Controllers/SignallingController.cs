@@ -3,22 +3,18 @@ using System;
 using WebArticleLibrary.Hubs;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.SignalR;
 
 namespace WebArticleLibrary.Controllers
 {
-	public class SignallingController: LibraryControllerBase, IDisposable
+	public class SignallingController: LibraryControllerBase
 	{   
-        private NotificationHub notificationHub;
+        private NotificationSender senderHub;
 
-        // IHubContext<NotificationHub> hub)
-        public SignallingController(ArticleLibraryContext dbContext): base(dbContext)
+        public SignallingController(ArticleLibraryContext dbContext, 
+            IHubContext<NotificationHub> hubContext): base(dbContext)
         {
-            notificationHub = new NotificationHub();
-        }
-        
-        public void Dispose()
-		{
-            notificationHub?.Dispose();
+            senderHub = new NotificationSender(hubContext);
         }
 
         protected void AddNotification(String text, ArticleHistory history, 
@@ -37,7 +33,7 @@ namespace WebArticleLibrary.Controllers
 					.Select(u => u.Id).Union(recipientIds).ToArray();
 			}
 
-			var curUserId = GetUserInfo().id;
+			var curUserId = GetCurrentUserId();
 			List<UserNotification> notifications = new List<UserNotification>();
 
 			foreach (var recipientId in recipientIds.Distinct())
@@ -57,12 +53,12 @@ namespace WebArticleLibrary.Controllers
 
 			dbContext.UserNotification.AddRange(notifications);
             
-			notificationHub.AddNotifications(notifications);
+			senderHub.AddNotifications(notifications);
 		}
 
         protected void RemoveNotifications(IEnumerable<UserNotification> notifications)
         {
-			notificationHub.RemoveNotifications(notifications);
+			senderHub.RemoveNotifications(notifications);
         }
 
 		protected ArticleHistory AddHistory(Int32 artId, Int32 authorId, String obj, 
