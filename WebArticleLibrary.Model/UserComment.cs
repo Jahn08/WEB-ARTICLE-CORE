@@ -40,19 +40,19 @@ namespace WebArticleLibrary.Model
 		public DateTime InsertDate { get; set; }
 		
         [DataMember(Name = "status")]
-		public CommentStatus Status { get; set; }
+		public virtual CommentStatus Status { get; set; }
 
-		public User Author { get; set; }
+		public virtual User Author { get; set; }
 
-		public UserComment ResponseTo { get; set; }
+		public virtual UserComment ResponseTo { get; set; }
 
-		public Article Article { get; set; }	
+		public virtual Article Article { get; set; }	
 		
         [InverseProperty("ResponseTo")]
-		public ICollection<UserComment> RelatedComments { get; set; }
+		public virtual ICollection<UserComment> RelatedComments { get; set; }
 
         [InverseProperty("UserComment")]
-		public ICollection<UserComplaint> UserComplaints { get; set; }
+		public virtual ICollection<UserComplaint> UserComplaints { get; set; }
 	}
 
 	public enum CommentStatus {

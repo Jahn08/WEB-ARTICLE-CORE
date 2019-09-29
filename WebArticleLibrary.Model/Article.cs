@@ -22,7 +22,7 @@ namespace WebArticleLibrary.Model
 
 		[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 		[Key]
-        [DataMember(Name = "Id")]
+        [DataMember(Name = "id")]
 		public int Id { get; set; }
 
 		[DataMember(Name = "authorId")]
@@ -61,24 +61,24 @@ namespace WebArticleLibrary.Model
         [DataMember(Name = "reviewedContent")]
 		public Byte[] ReviewedContent { get; set; }
 
-		public User Author { get; set; }
+		public virtual User Author { get; set; }
 
-		public User AssignedTo { get; set; }
-
-        [InverseProperty("Article")]
-		public ICollection<Amendment> Amendments { get; set; }
+		public virtual User AssignedTo { get; set; }
 
         [InverseProperty("Article")]
-		public ICollection<ArticleHistory> ArticleHistory { get; set; }
+		public virtual ICollection<Amendment> Amendments { get; set; }
 
         [InverseProperty("Article")]
-		public ICollection<UserComment> UserComments { get; set; }
+		public virtual ICollection<ArticleHistory> ArticleHistory { get; set; }
 
         [InverseProperty("Article")]
-		public ICollection<UserEstimate> UserEstimates { get; set; }
+		public virtual ICollection<UserComment> UserComments { get; set; }
 
         [InverseProperty("Article")]
-		public ICollection<UserComplaint> UserComplaints { get; set; }
+		public virtual ICollection<UserEstimate> UserEstimates { get; set; }
+
+        [InverseProperty("Article")]
+		public virtual ICollection<UserComplaint> UserComplaints { get; set; }
 
 		public Int32 GetFinalEstimate()
 		{

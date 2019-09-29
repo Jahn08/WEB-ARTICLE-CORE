@@ -69,31 +69,31 @@ namespace WebArticleLibrary.Model
 		public Boolean ShowPrivateInfo { get; set; }
 
 		[InverseProperty("Author")]
-		public ICollection<Article> Articles { get; set; }
+		public virtual ICollection<Article> Articles { get; set; }
 
 		[InverseProperty("AssignedTo")]
-		public ICollection<Article> AssignedArticles { get; set; }
+		public virtual ICollection<Article> AssignedArticles { get; set; }
 
 		[InverseProperty("Author")]
-		public ICollection<Amendment> Amendments { get; set; }
+		public virtual ICollection<Amendment> Amendments { get; set; }
 
 		[InverseProperty("Author")]
-		public ICollection<ArticleHistory> ArticleHistory { get; set; }
+		public virtual ICollection<ArticleHistory> ArticleHistory { get; set; }
 
 		[InverseProperty("Author")]
-		public ICollection<UserComment> UserComments { get; set; }
+		public virtual ICollection<UserComment> UserComments { get; set; }
 
 		[InverseProperty("Author")]
-		public ICollection<UserEstimate> UserEstimates { get; set; }
+		public virtual ICollection<UserEstimate> UserEstimates { get; set; }
 
 		[InverseProperty("Author")]
-		public ICollection<UserComplaint> UserComplaints { get; set; }
+		public virtual ICollection<UserComplaint> UserComplaints { get; set; }
 		
 		[InverseProperty("AssignedTo")]
-		public ICollection<UserComplaint> AssignedUserComplaints { get; set; }
+		public virtual ICollection<UserComplaint> AssignedUserComplaints { get; set; }
 
 		[InverseProperty("Recipient")]
-		public ICollection<UserNotification> UserNotifications { get; set; }
+		public virtual ICollection<UserNotification> UserNotifications { get; set; }
 		
 		public String DisplayName {
 			get {

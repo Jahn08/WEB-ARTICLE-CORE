@@ -24,8 +24,8 @@ namespace WebArticleLibrary.Model
 		[Required]
 		public int ArticleHistoryId { get; set; }
 
-		public User Recipient { get; set; }
+		public virtual User Recipient { get; set; }
 
-		public ArticleHistory ArticleHistory { get; set; }
+		public virtual ArticleHistory ArticleHistory { get; set; }
 	}
 }

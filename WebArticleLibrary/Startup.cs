@@ -39,7 +39,8 @@ namespace WebArticleLibrary
             });
 
             services.AddDbContext<ArticleLibraryContext>(options => 
-                options.UseSqlServer(Configuration.GetConnectionString("WebArticle")));
+                options.UseLazyLoadingProxies()
+                    .UseSqlServer(Configuration.GetConnectionString("WebArticle")));
         
             services.AddSignalR();
         }

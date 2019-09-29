@@ -48,12 +48,12 @@ namespace WebArticleLibrary.Model
 		[DataMember(Name = "objectType")]
 		public HistoryObjectType ObjectType { get; set; }
 
-		public User Author { get; set; }
+		public virtual User Author { get; set; }
 
-		public Article Article { get; set; }
+		public virtual Article Article { get; set; }
 
         [InverseProperty("ArticleHistory")]
-		public ICollection<UserNotification> UserNotifications { get; set; }
+		public virtual ICollection<UserNotification> UserNotifications { get; set; }
 	}
 
 	public enum HistoryObjectType

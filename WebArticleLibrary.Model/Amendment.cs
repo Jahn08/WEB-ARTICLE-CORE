@@ -36,8 +36,8 @@ namespace WebArticleLibrary.Model
         [DataMember(Name="insertDate")]
 		public DateTime InsertDate { get; set; }
 
-		public Article Article { get; set; }
+		public virtual Article Article { get; set; }
 
-		public User Author { get; set; }
+		public virtual User Author { get; set; }
 	}
 }

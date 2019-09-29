@@ -36,15 +36,15 @@ namespace WebArticleLibrary.Model
 		public DateTime InsertDate { get; set; }
 		
 		[DataMember(Name = "status")]
-		public ComplaintStatus Status { get; set; }
+		public virtual ComplaintStatus Status { get; set; }
 
-		public User Author { get; set; }
+		public virtual User Author { get; set; }
 
-		public UserComment UserComment { get; set; }
+		public virtual UserComment UserComment { get; set; }
 
-		public Article Article { get; set; }
+		public virtual Article Article { get; set; }
 
-		public User AssignedTo { get; set; }
+		public virtual User AssignedTo { get; set; }
 	}
 
 	public enum ComplaintStatus {
