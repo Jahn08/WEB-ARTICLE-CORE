@@ -18,7 +18,7 @@ namespace WebArticleLibrary.Controllers
     {
 		private IConfiguration _config;
 
-        UserInfoController(ArticleLibraryContext dbContext, IConfiguration config):
+        public UserInfoController(ArticleLibraryContext dbContext, IConfiguration config):
             base(dbContext)
         {
             _config = config;
