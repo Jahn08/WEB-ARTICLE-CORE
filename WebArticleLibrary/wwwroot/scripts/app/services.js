@@ -289,14 +289,14 @@
 				}
 			},
             assignArticle: function(id) {
-                this._setArticleAssignment(id, true);
+                return this._setArticleAssignment(id, true);
             },
             _setArticleAssignment(id, shouldAssign) {
                 return $resource(baseUrl + 'Article/Assignment')
-                    .get({ id: id, assign: shouldAssign }).$promise;
+                    .save({ id: id, assign: shouldAssign }).$promise;
             },
             unassignArticle: function(id) {
-                this._setArticleAssignment(id, false);
+                return this._setArticleAssignment(id, false);
 			},
 
 			//*** AMENDMENTS ***
