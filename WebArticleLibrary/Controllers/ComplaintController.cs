@@ -95,8 +95,9 @@ namespace WebArticleLibrary.Controllers
 
 		[HttpPost("Status")]
 		[Authorize(SecurityConfigurator.ADMIN_POLICY_NAME)]
-		public ActionResult SetComplaintStatus(Int32 id, ComplaintStatus status, String response)
+		public ActionResult SetComplaintStatus(ComplaintStatusUpdate model)
 		{
+            var id = model.ComplaintId;
 			var entity = dbContext.UserComplaint.FirstOrDefault(c => c.Id == id);
 
 			if (entity == null)
@@ -109,6 +110,9 @@ namespace WebArticleLibrary.Controllers
 			var recipients = new List<Int32>();
 
 			var art = entity.Article;
+
+            var status = model.Status;
+            var response = model.Response;
 
 			if (status == ComplaintStatus.APPROVED)
 			{
@@ -199,8 +203,9 @@ namespace WebArticleLibrary.Controllers
 
 		[HttpPost("Assignment")]
 		[Authorize(SecurityConfigurator.ADMIN_POLICY_NAME)]
-		public ActionResult SetComplaintAssignment(Int32 id, Boolean assign)
+		public ActionResult SetComplaintAssignment(AssignmentUpdate model)
 		{
+            var id = model.EntityId;
 			var entity = dbContext.UserComplaint.FirstOrDefault(a => a.Id == id);
 
 			if (entity == null)
@@ -224,7 +229,7 @@ namespace WebArticleLibrary.Controllers
 
 			notificationStr += $"an article '{art.Name}' ";
 
-			if (assign)
+			if (model.ShouldAssign)
 			{
 				entity.AssignedToId = curUserId;
 				history = AddHistory(entity.ArticleId, curUserId, eventName, curUser.name, null,

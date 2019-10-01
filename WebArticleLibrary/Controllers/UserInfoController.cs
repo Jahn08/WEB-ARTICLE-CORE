@@ -151,27 +151,30 @@ namespace WebArticleLibrary.Controllers
 
 		[HttpPost("{userId}/Status")]
 		[Authorize(SecurityConfigurator.ADMIN_POLICY_NAME)]
-		public ActionResult SetUserStatus(String userId, Model.UserStatus Status)
+		public ActionResult SetUserStatus(UserStatusUpdate model)
 		{
 			UserInfo userForUpd;
+
+            var userId = model.UserId;
+            var status = model.Status;
 
 			using (UserStore store = new UserStore(this.dbContext))
 			{
 				userForUpd = store.FindByIdAsync(userId).Result;
 
 				if (userForUpd == null)
-					return BadRequest("There is no user with such an id");
+					return BadRequest("There is no user with id " + userId);
 
-				if (userForUpd.status == Status)
-					return BadRequest("The user already has this Status");
+				if (userForUpd.status == status)
+					return BadRequest($"The user already has '{status.ToString()}' status");
 
-				userForUpd.status = Status;
+				userForUpd.status = status;
 				store.Update(userForUpd);
 			}
 
 			new MailHelper(_config).SendUpdateStatusNotification(
                 GetRefererUri(), userForUpd,
-				$"your Status has been changed to \"{Enum.GetName(typeof(Model.UserStatus), Status)}\"");
+				$"your status has been changed to \"{Enum.GetName(typeof(Model.UserStatus), status)}\"");
 
 			return Ok();
 		}

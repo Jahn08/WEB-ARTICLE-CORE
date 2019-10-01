@@ -169,8 +169,9 @@ namespace WebArticleLibrary.Controllers
 
 		[HttpPost("Assignment")]
     	[Authorize(SecurityConfigurator.ADMIN_POLICY_NAME)]
-    	public ActionResult SetArticleAssignment(Int32 id, Boolean assign)
+       	public ActionResult SetArticleAssignment(AssignmentUpdate model)
 		{
+           var id = model.EntityId;
 			Article curArt = dbContext.Article.FirstOrDefault(a => a.Id == id);
 
 			if (curArt == null)
@@ -181,7 +182,7 @@ namespace WebArticleLibrary.Controllers
 
 			const String eventName = "AssignedTo";
 
-			if (assign)
+			if (model.ShouldAssign)
 			{
 				curArt.AssignedToId = curUserId;
 				curArt.Status = ArticleStatus.ON_REVIEW;
@@ -198,7 +199,8 @@ namespace WebArticleLibrary.Controllers
                     .Where(a => a.AuthorId == curArt.AssignedToId && !a.Resolved).ToArray())
 					curArt.Amendments.Remove(am);
 
-				var history = AddHistory(id, curUserId, eventName, null, curArt.AssignedTo.Login);
+				var history = AddHistory(id, curUserId, eventName, null, 
+                    curArt.AssignedTo.Login);
 				AddNotification($"{curUser.name} has backed out of reviewing an article '{curArt.Name}'",
 					history, true, curArt.AuthorId);
 

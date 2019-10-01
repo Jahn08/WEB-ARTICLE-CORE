@@ -59,9 +59,9 @@ namespace WebArticleLibrary.Controllers
 		}
 
 		[HttpPost("Status")]
-		public ActionResult UpdateCommentStatus(Int32 id, CommentStatus status)
+		public ActionResult UpdateCommentStatus(CommentStatusUpdate model)
 		{
-			var entity = dbContext.UserComment.FirstOrDefault(c => c.Id == id);
+			var entity = dbContext.UserComment.FirstOrDefault(c => c.Id == model.CommentId);
 
 			if (entity == null)
 				return BadRequest("The requested comment does not exist in the data base");
@@ -69,10 +69,10 @@ namespace WebArticleLibrary.Controllers
 			var curUser = GetUserInfo();
 
 			var now = DateTime.Now;
-			var history = AddHistory(entity.ArticleId, curUser.id, "Comment.Status", status.ToString(),
-				entity.Status.ToString(), now, entity.Id);
+			var history = AddHistory(entity.ArticleId, curUser.id, "Comment.Status",
+                model.Status.ToString(), entity.Status.ToString(), now, entity.Id);
 
-			if (status == CommentStatus.DELETED)
+			if (model.Status == CommentStatus.DELETED)
 			{
 				if (entity.AuthorId != curUser.id)
 					return BadRequest("A comment can only be removed by its author");
@@ -115,7 +115,7 @@ namespace WebArticleLibrary.Controllers
 				AddNotification($"The administrator {curUser.name} has blocked a comment #{entity.Id.ToString()} for an article '{art.Name}'",
 					history, true, participants.ToArray());
 
-				entity.Status = status;
+				entity.Status = model.Status;
 			}
 
 			dbContext.SaveChanges();
