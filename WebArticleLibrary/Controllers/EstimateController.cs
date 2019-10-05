@@ -85,9 +85,12 @@ namespace WebArticleLibrary.Controllers
 		}
 
 		[HttpPost]
-		public ActionResult AssessArticle(Int32 id, EstimateType estimate)
+		public ActionResult AssessArticle(EstimateUpdate model)
 		{
-			var article = dbContext.Article.FirstOrDefault(a => a.Id == id);
+            var articleId = model.ArticleId;
+            var estimate = model.Estimate;
+            
+			var article = dbContext.Article.FirstOrDefault(a => a.Id == articleId);
 
 			if (article == null)
 				return BadRequest("The requested article does not exist in the data base");
@@ -99,7 +102,8 @@ namespace WebArticleLibrary.Controllers
 			var curUser = GetUserInfo();
 			var curUserId = curUser.id;
 
-			var entity = dbContext.UserEstimate.FirstOrDefault(e => e.ArticleId == id && e.AuthorId == curUserId);
+			var entity = dbContext.UserEstimate.FirstOrDefault(
+                e => e.ArticleId == articleId && e.AuthorId == curUserId);
 			DateTime now = DateTime.Now;
 
 			if (entity == null)
@@ -111,8 +115,8 @@ namespace WebArticleLibrary.Controllers
                 dbContext.UserEstimate.Add(entity);
 			}
 
-			var history = AddHistory(id, curUserId, "Estimate.Estimate", estimate.ToString(), entity.Estimate.ToString(),
-				now, entity.Id);
+			var history = AddHistory(articleId, curUserId, "Estimate.Estimate", 
+                estimate.ToString(), entity.Estimate.ToString(), now, entity.Id);
 			entity.Estimate = estimate;
 			entity.InsertDate = DateTime.Now;
 
