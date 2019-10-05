@@ -69,17 +69,9 @@
 								$scope.$apply(function () { $scope.notifications = active; });
 							});
 
-							connection.on('close', () => $.connection.hub.stop());
-
-                            connection.start().then(function () {
-                                console.log("connected");
-                            
-                                hubServer.invoke('SignUp', userId);
-                            });
+                            connection.start().then(() => hubServer.invoke('SignUp', userId));
 
 							hubServer = connection;
-
-							connection.onclose(() => hubServer = null);
 							//************* SIGNALR **************//
 							
 							$scope.openNotificationModal = function () {
@@ -137,8 +129,8 @@
 					$scope.showUser = false;
 
                     if (hubServer && userId)
-                        hubServer.invoke('SignOut', userId);
-
+                        hubServer.connection.stop().then(() => hubServer = null);
+                        
 					reloadPage();
 				}, function (data) {
 					$scope.msg = ErrorService.formatMsg('Authentication error', data);

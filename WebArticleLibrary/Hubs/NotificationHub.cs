@@ -10,18 +10,6 @@ namespace WebArticleLibrary.Hubs
 	{
         private static ConcurrentDictionary<String, Int32> connectionIds = 
 			new ConcurrentDictionary<String, Int32>();
-
-        /// <summary>
-		/// Removing all existing connections for the user when logging out
-		/// </summary>
-		/// <param name="userId"></param>
-		public void SignOut(Int32 userId)
-		{
-            var keys = GetConnectionIds(userId);
-
-			if (keys.Any())
-				Clients.Clients(keys).SendAsync("close").Wait();
-		}
         
         public static String[] GetConnectionIds(Int32 userId)
         {
