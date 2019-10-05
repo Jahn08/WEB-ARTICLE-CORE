@@ -54,9 +54,6 @@ namespace WebArticleLibrary.Security
 		
 		private ClaimsPrincipal SetPrincipal()
 		{
-            if (Thread.CurrentPrincipal?.Identity?.IsAuthenticated == true)
-                return Thread.CurrentPrincipal as ClaimsPrincipal;
-
 			String cookie;
 
             var requiredCookie = this.Options.Cookie.Name;
