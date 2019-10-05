@@ -137,8 +137,13 @@
 				});
 			};
 
-			$scope.logIn = function () {
-				$scope.msg = null;
+            $scope.logIn = function () {
+                if (!$scope.userName || !$scope.userPassword) {
+                    $scope.msg = 'A login or password is not provided';
+                    return;
+                }
+
+                $scope.msg = null;
 				$scope.loading = true;
 
 				AuthReqFactory.logIn({
@@ -159,6 +164,11 @@
 					$scope.loading = false;
 				});
 			};
+
+            $scope.tryLogIn = function (event) {
+                if (event && event.keyCode === 13)
+                    $scope.logIn();
+            };
 
 			$scope.openModal = function () {
 				$uibModal.open({

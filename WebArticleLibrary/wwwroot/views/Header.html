@@ -26,10 +26,10 @@
 				<li>
 					<form class="form-inline">
 						<div class="form-group" ng-show="!showUser">
-							<input type="text" class="form-control" placeholder="User" ng-model="userName" />
+							<input type="text" class="form-control" placeholder="User" ng-model="userName" ng-keyup="tryLogIn($event)" />
 						</div>
 						<div class="form-group" ng-show="!showUser">
-							<input type="password" class="form-control" placeholder="Password" ng-model="userPassword" />
+							<input type="password" class="form-control" placeholder="Password" ng-model="userPassword" ng-keyup="tryLogIn($event)" />
 						</div>
 						<div class="form-group" ng-show="!showUser && !loading">
 							<button type="button" ng-click="logIn()" class="btn">Log In</button>
