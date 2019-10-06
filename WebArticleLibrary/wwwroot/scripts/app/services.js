@@ -51,13 +51,20 @@
 			}])
 		.service('ErrorService', ['AuthService', function (AuthService) {
 			this.formatMsg = function (msg, data) {
-				if (data.status == "401")
+				if (data.status === 401)
 					AuthService.logOut();
 
-				return (msg ? msg + ": " : "") + (data.status ? (data.status + ": " +
-					(data.data && data.data.Message ?
-					data.data.Message + (data.data.ExceptionMessage ? ": " + data.data.ExceptionMessage : "") :
-					data.statusText)) : data);
+                const outcome = msg ? msg + ': ' : '';
+
+                if (typeof data === 'string')
+                    return outcome + data;
+
+                let status = `status: '${data.statusText ? data.statusText: data.status}'`;
+                
+                if (data.status !== 500)
+                    status += `, reason: '${data.data ? data.data : data}'`;
+
+				return outcome + status;
 			};
 		}])
 		.factory('AuthReqFactory', ['$resource', 'baseUrl', function ($resource, baseUrl) {
