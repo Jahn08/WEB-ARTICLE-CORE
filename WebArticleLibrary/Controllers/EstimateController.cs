@@ -102,6 +102,9 @@ namespace WebArticleLibrary.Controllers
 			var curUser = GetUserInfo();
 			var curUserId = curUser.id;
 
+			if (article.AuthorId == curUserId)
+				return BadRequest("Authors cannot assess their own articles");
+
 			var entity = dbContext.UserEstimate.FirstOrDefault(
                 e => e.ArticleId == articleId && e.AuthorId == curUserId);
 			DateTime now = DateTime.Now;
