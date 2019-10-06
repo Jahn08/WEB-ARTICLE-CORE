@@ -7,6 +7,9 @@
 			$scope.msg = null;
 
 			var setInfo = function (userInfo) {
+                if (!$stateParams.id)
+                    return;
+
 				ArticleReqFactory.viewArticle($stateParams.id, userInfo.id).then(function (data) {
 					$scope.art = data.article;
 					$scope.updatedDate = data.updatedDate;
