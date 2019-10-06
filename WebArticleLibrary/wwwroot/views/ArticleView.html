@@ -36,7 +36,7 @@
 	</div>
 	<loading msg="msg" sending="sending" is-error="isError"></loading>
 	
-	<div ng-show="!sending && !isError">
+	<div ng-show="!sending">
 		<div class="row">
 			<div class="col-xs-12">
 				<span ng-class="{'text-success': estimate >= 0, 'text-danger': 0 > estimate}">Current rating: {{estimate}}</span>
