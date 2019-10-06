@@ -52,7 +52,7 @@
 								</div>
 							</div>
 							<div class="col-xs-12 col-sm-9 btn-group btn-group-sm">
-								<a click-disabled="sending || !selectedArticle" ui-sref="app.articleedit({id:selectedArticle.id})" ng-disabled="sending || !selectedArticle" title="Review" type="button" class="btn btn-default">
+								<a click-disabled="sending || !selectedArticle" ui-sref="app.articleedit({id:selectedArticle.id})" ng-disabled="sending || !selectedArticle || selectedArticle.assignedToId != ui.id" title="Review" type="button" class="btn btn-default">
 									<span class="glyphicon glyphicon-edit"></span>
 								</a>
 								<a click-disabled="sending || !selectedArticle" ui-sref="app.articleview({id:selectedArticle.id})" ng-disabled="sending || !selectedArticle" title="Show" type="button" class="btn btn-default">
