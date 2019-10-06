@@ -9,7 +9,7 @@
 				alert('Congratulations! Your account has been confirmed. You can now use it to log in');
 				$state.go('app');
 			}, function (data) {
-				$scope.ConfirmationStateMsg = ErrorService.formatMsg('Unfortunately, your account was not confirmed', data);
+				$scope.ConfirmationStateMsg = ErrorService.processError('Unfortunately, your account has not been confirmed', data);
 				$scope.error = true;
 			});
 		}]);

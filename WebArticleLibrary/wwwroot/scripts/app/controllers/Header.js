@@ -20,7 +20,7 @@
 			var onError = function (data) {
 				if (data && data != MODAL_CLICK_MSG)
 				{
-					$scope.msg = ErrorService.formatMsg('Error', data);
+					$scope.msg = ErrorService.processError('Error', data);
 					$scope.isError = true;
 					$scope.loading = false;
 				}
@@ -133,7 +133,7 @@
                         
 					reloadPage();
 				}, function (data) {
-					$scope.msg = ErrorService.formatMsg('Authentication error', data);
+					$scope.msg = ErrorService.processError('Authentication error', data);
 				});
 			};
 
@@ -156,7 +156,7 @@
 					if (data.status == '401')
 						$scope.msg = 'The usage of a wrong user name or password';
 					else
-						$scope.msg = ErrorService.formatMsg('Authentication error', data);
+						$scope.msg = ErrorService.processError('Authentication error', data);
 
 					AuthService.logOut();
 
@@ -202,7 +202,7 @@
 								}, function (data) {
 									$scope.loading = false;
 									$scope.isError = true;
-									$scope.msg = ErrorService.formatMsg('Error', data);
+									$scope.msg = ErrorService.processError('Error', data);
 								});
 							};
 						}]

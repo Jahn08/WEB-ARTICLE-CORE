@@ -29,7 +29,7 @@
 				}, function (data) {
 					$scope.sending = false;
 					$scope.isError = true;
-					$scope.msg = ErrorService.formatMsg('Registration error', data);
+					$scope.msg = ErrorService.processError('Registration error', data);
 				});
 			};
 		}])

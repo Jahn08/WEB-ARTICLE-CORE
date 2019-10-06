@@ -217,17 +217,20 @@
 			$urlRouterProvider.otherwise('/');
 		})
 		.run(['$state', '$rootScope', 'AuthService', function ($state, $rootScope, AuthService) {
-			$rootScope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams, options){ 
+			$rootScope.$on('$stateChangeStart', function(event, toState) { 
 
 				if (toState.data && toState.data.secure) {
 
 					AuthService.getCurrentUser().then(function (outcome) {
 						if (outcome == 0) {
-							event.preventDefault();
-							$state.go('app');
+                            event.preventDefault();
+                            
+                            $state.transitionTo('app', null, {
+                                reload: true, inherit: false, notify: true
+                            });
 						}
 					});
 				}
-			});
+            });
 		}]);
 })();

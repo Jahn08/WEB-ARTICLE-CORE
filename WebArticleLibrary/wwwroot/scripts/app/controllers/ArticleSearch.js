@@ -33,7 +33,7 @@
 				if (data) {
 					$scope.sending = false;
 					$scope.isError = true;
-					$scope.msg = ErrorService.formatMsg(msg, data);
+					$scope.msg = ErrorService.processError(msg, data);
 				}
 			};
 

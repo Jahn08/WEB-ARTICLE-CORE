@@ -19,7 +19,7 @@
 
 			var onError = function (data) {
 				if (data && data != MODAL_CLICK_MSG) {
-					$scope.msg = ErrorService.formatMsg('Error', data);
+					$scope.msg = ErrorService.processError('Error', data);
 					$scope.isError = true;
 					$scope.sending = false;
 				}

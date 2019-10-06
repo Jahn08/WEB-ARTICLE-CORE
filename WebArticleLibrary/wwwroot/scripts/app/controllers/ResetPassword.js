@@ -15,7 +15,7 @@
 				}, function (data) {
 					$scope.loading = false;
 					$scope.isError = true;
-					$scope.msg = ErrorService.formatMsg('Unfortunately, your password was not replaced', data);
+					$scope.msg = ErrorService.processError('Unfortunately, your password has not been replaced', data);
 				});
 			};
 		}]);

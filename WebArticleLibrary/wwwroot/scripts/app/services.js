@@ -4,8 +4,8 @@
 	angular.module('ArticleLibraryApp')
 		.constant('authUserItem', { authUser: 'CurrentUser' })
 		.constant('baseUrl', 'api/')
-		.service('AuthService', ['$window', 'authUserItem', 'UserReqFactory', '$cookies', '$q',
-			function ($window, authUserItem, UserReqFactory, $cookies, $q) {
+		.service('AuthService', ['$window', 'authUserItem', 'UserReqFactory', '$cookies', '$q', '$state',
+			function ($window, authUserItem, UserReqFactory, $cookies, $q, $state) {
 				var obj = this;
 				const authCookie = 'Auth_Id';
 
@@ -47,12 +47,20 @@
 				this.logOut = function () {
 					$cookies.remove(authCookie, { path: '/'});
 					$window.localStorage.removeItem(authUserItem.authUser);
-				};
+                };
+
+                this.reloadState = function () {
+                    $state.reload();
+                };
 			}])
 		.service('ErrorService', ['AuthService', function (AuthService) {
-			this.formatMsg = function (msg, data) {
-				if (data.status === 401)
+			this.processError = function (msg, data) {
+				if (data.status === 401) {
 					AuthService.logOut();
+                    AuthService.reloadState();
+ 
+                    return;
+                }
 
                 const outcome = msg ? msg + ': ' : '';
 

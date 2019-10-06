@@ -261,7 +261,7 @@
 				if (data && data != MODAL_CLICK_MSG) {
 					$scope.sending = false;
 					$scope.isError = true;
-					$scope.msg = ErrorService.formatMsg('Error', data);
+					$scope.msg = ErrorService.processError('Error', data);
 				}
 				else if (!$scope.isError)
 					onRequest(true);

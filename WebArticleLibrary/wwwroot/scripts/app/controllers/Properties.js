@@ -8,7 +8,7 @@
 			};
 
 			var onError = function (data) {
-				$scope.msg = ErrorService.formatMsg('Error', data);
+				$scope.msg = ErrorService.processError('Error', data);
 				$scope.isError = true;
 				$scope.sending = false;
 			};
