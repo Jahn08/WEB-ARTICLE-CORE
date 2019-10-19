@@ -1,8 +1,9 @@
 ﻿(function () {
 	'use strict';
 
-	angular.module('ArticleLibraryApp').controller('HomeCtrl', ['$scope', '$timeout', 'AuthReqFactory', 'AuthService', 'ErrorService', 'ArticleReqFactory',
-		function ($scope, $timeout, AuthReqFactory, AuthService, ErrorService, ArticleReqFactory) {
+    angular.module('ArticleLibraryApp').controller('HomeCtrl', 
+        ['$scope', '$timeout', 'AuthService', 'ErrorService', 'ArticleRequest',
+		function ($scope, $timeout, AuthService, ErrorService, ArticleRequest) {
 
 			var onRequest = function (end) {
 				if (end) {
@@ -25,10 +26,10 @@
 			onRequest();
 
 			var setUserInfo = function (ui) {
-				ArticleReqFactory.getArticleTitles().then(function (artData) {
+				ArticleRequest.getArticleTitles().then(function (artData) {
 					$scope.ui = ui;
 
-					ArticleReqFactory.getDefaultCategories().then(function (data) {
+					ArticleRequest.getDefaultCategories().then(function (data) {
 						$scope.categories = data;
 						$scope.userNames = artData.userNames;
 

@@ -21,7 +21,7 @@ namespace WebArticleLibrary.Controllers
 		[HttpGet]
 		public ActionResult GetEstimates(Int32 page = 1, ColumnIndex colIndex = ColumnIndex.DATE,
 			Boolean asc = false, Int32? userId = null,
-			EstimateType? estimate = null, String article = null,
+			EstimateType? estimate = null, String articleName = null,
 			DateTime? dateStart = null, DateTime? dateEnd = null)
 		{
 			var curUser = GetUserInfo();
@@ -43,9 +43,9 @@ namespace WebArticleLibrary.Controllers
 			if (estimate != null)
 				data = data.Where(c => c.Estimate == estimate);
 
-			if (article != null)
+			if (articleName != null)
 			{
-				var filter = article.ToUpper();
+				var filter = articleName.ToUpper();
 				data = data.Where(c => c.Article.Name.ToUpper().Contains(filter));
 			}
 
@@ -127,7 +127,7 @@ namespace WebArticleLibrary.Controllers
 
 			dbContext.SaveChanges();
 
-			return Ok(new { estimate = article.GetFinalEstimate() });
+			return Ok(new { finalEstimate = article.GetFinalEstimate() });
 		}
     }
 }

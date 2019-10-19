@@ -1,8 +1,8 @@
 ﻿(function () {
 	'use strict';
 
-	angular.module('ArticleLibraryApp').controller('RegisterModalCtrl', ['$scope', '$uibModalInstance', 'userData', '$window', '$state', 'AuthReqFactory', 'ErrorService',
-		function ($scope, $uibModalInstance, userData, $window, $state, AuthReqFactory, ErrorService) {
+	angular.module('ArticleLibraryApp').controller('RegisterModalCtrl', ['$scope', '$uibModalInstance', 'userData', '$window', '$state', 'AuthRequest', 'ErrorService',
+		function ($scope, $uibModalInstance, userData, $window, $state, AuthRequest, ErrorService) {
 			$scope.userName = userData.name;
 			$scope.userPassword = userData.password;
 
@@ -16,7 +16,7 @@
 				$scope.sending = true;
 				$scope.msg = "Please, wait...";
 
-				AuthReqFactory.register({
+				AuthRequest.register({
 					name: $scope.userName,
 					password: $scope.userPassword,
 					firstName: $scope.userFirstName,
@@ -97,8 +97,8 @@
 					$uibModalInstance.close(complaint);
 				};
 			}])
-		.controller('AmendmentModalCtrl', ['$scope', '$uibModalInstance', 'data', 'AuthReqFactory', 'ErrorService',
-			function ($scope, $uibModalInstance, data, AuthReqFactory, ErrorService) {
+		.controller('AmendmentModalCtrl', ['$scope', '$uibModalInstance', 'data',
+			function ($scope, $uibModalInstance, data) {
 				var amendment = {};
 
 				if (data.amendment) {

@@ -1,8 +1,9 @@
 ﻿(function () {
 	'use strict';
 
-	angular.module('ArticleLibraryApp').controller('HeaderCtrl', ['$scope', '$uibModal', 'AuthReqFactory', 'AuthService', 'ErrorService', 'ArticleReqFactory', '$state', 'section', 'MODAL_CLICK_MSG',
-		function ($scope, $uibModal, AuthReqFactory, AuthService, ErrorService, ArticleReqFactory, $state, section, MODAL_CLICK_MSG) {
+    angular.module('ArticleLibraryApp').controller('HeaderCtrl', 
+        ['$scope', '$uibModal', 'AuthRequest', 'AuthService', 'ErrorService', 'ArticleRequest', 'NotificationRequest', '$state', 'section', 'MODAL_CLICK_MSG',
+		function ($scope, $uibModal, AuthRequest, AuthService, ErrorService, ArticleRequest, NotificationRequest, $state, section, MODAL_CLICK_MSG) {
 			let hubServer;
 			var userId;
 			
@@ -31,7 +32,7 @@
 			onRequest();
 
 			var setUserInfo = function (ui) {
-				ArticleReqFactory.getDefaultCategories().then(function (data) {
+				ArticleRequest.getDefaultCategories().then(function (data) {
 					$scope.categories = data;
 
 					if (ui) {
@@ -39,7 +40,7 @@
 						$scope.showUser = true;
 						userId = ui.id;
 
-						ArticleReqFactory.getNotifications(userId).then(function (data) {
+						NotificationRequest.get(userId).then(function (data) {
 							$scope.notifications = data;
 
                             //************* SIGNALR **************//
@@ -93,7 +94,7 @@
 												return val.id;
 											});
 
-											ArticleReqFactory.clearNotifications(ids).then(function () {
+											NotificationRequest.clear(ids).then(function () {
 												$scope.notifications = null;
 
 												onRequest(true);
@@ -124,7 +125,7 @@
 			$scope.logOut = function () {
 				$scope.msg = null;
 
-				AuthReqFactory.logOut().then(function () {
+				AuthRequest.logOut().then(function () {
 					AuthService.logOut();
 					$scope.showUser = false;
 
@@ -146,7 +147,7 @@
                 $scope.msg = null;
 				$scope.loading = true;
 
-				AuthReqFactory.logIn({
+				AuthRequest.logIn({
 					name: $scope.userName,
 					password: $scope.userPassword
 				}).then(function (data) {

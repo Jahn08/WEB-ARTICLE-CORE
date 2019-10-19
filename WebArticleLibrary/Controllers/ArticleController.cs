@@ -499,7 +499,7 @@ namespace WebArticleLibrary.Controllers
 
 			dbContext.SaveChanges();
 
-			return Ok(new { id = newArt.Id });
+			return Ok(new { newVersionId = newArt.Id });
 		}
 
 		[HttpGet("Titles")]

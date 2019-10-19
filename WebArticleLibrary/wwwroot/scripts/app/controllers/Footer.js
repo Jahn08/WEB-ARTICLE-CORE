@@ -1,8 +1,9 @@
 ﻿(function () {
 	'use strict';
 
-	angular.module('ArticleLibraryApp').controller('FooterCtrl', ['$scope', 'InfoReqFactory', 'ErrorService',
-		function ($scope, InfoReqFactory, ErrorService) {
+    angular.module('ArticleLibraryApp').controller('FooterCtrl', 
+        ['$scope', 'ContactRequest', 'ErrorService',
+		function ($scope, ContactRequest, ErrorService) {
 			
 			var onRequest = function (end) {
 				if (end) {
@@ -25,7 +26,7 @@
 
 			onRequest();
 
-			InfoReqFactory.getBasicInfo().then(function (data) {
+			ContactRequest.getBasicInfo().then(function (data) {
 				$scope.info = data;
 				onRequest(true);
 			}, onError);
