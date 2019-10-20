@@ -8,6 +8,7 @@ define("app/system", ["require", "exports", "angular"], function (require, expor
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     class AppSystem {
+        // static readonly DEPENDENCY_SCOPE: string = '$scope';
         static get appModule() {
             return angular.module(this.APP_MODULE_NAME);
         }
@@ -120,7 +121,7 @@ define("app/inject", ["require", "exports"], function (require, exports) {
     }
     exports.inject = inject;
 });
-define("services/authService", ["require", "exports", "services/api/userRequest", "app/inject"], function (require, exports, userRequest_1, inject_1) {
+define("services/authService", ["require", "exports", "services/api/userRequest", "app/inject", "app/system"], function (require, exports, userRequest_1, inject_1, system_1) {
     "use strict";
     var AuthService_1;
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -172,14 +173,14 @@ define("services/authService", ["require", "exports", "services/api/userRequest"
     AuthService.AUTH_USER_ITEM = 'CurrentUser';
     AuthService.AUTH_COOKIE = 'Auth_Id';
     AuthService = AuthService_1 = __decorate([
-        inject_1.inject('$window', userRequest_1.UserRequest, '$cookies', '$state')
+        inject_1.inject(system_1.AppSystem.DEPENDENCY_WINDOW, userRequest_1.UserRequest, system_1.AppSystem.DEPENDENCY_COOKIES, system_1.AppSystem.DEPENDENCY_STATE)
     ], AuthService);
     exports.AuthService = AuthService;
 });
-define("app/configurator", ["require", "exports", "app/system", "angular", "services/authService"], function (require, exports, system_1, angular, authService_1) {
+define("app/configurator", ["require", "exports", "app/system", "angular", "services/authService"], function (require, exports, system_2, angular, authService_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    angular.module(system_1.AppSystem.APP_MODULE_NAME, ['ui.router', 'ui.bootstrap', 'ngResource', 'ngCookies', 'ngSanitize'])
+    angular.module(system_2.AppSystem.APP_MODULE_NAME, ['ui.router', 'ui.bootstrap', 'ngResource', 'ngCookies', 'ngSanitize'])
         .config(($stateProvider, $urlRouterProvider, $locationProvider) => {
         $locationProvider.hashPrefix('');
         $stateProvider.state('app', {
@@ -403,6 +404,126 @@ define("app/configurator", ["require", "exports", "app/system", "angular", "serv
             });
         }]);
 });
+define("services/api/contactRequest", ["require", "exports", "services/api/apiRequest"], function (require, exports, apiRequest_2) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    class ContactRequest extends apiRequest_2.ApiRequest {
+        constructor($resource) {
+            super($resource, 'ContactInfo');
+        }
+        getBasicInfo() {
+            return this.getResource();
+        }
+        getAboutUsInfo() {
+            return this.getResource(undefined, 'AboutUs');
+        }
+    }
+    exports.ContactRequest = ContactRequest;
+});
+define("services/errorService", ["require", "exports", "services/authService", "app/inject"], function (require, exports, authService_2, inject_2) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    let ErrorService = class ErrorService {
+        constructor(authService) {
+            this.authService = authService;
+        }
+        formatError(msg, data) {
+            return this.formatMessage(msg) + data;
+        }
+        formatMessage(msg) {
+            return msg ? msg + ': ' : '';
+        }
+        processError(msg, data) {
+            if (data.status === 401) {
+                this.authService.logOut();
+                this.authService.reloadState();
+                return;
+            }
+            const outcome = this.formatMessage(msg);
+            let status = `status: '${data.statusText ? data.statusText : data.status}'`;
+            if (data.status !== 500)
+                status += `, reason: '${data.data ? data.data : data}'`;
+            return outcome + status;
+        }
+    };
+    ErrorService = __decorate([
+        inject_2.inject(authService_2.AuthService)
+    ], ErrorService);
+    exports.ErrorService = ErrorService;
+});
+define("controllers/baseCtrl", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    class BaseCtrl {
+        constructor(errorSrv) {
+            this.errorSrv = errorSrv;
+            this.setState(true);
+        }
+        setState(isLoading) {
+            if (isLoading) {
+                this.sending = true;
+                this.msg = "Please, wait...";
+            }
+            else {
+                this.sending = false;
+                this.msg = null;
+            }
+            this.isError = false;
+        }
+        processRequest(sendingPromise, successFn) {
+            sendingPromise.then(data => {
+                successFn(data);
+                this.setState(false);
+            }).catch(this.onError);
+        }
+        onError(data) {
+            if (data) {
+                this.sending = false;
+                this.isError = true;
+                this.msg = this.errorSrv.processError(null, data);
+            }
+        }
+    }
+    exports.BaseCtrl = BaseCtrl;
+});
+define("controllers/aboutUsCtrl", ["require", "exports", "services/api/contactRequest", "services/errorService", "app/inject", "controllers/baseCtrl"], function (require, exports, contactRequest_1, errorService_1, inject_3, baseCtrl_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    let AboutUsCtrl = class AboutUsCtrl extends baseCtrl_1.BaseCtrl {
+        constructor(contactReq, errorSrv) {
+            super(errorSrv);
+            this.processRequest(contactReq.getAboutUsInfo(), data => {
+                this.info = data.aboutUs;
+            });
+        }
+    };
+    AboutUsCtrl = __decorate([
+        inject_3.inject(contactRequest_1.ContactRequest, errorService_1.ErrorService)
+    ], AboutUsCtrl);
+    exports.AboutUsCtrl = AboutUsCtrl;
+});
+define("controllers/footerCtrl", ["require", "exports", "app/inject", "services/api/contactRequest", "services/errorService", "controllers/baseCtrl"], function (require, exports, inject_4, contactRequest_2, errorService_2, baseCtrl_2) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    let FooterCtrl = class FooterCtrl extends baseCtrl_2.BaseCtrl {
+        constructor(contactReq, errorSrv) {
+            super(errorSrv);
+            this.processRequest(contactReq.getBasicInfo(), data => {
+                this.info = data;
+            });
+        }
+    };
+    FooterCtrl = __decorate([
+        inject_4.inject(contactRequest_2.ContactRequest, errorService_2.ErrorService)
+    ], FooterCtrl);
+    exports.FooterCtrl = FooterCtrl;
+});
+define("controllers/configurator", ["require", "exports", "controllers/aboutUsCtrl", "app/system", "controllers/footerCtrl"], function (require, exports, aboutUsCtrl_1, system_3, footerCtrl_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const appModule = system_3.AppSystem.appModule;
+    [aboutUsCtrl_1.AboutUsCtrl, footerCtrl_1.FooterCtrl].forEach(ctrl => appModule.controller(ctrl.name, ctrl));
+});
 define("directives/directiveFactory", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -484,10 +605,10 @@ define("directives/directiveFactory", ["require", "exports"], function (require,
     DirectiveFactory.ATTRIBUTE_RESTRICTION = 'A';
     DirectiveFactory.ELEMENT_RESTRICTION = 'E';
 });
-define("directives/configurator", ["require", "exports", "directives/directiveFactory", "app/system"], function (require, exports, directiveFactory_1, system_2) {
+define("directives/configurator", ["require", "exports", "directives/directiveFactory", "app/system"], function (require, exports, directiveFactory_1, system_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    const appModule = system_2.AppSystem.appModule;
+    const appModule = system_4.AppSystem.appModule;
     [directiveFactory_1.DirectiveFactory.loading, directiveFactory_1.DirectiveFactory.breadcrumb, directiveFactory_1.DirectiveFactory.clickDisabled,
         directiveFactory_1.DirectiveFactory.limitedVal, directiveFactory_1.DirectiveFactory.pagination, directiveFactory_1.DirectiveFactory.sortBtn]
         .forEach(func => appModule.directive(func.name, func));
@@ -503,15 +624,15 @@ define("filters/limitToFormat", ["require", "exports"], function (require, expor
     }
     exports.limitToFormat = limitToFormat;
 });
-define("filters/configurator", ["require", "exports", "filters/limitToFormat", "app/system"], function (require, exports, limitToFormat_1, system_3) {
+define("filters/configurator", ["require", "exports", "filters/limitToFormat", "app/system"], function (require, exports, limitToFormat_1, system_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    system_3.AppSystem.appModule.filter('limitToFormat', limitToFormat_1.limitToFormat);
+    system_5.AppSystem.appModule.filter('limitToFormat', limitToFormat_1.limitToFormat);
 });
-define("services/api/authRequest", ["require", "exports", "services/api/apiRequest"], function (require, exports, apiRequest_2) {
+define("services/api/authRequest", ["require", "exports", "services/api/apiRequest"], function (require, exports, apiRequest_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    class AuthRequest extends apiRequest_2.ApiRequest {
+    class AuthRequest extends apiRequest_3.ApiRequest {
         constructor($resource) {
             super($resource, 'Authentication');
         }
@@ -530,53 +651,6 @@ define("services/api/authRequest", ["require", "exports", "services/api/apiReque
     }
     exports.AuthRequest = AuthRequest;
 });
-define("services/api/contactRequest", ["require", "exports", "services/api/apiRequest"], function (require, exports, apiRequest_3) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    class ContactRequest extends apiRequest_3.ApiRequest {
-        constructor($resource) {
-            super($resource, 'ContactInfo');
-        }
-        getBasicInfo() {
-            return this.getResource();
-        }
-        getAboutUsInfo() {
-            return this.getResource(undefined, 'AboutUs');
-        }
-    }
-    exports.ContactRequest = ContactRequest;
-});
-define("services/errorService", ["require", "exports", "services/authService", "app/inject"], function (require, exports, authService_2, inject_2) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    let ErrorService = class ErrorService {
-        constructor(authService) {
-            this.authService = authService;
-        }
-        formatError(msg, data) {
-            return this.formatMessage(msg) + data;
-        }
-        formatMessage(msg) {
-            return msg ? msg + ': ' : '';
-        }
-        processError(msg, data) {
-            if (data.status === 401) {
-                this.authService.logOut();
-                this.authService.reloadState();
-                return;
-            }
-            const outcome = this.formatMessage(msg);
-            let status = `status: '${data.statusText ? data.statusText : data.status}'`;
-            if (data.status !== 500)
-                status += `, reason: '${data.data ? data.data : data}'`;
-            return outcome + status;
-        }
-    };
-    ErrorService = __decorate([
-        inject_2.inject(authService_2.AuthService)
-    ], ErrorService);
-    exports.ErrorService = ErrorService;
-});
 define("services/converterService", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -590,7 +664,7 @@ define("services/converterService", ["require", "exports"], function (require, e
     }
     exports.ConverterService = ConverterService;
 });
-define("services/api/commentRequest", ["require", "exports", "services/api/apiRequest", "services/converterService", "app/inject"], function (require, exports, apiRequest_4, converterService_1, inject_3) {
+define("services/api/commentRequest", ["require", "exports", "services/api/apiRequest", "services/converterService", "app/inject", "app/system"], function (require, exports, apiRequest_4, converterService_1, inject_5, system_6) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     let CommentRequest = class CommentRequest extends apiRequest_4.ApiRequest {
@@ -622,7 +696,7 @@ define("services/api/commentRequest", ["require", "exports", "services/api/apiRe
         }
     };
     CommentRequest = __decorate([
-        inject_3.inject('$resource', converterService_1.ConverterService)
+        inject_5.inject(system_6.AppSystem.DEPENDENCY_RESOURCE, converterService_1.ConverterService)
     ], CommentRequest);
     exports.CommentRequest = CommentRequest;
     var CommentStatus;
@@ -665,7 +739,7 @@ define("services/api/estimateRequest", ["require", "exports", "services/api/apiR
     })(EstimateType || (EstimateType = {}));
     exports.EstimateType = EstimateType;
 });
-define("services/api/articleRequest", ["require", "exports", "services/api/apiRequest", "app/inject", "services/converterService"], function (require, exports, apiRequest_6, inject_4, converterService_2) {
+define("services/api/articleRequest", ["require", "exports", "services/api/apiRequest", "app/inject", "app/system", "services/converterService"], function (require, exports, apiRequest_6, inject_6, system_7, converterService_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     let ArticleRequest = class ArticleRequest extends apiRequest_6.ApiRequest {
@@ -748,7 +822,7 @@ define("services/api/articleRequest", ["require", "exports", "services/api/apiRe
         }
     };
     ArticleRequest = __decorate([
-        inject_4.inject('$resource', '$window', converterService_2.ConverterService)
+        inject_6.inject(system_7.AppSystem.DEPENDENCY_RESOURCE, system_7.AppSystem.DEPENDENCY_WINDOW, converterService_2.ConverterService)
     ], ArticleRequest);
     exports.ArticleRequest = ArticleRequest;
     var ArticleStatus;
@@ -880,14 +954,14 @@ define("services/api/complaintRequest", ["require", "exports", "services/api/api
         ComplaintEntityType[ComplaintEntityType["ARTICLE"] = 1] = "ARTICLE";
     })(ComplaintEntityType || (ComplaintEntityType = {}));
 });
-define("services/configurator", ["require", "exports", "services/api/userRequest", "services/api/authRequest", "services/api/contactRequest", "services/authService", "services/errorService", "services/converterService", "services/api/articleRequest", "services/api/notificationRequest", "services/api/historyRequest", "services/api/amendmentRequest", "services/api/commentRequest", "services/api/estimateRequest", "services/api/complaintRequest", "app/system"], function (require, exports, userRequest_2, authRequest_1, contactRequest_1, authService_3, errorService_1, converterService_3, articleRequest_1, notificationRequest_1, historyRequest_1, amendmentRequest_1, commentRequest_1, estimateRequest_1, complaintRequest_1, system_4) {
+define("services/configurator", ["require", "exports", "services/api/userRequest", "services/api/authRequest", "services/api/contactRequest", "services/authService", "services/errorService", "services/converterService", "services/api/articleRequest", "services/api/notificationRequest", "services/api/historyRequest", "services/api/amendmentRequest", "services/api/commentRequest", "services/api/estimateRequest", "services/api/complaintRequest", "app/system"], function (require, exports, userRequest_2, authRequest_1, contactRequest_3, authService_3, errorService_3, converterService_3, articleRequest_1, notificationRequest_1, historyRequest_1, amendmentRequest_1, commentRequest_1, estimateRequest_1, complaintRequest_1, system_8) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    const services = [authService_3.AuthService, errorService_1.ErrorService, userRequest_2.UserRequest,
-        authRequest_1.AuthRequest, contactRequest_1.ContactRequest, converterService_3.ConverterService, articleRequest_1.ArticleRequest,
+    const services = [authService_3.AuthService, errorService_3.ErrorService, userRequest_2.UserRequest,
+        authRequest_1.AuthRequest, contactRequest_3.ContactRequest, converterService_3.ConverterService, articleRequest_1.ArticleRequest,
         notificationRequest_1.NotificationRequest, historyRequest_1.HistoryRequest, amendmentRequest_1.AmmendmentRequest, commentRequest_1.CommentRequest,
         estimateRequest_1.EstimateRequest, complaintRequest_1.ComplaintRequest];
-    const module = system_4.AppSystem.appModule;
+    const module = system_8.AppSystem.appModule;
     services.forEach(srv => module.service(srv.name, srv));
 });
 //# sourceMappingURL=app.js.map

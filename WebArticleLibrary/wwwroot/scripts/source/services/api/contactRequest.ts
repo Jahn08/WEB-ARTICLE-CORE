@@ -27,4 +27,4 @@ interface IContactResponse {
     facebookLink: string;
 }
 
-export { ContactRequest };
+export { ContactRequest, IContactResponse };
