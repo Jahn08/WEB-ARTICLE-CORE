@@ -1,5 +1,5 @@
 import { UserRequest, IUserInfo } from './api/userRequest'; 
-import { inject } from '../inject';
+import { inject } from '../app/inject';
 
 @inject('$window', UserRequest, '$cookies', '$state')
 class AuthService {
@@ -12,7 +12,7 @@ class AuthService {
         private $cookies: ng.cookies.ICookiesService, 
         private $state: ng.ui.IStateService) { }
 
-    getCurrentUser(getPhoto: boolean): Promise<Number | IUserInfo> {
+    getCurrentUser(getPhoto: boolean = false): Promise<Number | IUserInfo> {
         return new Promise((resolve, reject) => {
             if (!this.$cookies.get(AuthService.AUTH_COOKIE)) {
                 this.logOut();

@@ -1,6 +1,6 @@
 import { ApiRequest, IArticleEntity, ISearchQuery, INameSearchResult } from './apiRequest';
 import { ConverterService } from '../converterService';
-import { inject } from '../../inject';
+import { inject } from '../../app/inject';
 import { IPromise } from 'angular';
 
 @inject('$resource', ConverterService)

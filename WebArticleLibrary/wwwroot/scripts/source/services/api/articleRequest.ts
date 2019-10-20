@@ -1,6 +1,6 @@
 import { ApiRequest, ISearchQuery } from './apiRequest';
 import { IComment } from './commentRequest';
-import { inject } from '../../inject';
+import { inject } from '../../app/inject';
 import { ConverterService } from '../converterService';
 import { IPromise } from 'angular';
 import { EstimateType } from './estimateRequest';

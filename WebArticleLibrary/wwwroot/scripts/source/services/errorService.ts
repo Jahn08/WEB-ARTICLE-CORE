@@ -1,6 +1,6 @@
 import { IHttpResponse } from "angular";
 import { AuthService } from "./authService";
-import { inject } from "../inject";
+import { inject } from "../app/inject";
 
 @inject(AuthService)
 class ErrorService {

@@ -3,9 +3,8 @@
         "target": "es6",
         "sourceMap": true,
         "module": "amd",
-        "outFile": "wwwroot/scripts/app/services.js",
+        "outFile": "wwwroot/scripts/app.js",
         "experimentalDecorators": true,
-        "allowJs": true,
         "moduleResolution": "node"
     },
     "include": ["wwwroot/scripts/**/*.ts"]

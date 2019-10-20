@@ -4,15 +4,25 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-define("inject", ["require", "exports"], function (require, exports) {
+define("app/system", ["require", "exports", "angular"], function (require, exports, angular) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    function inject(...dependencies) {
-        return (constructor) => {
-            constructor.$inject = dependencies.map(d => typeof d === 'string' ? d : d.name);
-        };
+    class AppSystem {
+        static get appModule() {
+            return angular.module(this.APP_MODULE_NAME);
+        }
     }
-    exports.inject = inject;
+    exports.AppSystem = AppSystem;
+    AppSystem.APP_MODULE_NAME = 'ArticleLibraryApp';
+    AppSystem.DEPENDENCY_WINDOW = '$window';
+    AppSystem.DEPENDENCY_RESOURCE = '$resource';
+    AppSystem.DEPENDENCY_STATE = '$state';
+    AppSystem.DEPENDENCY_COOKIES = '$cookies';
+    class Constants {
+    }
+    exports.Constants = Constants;
+    Constants.NO_PHOTO_FILE_URL = 'images/noPhoto.png';
+    Constants.MODAL_CLICK_MSG = 'backdrop';
 });
 define("services/api/apiRequest", ["require", "exports"], function (require, exports) {
     "use strict";
@@ -100,45 +110,17 @@ define("services/api/userRequest", ["require", "exports", "services/api/apiReque
         UserStatus[UserStatus["ADMINISTRATOR"] = 5] = "ADMINISTRATOR";
     })(UserStatus || (UserStatus = {}));
 });
-define("services/api/authRequest", ["require", "exports", "services/api/apiRequest"], function (require, exports, apiRequest_2) {
+define("app/inject", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    class AuthRequest extends apiRequest_2.ApiRequest {
-        constructor($resource) {
-            super($resource, 'Authentication');
-        }
-        logOut() {
-            return this.getResource(undefined, 'LogOut');
-        }
-        logIn(userData) {
-            return this.saveResource(userData, 'LogIn');
-        }
-        register(userData) {
-            return this.saveResource(userData, 'Register');
-        }
-        confirm(confirmationId) {
-            return this.getResource(confirmationId, 'Confirm');
-        }
+    function inject(...dependencies) {
+        return (constructor) => {
+            constructor.$inject = dependencies.map(d => typeof d === 'string' ? d : d.name);
+        };
     }
-    exports.AuthRequest = AuthRequest;
+    exports.inject = inject;
 });
-define("services/api/contactRequest", ["require", "exports", "services/api/apiRequest"], function (require, exports, apiRequest_3) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    class ContactRequest extends apiRequest_3.ApiRequest {
-        constructor($resource) {
-            super($resource, 'ContactInfo');
-        }
-        getBasicInfo() {
-            return this.getResource();
-        }
-        getAboutUsInfo() {
-            return this.getResource(undefined, 'AboutUs');
-        }
-    }
-    exports.ContactRequest = ContactRequest;
-});
-define("services/authService", ["require", "exports", "services/api/userRequest", "inject"], function (require, exports, userRequest_1, inject_1) {
+define("services/authService", ["require", "exports", "services/api/userRequest", "app/inject"], function (require, exports, userRequest_1, inject_1) {
     "use strict";
     var AuthService_1;
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -149,7 +131,7 @@ define("services/authService", ["require", "exports", "services/api/userRequest"
             this.$cookies = $cookies;
             this.$state = $state;
         }
-        getCurrentUser(getPhoto) {
+        getCurrentUser(getPhoto = false) {
             return new Promise((resolve, reject) => {
                 if (!this.$cookies.get(AuthService_1.AUTH_COOKIE)) {
                     this.logOut();
@@ -194,7 +176,377 @@ define("services/authService", ["require", "exports", "services/api/userRequest"
     ], AuthService);
     exports.AuthService = AuthService;
 });
-define("services/errorService", ["require", "exports", "services/authService", "inject"], function (require, exports, authService_1, inject_2) {
+define("app/configurator", ["require", "exports", "app/system", "angular", "services/authService"], function (require, exports, system_1, angular, authService_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    angular.module(system_1.AppSystem.APP_MODULE_NAME, ['ui.router', 'ui.bootstrap', 'ngResource', 'ngCookies', 'ngSanitize'])
+        .config(($stateProvider, $urlRouterProvider, $locationProvider) => {
+        $locationProvider.hashPrefix('');
+        $stateProvider.state('app', {
+            url: '/',
+            views: {
+                'header': {
+                    templateUrl: 'views/Header.html',
+                    controller: 'HeaderCtrl'
+                },
+                'content': {
+                    templateUrl: 'views/Home.html',
+                    controller: "HomeCtrl"
+                },
+                'footer': {
+                    templateUrl: 'views/Footer.html',
+                    controller: "FooterCtrl"
+                }
+            },
+            resolve: {
+                section: function () {
+                    return 'app';
+                }
+            }
+        })
+            .state('app.confirmuser', {
+            url: 'confirmuser/:id',
+            views: {
+                'content@': {
+                    template: '<span ng-class="{\'text-success\':!error, \'text-danger\':error}">{{ConfirmationStateMsg}}</span>',
+                    controller: 'UserConfirmationCtrl'
+                }
+            }
+        })
+            .state('app.confirmemail', {
+            url: 'confirmemail/:id',
+            views: {
+                'content@': {
+                    template: '<span ng-class="{\'text-success\':!error, \'text-danger\':error}">{{ConfirmationStateMsg}}</span>',
+                    controller: 'EmailConfirmationCtrl'
+                }
+            }
+        })
+            .state('app.afterregistration', {
+            url: 'afterregistration',
+            views: {
+                'content@': {
+                    template: '<span class="text-info">A message with a confirmation link was sent to your email.' +
+                        'Please, activate your account through the link until it gets expired</span>'
+                }
+            }
+        })
+            .state('app.aftermarkingpasswordforresetting', {
+            url: 'aftermarkingpasswordforresetting',
+            views: {
+                'content@': {
+                    template: '<span class="text-info">A message with a confirmation link was sent to your email.' +
+                        'Please, reset your current password through the link until it gets expired</span>'
+                }
+            }
+        })
+            .state('app.userinfo', {
+            url: 'userinfo',
+            views: {
+                'content@': {
+                    templateUrl: 'views/UserInfo.html',
+                    controller: 'UserInfoCtrl'
+                }
+            },
+            data: {
+                secure: true
+            }
+        })
+            .state('app.complaintinfo', {
+            url: 'complaintinfo',
+            views: {
+                'content@': {
+                    templateUrl: 'views/ComplaintInfo.html',
+                    controller: 'ComplaintInfoCtrl'
+                }
+            },
+            data: {
+                secure: true
+            }
+        })
+            .state('app.articleinfo', {
+            url: 'articleinfo',
+            views: {
+                'content@': {
+                    templateUrl: 'views/ArticleInfo.html',
+                    controller: 'ArticleInfoCtrl'
+                }
+            },
+            data: {
+                secure: true
+            }
+        })
+            .state('app.commentinfo', {
+            url: 'commentinfo',
+            views: {
+                'content@': {
+                    templateUrl: 'views/CommentInfo.html',
+                    controller: 'CommentInfoCtrl'
+                }
+            },
+            data: {
+                secure: true
+            }
+        })
+            .state('app.estimateinfo', {
+            url: 'estimateinfo',
+            views: {
+                'content@': {
+                    templateUrl: 'views/EstimateInfo.html',
+                    controller: 'EstimateInfoCtrl'
+                }
+            },
+            data: {
+                secure: true
+            }
+        })
+            .state('app.properties', {
+            url: 'properties/:confirmEmail',
+            views: {
+                'content@': {
+                    templateUrl: 'views/Properties.html',
+                    controller: 'PropertiesCtrl'
+                }
+            },
+            data: {
+                secure: true
+            }
+        })
+            .state('app.resetpassword', {
+            url: 'resetpassword/:id',
+            views: {
+                'content@': {
+                    templateUrl: 'views/ResetPassword.html',
+                    controller: 'ResetPasswordCtrl'
+                }
+            }
+        })
+            .state('app.aboutus', {
+            url: "aboutus",
+            views: {
+                'content@': {
+                    templateUrl: 'views/AboutUs.html',
+                    controller: 'AboutUsCtrl'
+                },
+                'header@': {
+                    templateUrl: 'views/Header.html',
+                    controller: 'HeaderCtrl',
+                }
+            },
+            resolve: {
+                section: function () {
+                    return "aboutus";
+                }
+            }
+        })
+            .state('app.articleedit', {
+            url: "editarticle/:id/:category",
+            views: {
+                'content@': {
+                    templateUrl: 'views/ArticleEdit.html',
+                    controller: 'ArticleEditCtrl'
+                },
+                'header@': {
+                    templateUrl: 'views/Header.html',
+                    controller: 'HeaderCtrl',
+                }
+            },
+            data: {
+                secure: true
+            },
+            resolve: {
+                section: function ($stateParams) {
+                    return $stateParams.id ? 'app' : 'createarticle';
+                }
+            }
+        })
+            .state('app.articleview', {
+            url: "viewarticle/:id/:commentId/:historyId",
+            views: {
+                'content@': {
+                    templateUrl: 'views/ArticleView.html',
+                    controller: 'ArticleViewCtrl'
+                }
+            }
+        })
+            .state('app.articlesearch', {
+            url: "searcharticle/:category/:author",
+            views: {
+                'content@': {
+                    templateUrl: 'views/ArticleSearch.html',
+                    controller: "ArticleSearchCtrl"
+                },
+                'header@': {
+                    templateUrl: 'views/Header.html',
+                    controller: 'HeaderCtrl',
+                }
+            },
+            resolve: {
+                section: function ($stateParams) {
+                    return $stateParams.category || 'searcharticle';
+                }
+            }
+        });
+        $urlRouterProvider.otherwise('/');
+    }).run(['$state', '$rootScope', authService_1.AuthService.name, function ($state, $rootScope, authService) {
+            $rootScope.$on('$stateChangeStart', function (event, toState) {
+                if (toState.data && toState.data.secure) {
+                    authService.getCurrentUser().then(outcome => {
+                        if (outcome === 0) {
+                            event.preventDefault();
+                            $state.transitionTo('app', null, {
+                                reload: true, inherit: false, notify: true
+                            });
+                        }
+                    });
+                }
+            });
+        }]);
+});
+define("directives/directiveFactory", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    class DirectiveFactory {
+        static clickDisabled() {
+            return {
+                restrict: DirectiveFactory.ATTRIBUTE_RESTRICTION,
+                scope: {
+                    disabled: '=clickDisabled'
+                },
+                link: (scope, el) => {
+                    el.on('click', () => !scope.disabled);
+                }
+            };
+        }
+        static limitedVal() {
+            return {
+                restrict: DirectiveFactory.ELEMENT_RESTRICTION,
+                scope: {
+                    value: '=',
+                    length: '='
+                },
+                template: '<div title="{{value}}">{{value|limitToFormat:length}}</div>'
+            };
+        }
+        static sortBtn() {
+            return {
+                restrict: DirectiveFactory.ELEMENT_RESTRICTION,
+                scope: {
+                    name: '=',
+                    asc: '=',
+                    colIndex: '=',
+                    fnClick: '=',
+                    curColIndex: '='
+                },
+                templateUrl: 'views/directives/SortBtn.html'
+            };
+        }
+        static pagination() {
+            return {
+                restrict: DirectiveFactory.ELEMENT_RESTRICTION,
+                scope: {
+                    pages: '=',
+                    curPage: '=',
+                    fnNextPage: '=',
+                    addParam: '='
+                },
+                templateUrl: 'views/directives/Pagination.html'
+            };
+        }
+        static breadcrumb() {
+            return {
+                restrict: DirectiveFactory.ELEMENT_RESTRICTION,
+                scope: {
+                    links: '='
+                },
+                link: (scope) => {
+                    scope.states = scope.links.split('|').map(v => {
+                        const vals = v.split(':');
+                        return { name: vals[0], state: vals.length > 1 ? vals[1] : null };
+                    });
+                },
+                templateUrl: 'views/directives/Breadcrumb.html'
+            };
+        }
+        static loading() {
+            return {
+                restrict: DirectiveFactory.ELEMENT_RESTRICTION,
+                scope: {
+                    msg: '=',
+                    isError: '=',
+                    sending: '='
+                },
+                templateUrl: 'views/directives/Loading.html'
+            };
+        }
+    }
+    exports.DirectiveFactory = DirectiveFactory;
+    DirectiveFactory.ATTRIBUTE_RESTRICTION = 'A';
+    DirectiveFactory.ELEMENT_RESTRICTION = 'E';
+});
+define("directives/configurator", ["require", "exports", "directives/directiveFactory", "app/system"], function (require, exports, directiveFactory_1, system_2) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const appModule = system_2.AppSystem.appModule;
+    [directiveFactory_1.DirectiveFactory.loading, directiveFactory_1.DirectiveFactory.breadcrumb, directiveFactory_1.DirectiveFactory.clickDisabled,
+        directiveFactory_1.DirectiveFactory.limitedVal, directiveFactory_1.DirectiveFactory.pagination, directiveFactory_1.DirectiveFactory.sortBtn]
+        .forEach(func => appModule.directive(func.name, func));
+});
+define("filters/limitToFormat", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    function limitToFormat() {
+        return function (input, length) {
+            input = input || '';
+            return input.length > length ? input.substr(0, length) + '...' : input;
+        };
+    }
+    exports.limitToFormat = limitToFormat;
+});
+define("filters/configurator", ["require", "exports", "filters/limitToFormat", "app/system"], function (require, exports, limitToFormat_1, system_3) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    system_3.AppSystem.appModule.filter('limitToFormat', limitToFormat_1.limitToFormat);
+});
+define("services/api/authRequest", ["require", "exports", "services/api/apiRequest"], function (require, exports, apiRequest_2) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    class AuthRequest extends apiRequest_2.ApiRequest {
+        constructor($resource) {
+            super($resource, 'Authentication');
+        }
+        logOut() {
+            return this.getResource(undefined, 'LogOut');
+        }
+        logIn(userData) {
+            return this.saveResource(userData, 'LogIn');
+        }
+        register(userData) {
+            return this.saveResource(userData, 'Register');
+        }
+        confirm(confirmationId) {
+            return this.getResource(confirmationId, 'Confirm');
+        }
+    }
+    exports.AuthRequest = AuthRequest;
+});
+define("services/api/contactRequest", ["require", "exports", "services/api/apiRequest"], function (require, exports, apiRequest_3) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    class ContactRequest extends apiRequest_3.ApiRequest {
+        constructor($resource) {
+            super($resource, 'ContactInfo');
+        }
+        getBasicInfo() {
+            return this.getResource();
+        }
+        getAboutUsInfo() {
+            return this.getResource(undefined, 'AboutUs');
+        }
+    }
+    exports.ContactRequest = ContactRequest;
+});
+define("services/errorService", ["require", "exports", "services/authService", "app/inject"], function (require, exports, authService_2, inject_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     let ErrorService = class ErrorService {
@@ -221,7 +573,7 @@ define("services/errorService", ["require", "exports", "services/authService", "
         }
     };
     ErrorService = __decorate([
-        inject_2.inject(authService_1.AuthService)
+        inject_2.inject(authService_2.AuthService)
     ], ErrorService);
     exports.ErrorService = ErrorService;
 });
@@ -238,7 +590,7 @@ define("services/converterService", ["require", "exports"], function (require, e
     }
     exports.ConverterService = ConverterService;
 });
-define("services/api/commentRequest", ["require", "exports", "services/api/apiRequest", "services/converterService", "inject"], function (require, exports, apiRequest_4, converterService_js_1, inject_js_1) {
+define("services/api/commentRequest", ["require", "exports", "services/api/apiRequest", "services/converterService", "app/inject"], function (require, exports, apiRequest_4, converterService_1, inject_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     let CommentRequest = class CommentRequest extends apiRequest_4.ApiRequest {
@@ -270,7 +622,7 @@ define("services/api/commentRequest", ["require", "exports", "services/api/apiRe
         }
     };
     CommentRequest = __decorate([
-        inject_js_1.inject('$resource', converterService_js_1.ConverterService)
+        inject_3.inject('$resource', converterService_1.ConverterService)
     ], CommentRequest);
     exports.CommentRequest = CommentRequest;
     var CommentStatus;
@@ -313,7 +665,7 @@ define("services/api/estimateRequest", ["require", "exports", "services/api/apiR
     })(EstimateType || (EstimateType = {}));
     exports.EstimateType = EstimateType;
 });
-define("services/api/articleRequest", ["require", "exports", "services/api/apiRequest", "inject", "services/converterService"], function (require, exports, apiRequest_6, inject_3, converterService_1) {
+define("services/api/articleRequest", ["require", "exports", "services/api/apiRequest", "app/inject", "services/converterService"], function (require, exports, apiRequest_6, inject_4, converterService_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     let ArticleRequest = class ArticleRequest extends apiRequest_6.ApiRequest {
@@ -396,7 +748,7 @@ define("services/api/articleRequest", ["require", "exports", "services/api/apiRe
         }
     };
     ArticleRequest = __decorate([
-        inject_3.inject('$resource', '$window', converterService_1.ConverterService)
+        inject_4.inject('$resource', '$window', converterService_2.ConverterService)
     ], ArticleRequest);
     exports.ArticleRequest = ArticleRequest;
     var ArticleStatus;
@@ -528,14 +880,14 @@ define("services/api/complaintRequest", ["require", "exports", "services/api/api
         ComplaintEntityType[ComplaintEntityType["ARTICLE"] = 1] = "ARTICLE";
     })(ComplaintEntityType || (ComplaintEntityType = {}));
 });
-define("services", ["require", "exports", "services/api/userRequest", "services/api/authRequest", "services/api/contactRequest", "services/authService", "services/errorService", "services/converterService", "services/api/articleRequest", "services/api/notificationRequest", "services/api/historyRequest", "services/api/amendmentRequest", "services/api/commentRequest", "services/api/estimateRequest", "services/api/complaintRequest", "angular"], function (require, exports, userRequest_2, authRequest_1, contactRequest_1, authService_2, errorService_1, converterService_2, articleRequest_1, notificationRequest_1, historyRequest_1, amendmentRequest_1, commentRequest_1, estimateRequest_1, complaintRequest_1, angular) {
+define("services/configurator", ["require", "exports", "services/api/userRequest", "services/api/authRequest", "services/api/contactRequest", "services/authService", "services/errorService", "services/converterService", "services/api/articleRequest", "services/api/notificationRequest", "services/api/historyRequest", "services/api/amendmentRequest", "services/api/commentRequest", "services/api/estimateRequest", "services/api/complaintRequest", "app/system"], function (require, exports, userRequest_2, authRequest_1, contactRequest_1, authService_3, errorService_1, converterService_3, articleRequest_1, notificationRequest_1, historyRequest_1, amendmentRequest_1, commentRequest_1, estimateRequest_1, complaintRequest_1, system_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    const services = [authService_2.AuthService, errorService_1.ErrorService, userRequest_2.UserRequest,
-        authRequest_1.AuthRequest, contactRequest_1.ContactRequest, converterService_2.ConverterService, articleRequest_1.ArticleRequest,
+    const services = [authService_3.AuthService, errorService_1.ErrorService, userRequest_2.UserRequest,
+        authRequest_1.AuthRequest, contactRequest_1.ContactRequest, converterService_3.ConverterService, articleRequest_1.ArticleRequest,
         notificationRequest_1.NotificationRequest, historyRequest_1.HistoryRequest, amendmentRequest_1.AmmendmentRequest, commentRequest_1.CommentRequest,
         estimateRequest_1.EstimateRequest, complaintRequest_1.ComplaintRequest];
-    const module = angular.module('ArticleLibraryApp');
+    const module = system_4.AppSystem.appModule;
     services.forEach(srv => module.service(srv.name, srv));
 });
-//# sourceMappingURL=services.js.map
+//# sourceMappingURL=app.js.map
