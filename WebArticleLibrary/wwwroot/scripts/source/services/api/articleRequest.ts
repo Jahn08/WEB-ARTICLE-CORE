@@ -1,11 +1,12 @@
 import { ApiRequest, ISearchQuery } from './apiRequest';
 import { IComment } from './commentRequest';
 import { inject } from '../../app/inject';
+import { AppSystem } from '../../app/system';
 import { ConverterService } from '../converterService';
 import { IPromise } from 'angular';
 import { EstimateType } from './estimateRequest';
 
-@inject('$resource', '$window', ConverterService)
+@inject(AppSystem.DEPENDENCY_RESOURCE, AppSystem.DEPENDENCY_WINDOW, ConverterService)
 class ArticleRequest extends ApiRequest {
     constructor($resource: ng.resource.IResourceService, 
         private $window: ng.IWindowService,

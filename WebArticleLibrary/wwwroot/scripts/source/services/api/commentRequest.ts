@@ -2,8 +2,9 @@ import { ApiRequest, IArticleEntity, ISearchQuery, INameSearchResult } from './a
 import { ConverterService } from '../converterService';
 import { inject } from '../../app/inject';
 import { IPromise } from 'angular';
+import { AppSystem } from '../../app/system';
 
-@inject('$resource', ConverterService)
+@inject(AppSystem.DEPENDENCY_RESOURCE, ConverterService)
 class CommentRequest extends ApiRequest {
     constructor($resource: ng.resource.IResourceService, 
         private converter: ConverterService) {

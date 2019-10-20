@@ -1,7 +1,9 @@
 import { UserRequest, IUserInfo } from './api/userRequest'; 
 import { inject } from '../app/inject';
+import { AppSystem } from '../app/system';
 
-@inject('$window', UserRequest, '$cookies', '$state')
+@inject(AppSystem.DEPENDENCY_WINDOW, UserRequest, AppSystem.DEPENDENCY_COOKIES, 
+    AppSystem.DEPENDENCY_STATE)
 class AuthService {
     private static readonly AUTH_USER_ITEM = 'CurrentUser';
 
