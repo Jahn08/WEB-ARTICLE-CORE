@@ -10,6 +10,10 @@ class AppSystem {
     static readonly DEPENDENCY_STATE: string = '$state';
 
     static readonly DEPENDENCY_COOKIES: string = '$cookies';
+    
+    static readonly DEPENDENCY_TIMEOUT: string = '$timeout';
+
+    static readonly DEPENDENCY_Q_SERVICE: string = '$q';
 
     static get appModule(): angular.IModule {
         return angular.module(this.APP_MODULE_NAME);

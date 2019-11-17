@@ -1,7 +1,8 @@
 import { AboutUsCtrl } from './aboutUsCtrl';
 import { AppSystem } from '../app/system';
 import { FooterCtrl } from './footerCtrl';
+import { HomeCtrl } from './homeCtrl';
 
 const appModule = AppSystem.appModule;
 
-[AboutUsCtrl, FooterCtrl].forEach(ctrl => appModule.controller(ctrl.name, ctrl));
+[AboutUsCtrl, FooterCtrl, HomeCtrl].forEach(ctrl => appModule.controller(ctrl.name, ctrl));

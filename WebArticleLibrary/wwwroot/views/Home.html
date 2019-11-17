@@ -1,25 +1,25 @@
 ﻿<breadcrumb links="'Home'"></breadcrumb>
 
-<div class="container">
+<div ng-controller="HomeCtrl as ctrl" class="container">
 	<div class="row">
 		<div id="slides" class="col-xs-12 carousel slide" data-ride="carousel">
 			<ol class="carousel-indicators">
-				<li ng-repeat="s in slides" data-target="#slides" data-slide-to="{{$index}}" ng-class="{'active':$index==0}"></li>
+				<li ng-repeat="s in ctrl.slides" data-target="#slides" data-slide-to="{{$index}}" ng-class="{'active':$index==0}"></li>
 			</ol>
 			<div class="carousel-inner">
-				<div ng-repeat="s in slides" class="item" ng-class="{'active':$index==0}">
+				<div ng-repeat="s in ctrl.slides" class="item" ng-class="{'active':$index==0}">
 					<img class="img-responsive" ng-src="images/{{s.category}}_{{s.index}}.jpg" title="#{{s.category}}">
 					<div class="carousel-caption">
 						<a ng-if="s.article" ui-sref="app.articleview({id:s.article.id})">
 							<h1 class="text-danger"><b>{{s.article.name}}</b></h1>
-							<h3 class="text-danger">by {{getUserName(s.article.authorId)}}</h3>
+							<h3 class="text-danger">by {{ctrl.getUserName(s.article.authorId)}}</h3>
 							<h3 class="text-danger">#{{s.category}} (<span class="glyphicon glyphicon-thumbs-up"></span> {{s.article.estimate}})</h3>
 						</a>
 						<div ng-show="!s.article">
-							<a ng-if="ui" ui-sref="app.articleedit({category:s.category})">
+							<a ng-if="ctrl.userInfo" ui-sref="app.articleedit({category:s.category})">
 								<h3 class="text-danger">Try to create your own article of #{{s.category}}</h3>
 							</a>
-							<h3 ng-if="!ui" class="text-danger">Here your own article can be. Just register on the site</h3>
+							<h3 ng-if="!ctrl.userInfo" class="text-danger">Here your own article can be. Just register on the site</h3>
 						</div>
 					</div>
 				</div>
@@ -34,5 +34,5 @@
 			</a>
 		</div>		
 	</div>
-	<loading msg="msg" sending="loading" is-error="isError"></loading>
+	<loading msg="ctrl.msg" sending="ctrl.sending" is-error="ctrl.isError"></loading>
 </div>

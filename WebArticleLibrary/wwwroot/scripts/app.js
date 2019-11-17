@@ -8,7 +8,6 @@ define("app/system", ["require", "exports", "angular"], function (require, expor
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     class AppSystem {
-        // static readonly DEPENDENCY_SCOPE: string = '$scope';
         static get appModule() {
             return angular.module(this.APP_MODULE_NAME);
         }
@@ -19,6 +18,8 @@ define("app/system", ["require", "exports", "angular"], function (require, expor
     AppSystem.DEPENDENCY_RESOURCE = '$resource';
     AppSystem.DEPENDENCY_STATE = '$state';
     AppSystem.DEPENDENCY_COOKIES = '$cookies';
+    AppSystem.DEPENDENCY_TIMEOUT = '$timeout';
+    AppSystem.DEPENDENCY_Q_SERVICE = '$q';
     class Constants {
     }
     exports.Constants = Constants;
@@ -126,13 +127,20 @@ define("services/authService", ["require", "exports", "services/api/userRequest"
     var AuthService_1;
     Object.defineProperty(exports, "__esModule", { value: true });
     let AuthService = AuthService_1 = class AuthService {
-        constructor($window, userReq, $cookies, $state) {
+        constructor($window, userReq, $cookies, $state, $q) {
             this.$window = $window;
             this.userReq = userReq;
             this.$cookies = $cookies;
             this.$state = $state;
+            this.$q = $q;
         }
         getCurrentUser(getPhoto = false) {
+            const task = this.$q.defer();
+            this.getCurrentUserInternally(getPhoto).then(result => task.resolve(result))
+                .catch(err => task.reject(err));
+            return task.promise;
+        }
+        getCurrentUserInternally(getPhoto) {
             return new Promise((resolve, reject) => {
                 if (!this.$cookies.get(AuthService_1.AUTH_COOKIE)) {
                     this.logOut();
@@ -173,7 +181,7 @@ define("services/authService", ["require", "exports", "services/api/userRequest"
     AuthService.AUTH_USER_ITEM = 'CurrentUser';
     AuthService.AUTH_COOKIE = 'Auth_Id';
     AuthService = AuthService_1 = __decorate([
-        inject_1.inject(system_1.AppSystem.DEPENDENCY_WINDOW, userRequest_1.UserRequest, system_1.AppSystem.DEPENDENCY_COOKIES, system_1.AppSystem.DEPENDENCY_STATE)
+        inject_1.inject(system_1.AppSystem.DEPENDENCY_WINDOW, userRequest_1.UserRequest, system_1.AppSystem.DEPENDENCY_COOKIES, system_1.AppSystem.DEPENDENCY_STATE, system_1.AppSystem.DEPENDENCY_Q_SERVICE)
     ], AuthService);
     exports.AuthService = AuthService;
 });
@@ -518,11 +526,256 @@ define("controllers/footerCtrl", ["require", "exports", "app/inject", "services/
     ], FooterCtrl);
     exports.FooterCtrl = FooterCtrl;
 });
-define("controllers/configurator", ["require", "exports", "controllers/aboutUsCtrl", "app/system", "controllers/footerCtrl"], function (require, exports, aboutUsCtrl_1, system_3, footerCtrl_1) {
+define("services/converterService", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    const appModule = system_3.AppSystem.appModule;
-    [aboutUsCtrl_1.AboutUsCtrl, footerCtrl_1.FooterCtrl].forEach(ctrl => appModule.controller(ctrl.name, ctrl));
+    class ConverterService {
+        strToBytes(content) {
+            return btoa(unescape(encodeURIComponent(content)));
+        }
+        bytesToStr(content) {
+            return decodeURIComponent(escape(atob(content)));
+        }
+    }
+    exports.ConverterService = ConverterService;
+});
+define("services/api/commentRequest", ["require", "exports", "services/api/apiRequest", "services/converterService", "app/inject", "app/system"], function (require, exports, apiRequest_3, converterService_1, inject_5, system_3) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    let CommentRequest = class CommentRequest extends apiRequest_3.ApiRequest {
+        constructor($resource, converter) {
+            super($resource, 'Comment');
+            this.converter = converter;
+        }
+        create(comment) {
+            comment.content = this.converter.strToBytes(comment.content);
+            return this.saveResource(comment);
+        }
+        getComments(query) {
+            return this.getResource(query);
+        }
+        updateStatus(commentId, status) {
+            return this.saveResource({ id: commentId, status }, 'Status');
+        }
+        getStatusCaption(status) {
+            switch (status) {
+                case CommentStatus.CREATED:
+                    return 'created';
+                case CommentStatus.BLOCKED:
+                    return 'blocked';
+                case CommentStatus.DELETED:
+                    return 'deleted';
+                default:
+                    return 'none';
+            }
+        }
+    };
+    CommentRequest = __decorate([
+        inject_5.inject(system_3.AppSystem.DEPENDENCY_RESOURCE, converterService_1.ConverterService)
+    ], CommentRequest);
+    exports.CommentRequest = CommentRequest;
+    var CommentStatus;
+    (function (CommentStatus) {
+        CommentStatus[CommentStatus["CREATED"] = 1] = "CREATED";
+        CommentStatus[CommentStatus["BLOCKED"] = 6] = "BLOCKED";
+        CommentStatus[CommentStatus["DELETED"] = 7] = "DELETED";
+    })(CommentStatus || (CommentStatus = {}));
+});
+define("services/api/estimateRequest", ["require", "exports", "services/api/apiRequest"], function (require, exports, apiRequest_4) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    class EstimateRequest extends apiRequest_4.ApiRequest {
+        constructor($resource) {
+            super($resource, 'Estimate');
+        }
+        assessArticle(articleId, estimate) {
+            return this.saveResource({ id: articleId, estimate });
+        }
+        getEstimates(query) {
+            return this.getResource(query);
+        }
+        getTypeCaption(estimate) {
+            switch (estimate) {
+                case EstimateType.NEGATIVE:
+                    return 'negative';
+                case EstimateType.POSITIVE:
+                    return 'positive';
+                default:
+                    return 'none';
+            }
+        }
+    }
+    exports.EstimateRequest = EstimateRequest;
+    var EstimateType;
+    (function (EstimateType) {
+        EstimateType[EstimateType["NONE"] = 0] = "NONE";
+        EstimateType[EstimateType["POSITIVE"] = 1] = "POSITIVE";
+        EstimateType[EstimateType["NEGATIVE"] = 2] = "NEGATIVE";
+    })(EstimateType || (EstimateType = {}));
+    exports.EstimateType = EstimateType;
+});
+define("services/api/articleRequest", ["require", "exports", "services/api/apiRequest", "app/inject", "app/system", "services/converterService"], function (require, exports, apiRequest_5, inject_6, system_4, converterService_2) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    let ArticleRequest = class ArticleRequest extends apiRequest_5.ApiRequest {
+        constructor($resource, $window, converter) {
+            super($resource, 'Article');
+            this.$window = $window;
+            this.converter = converter;
+        }
+        update(article, tempTags) {
+            if (article.status !== ArticleStatus.ON_EDIT &&
+                article.status !== ArticleStatus.ON_REVIEW &&
+                article.status !== ArticleStatus.ON_AMENDING)
+                article.reviewedContent = null;
+            else
+                article.reviewedContent = this.converter.strToBytes(article.reviewedContent);
+            article.content = this.converter.strToBytes(article.content);
+            article.tags = tempTags.join(' ');
+            return this.saveResource(article);
+        }
+        createVersion(articleId) {
+            return this.getResource(articleId, 'NewVersion');
+        }
+        remove(articleIds) {
+            return this.removeResource(articleIds);
+        }
+        getAllArticles(query) {
+            return this.searching(query, 'All');
+        }
+        searching(query, methodName) {
+            return this.getResource(query, methodName);
+        }
+        search(query) {
+            return this.searching(query);
+        }
+        getDefaultCategories() {
+            const methodName = 'Categories';
+            const tagStr = this.$window.localStorage.getItem(methodName);
+            return new Promise((resolve, reject) => {
+                if (tagStr)
+                    resolve(JSON.parse(tagStr));
+                else
+                    this.getResource(undefined, methodName).then(data => {
+                        this.$window.localStorage.setItem(methodName, JSON.stringify(data));
+                        resolve(data);
+                    }).catch(err => reject(err));
+            });
+        }
+        getArticleTitles() {
+            return this.getResource(undefined, 'Titles');
+        }
+        view(articleId, userId) {
+            return this.getResource(userId, articleId.toString());
+        }
+        getStatusCaption(status) {
+            switch (status) {
+                case ArticleStatus.DRAFT:
+                    return 'draft';
+                case ArticleStatus.CREATED:
+                    return 'created';
+                case ArticleStatus.ON_REVIEW:
+                    return 'on review';
+                case ArticleStatus.ON_EDIT:
+                    return 'on edit';
+                case ArticleStatus.APPROVED:
+                    return 'approved';
+                case ArticleStatus.ON_AMENDING:
+                    return 'on amending';
+                default:
+                    return 'none';
+            }
+        }
+        assign(articleId) {
+            return this.setArticleAssignment(articleId, true);
+        }
+        setArticleAssignment(id, shouldAssign) {
+            return this.saveResource({ id: id, assign: shouldAssign }, 'Assignment');
+        }
+        unassign(articleId) {
+            return this.setArticleAssignment(articleId, false);
+        }
+    };
+    ArticleRequest = __decorate([
+        inject_6.inject(system_4.AppSystem.DEPENDENCY_RESOURCE, system_4.AppSystem.DEPENDENCY_WINDOW, converterService_2.ConverterService)
+    ], ArticleRequest);
+    exports.ArticleRequest = ArticleRequest;
+    var ArticleStatus;
+    (function (ArticleStatus) {
+        ArticleStatus[ArticleStatus["DRAFT"] = 0] = "DRAFT";
+        ArticleStatus[ArticleStatus["CREATED"] = 1] = "CREATED";
+        ArticleStatus[ArticleStatus["ON_REVIEW"] = 2] = "ON_REVIEW";
+        ArticleStatus[ArticleStatus["ON_EDIT"] = 3] = "ON_EDIT";
+        ArticleStatus[ArticleStatus["APPROVED"] = 4] = "APPROVED";
+        ArticleStatus[ArticleStatus["REFUSED"] = 5] = "REFUSED";
+        ArticleStatus[ArticleStatus["BLOCKED"] = 6] = "BLOCKED";
+        ArticleStatus[ArticleStatus["DELETED"] = 7] = "DELETED";
+        ArticleStatus[ArticleStatus["ON_AMENDING"] = 8] = "ON_AMENDING";
+    })(ArticleStatus || (ArticleStatus = {}));
+});
+define("controllers/homeCtrl", ["require", "exports", "services/errorService", "app/inject", "controllers/baseCtrl", "app/system", "services/authService", "services/api/articleRequest", "jquery"], function (require, exports, errorService_3, inject_7, baseCtrl_3, system_5, authService_3, articleRequest_1, $) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    let HomeCtrl = class HomeCtrl extends baseCtrl_3.BaseCtrl {
+        constructor(authSrv, errorSrv, $timeout, articlReq) {
+            super(errorSrv);
+            this.$timeout = $timeout;
+            this.articlReq = articlReq;
+            this.slides = [];
+            this.processRequest(authSrv.getCurrentUser(), outcome => this.setUserInfo(outcome));
+        }
+        getUserName(userId) {
+            return this.userNames ? this.userNames[userId] : null;
+        }
+        setUserInfo(userInfo) {
+            this.articlReq.getArticleTitles().then(artData => {
+                this.userInfo = userInfo;
+                this.articlReq.getDefaultCategories().then(categories => {
+                    this.userNames = artData.userNames;
+                    if (artData.articles.length <= 3) {
+                        for (let i = 0; i < 3; ++i) {
+                            const item = artData.articles[i];
+                            const category = item ? this.getCategory(item.tags, categories) :
+                                categories[this.getRandomInt(0, categories.length - 1)];
+                            this.slides.push({
+                                article: item,
+                                index: this.getRandomInt(1, 3),
+                                category
+                            });
+                        }
+                    }
+                    else {
+                        const step = artData.articles.length / 3;
+                        for (let i = 0; i < 3; ++i) {
+                            const item = artData.articles[i];
+                            this.slides.push({
+                                article: item,
+                                index: this.getRandomInt(i + 1, (i == 2 ? artData.articles.length : i + step) - 1),
+                                category: this.getCategory(item.tags, categories)
+                            });
+                        }
+                    }
+                    this.$timeout(() => { $('#slides').carousel(); }, 0);
+                });
+            });
+        }
+        getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+        getCategory(tags, categories) {
+            return categories.find(cat => tags.toLowerCase().split(' ').indexOf(cat.toLowerCase()) != -1);
+        }
+    };
+    HomeCtrl = __decorate([
+        inject_7.inject(authService_3.AuthService, errorService_3.ErrorService, system_5.AppSystem.DEPENDENCY_TIMEOUT, articleRequest_1.ArticleRequest)
+    ], HomeCtrl);
+    exports.HomeCtrl = HomeCtrl;
+});
+define("controllers/configurator", ["require", "exports", "controllers/aboutUsCtrl", "app/system", "controllers/footerCtrl", "controllers/homeCtrl"], function (require, exports, aboutUsCtrl_1, system_6, footerCtrl_1, homeCtrl_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const appModule = system_6.AppSystem.appModule;
+    [aboutUsCtrl_1.AboutUsCtrl, footerCtrl_1.FooterCtrl, homeCtrl_1.HomeCtrl].forEach(ctrl => appModule.controller(ctrl.name, ctrl));
 });
 define("directives/directiveFactory", ["require", "exports"], function (require, exports) {
     "use strict";
@@ -605,10 +858,10 @@ define("directives/directiveFactory", ["require", "exports"], function (require,
     DirectiveFactory.ATTRIBUTE_RESTRICTION = 'A';
     DirectiveFactory.ELEMENT_RESTRICTION = 'E';
 });
-define("directives/configurator", ["require", "exports", "directives/directiveFactory", "app/system"], function (require, exports, directiveFactory_1, system_4) {
+define("directives/configurator", ["require", "exports", "directives/directiveFactory", "app/system"], function (require, exports, directiveFactory_1, system_7) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    const appModule = system_4.AppSystem.appModule;
+    const appModule = system_7.AppSystem.appModule;
     [directiveFactory_1.DirectiveFactory.loading, directiveFactory_1.DirectiveFactory.breadcrumb, directiveFactory_1.DirectiveFactory.clickDisabled,
         directiveFactory_1.DirectiveFactory.limitedVal, directiveFactory_1.DirectiveFactory.pagination, directiveFactory_1.DirectiveFactory.sortBtn]
         .forEach(func => appModule.directive(func.name, func));
@@ -624,15 +877,15 @@ define("filters/limitToFormat", ["require", "exports"], function (require, expor
     }
     exports.limitToFormat = limitToFormat;
 });
-define("filters/configurator", ["require", "exports", "filters/limitToFormat", "app/system"], function (require, exports, limitToFormat_1, system_5) {
+define("filters/configurator", ["require", "exports", "filters/limitToFormat", "app/system"], function (require, exports, limitToFormat_1, system_8) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    system_5.AppSystem.appModule.filter('limitToFormat', limitToFormat_1.limitToFormat);
+    system_8.AppSystem.appModule.filter('limitToFormat', limitToFormat_1.limitToFormat);
 });
-define("services/api/authRequest", ["require", "exports", "services/api/apiRequest"], function (require, exports, apiRequest_3) {
+define("services/api/authRequest", ["require", "exports", "services/api/apiRequest"], function (require, exports, apiRequest_6) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    class AuthRequest extends apiRequest_3.ApiRequest {
+    class AuthRequest extends apiRequest_6.ApiRequest {
         constructor($resource) {
             super($resource, 'Authentication');
         }
@@ -650,193 +903,6 @@ define("services/api/authRequest", ["require", "exports", "services/api/apiReque
         }
     }
     exports.AuthRequest = AuthRequest;
-});
-define("services/converterService", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    class ConverterService {
-        strToBytes(content) {
-            return btoa(unescape(encodeURIComponent(content)));
-        }
-        bytesToStr(content) {
-            return decodeURIComponent(escape(atob(content)));
-        }
-    }
-    exports.ConverterService = ConverterService;
-});
-define("services/api/commentRequest", ["require", "exports", "services/api/apiRequest", "services/converterService", "app/inject", "app/system"], function (require, exports, apiRequest_4, converterService_1, inject_5, system_6) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    let CommentRequest = class CommentRequest extends apiRequest_4.ApiRequest {
-        constructor($resource, converter) {
-            super($resource, 'Comment');
-            this.converter = converter;
-        }
-        create(comment) {
-            comment.content = this.converter.strToBytes(comment.content);
-            return this.saveResource(comment);
-        }
-        getComments(query) {
-            return this.getResource(query);
-        }
-        updateStatus(commentId, status) {
-            return this.saveResource({ id: commentId, status }, 'Status');
-        }
-        getStatusCaption(status) {
-            switch (status) {
-                case CommentStatus.CREATED:
-                    return 'created';
-                case CommentStatus.BLOCKED:
-                    return 'blocked';
-                case CommentStatus.DELETED:
-                    return 'deleted';
-                default:
-                    return 'none';
-            }
-        }
-    };
-    CommentRequest = __decorate([
-        inject_5.inject(system_6.AppSystem.DEPENDENCY_RESOURCE, converterService_1.ConverterService)
-    ], CommentRequest);
-    exports.CommentRequest = CommentRequest;
-    var CommentStatus;
-    (function (CommentStatus) {
-        CommentStatus[CommentStatus["CREATED"] = 1] = "CREATED";
-        CommentStatus[CommentStatus["BLOCKED"] = 6] = "BLOCKED";
-        CommentStatus[CommentStatus["DELETED"] = 7] = "DELETED";
-    })(CommentStatus || (CommentStatus = {}));
-});
-define("services/api/estimateRequest", ["require", "exports", "services/api/apiRequest"], function (require, exports, apiRequest_5) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    class EstimateRequest extends apiRequest_5.ApiRequest {
-        constructor($resource) {
-            super($resource, 'Estimate');
-        }
-        assessArticle(articleId, estimate) {
-            return this.saveResource({ id: articleId, estimate });
-        }
-        getEstimates(query) {
-            return this.getResource(query);
-        }
-        getTypeCaption(estimate) {
-            switch (estimate) {
-                case EstimateType.NEGATIVE:
-                    return 'negative';
-                case EstimateType.POSITIVE:
-                    return 'positive';
-                default:
-                    return 'none';
-            }
-        }
-    }
-    exports.EstimateRequest = EstimateRequest;
-    var EstimateType;
-    (function (EstimateType) {
-        EstimateType[EstimateType["NONE"] = 0] = "NONE";
-        EstimateType[EstimateType["POSITIVE"] = 1] = "POSITIVE";
-        EstimateType[EstimateType["NEGATIVE"] = 2] = "NEGATIVE";
-    })(EstimateType || (EstimateType = {}));
-    exports.EstimateType = EstimateType;
-});
-define("services/api/articleRequest", ["require", "exports", "services/api/apiRequest", "app/inject", "app/system", "services/converterService"], function (require, exports, apiRequest_6, inject_6, system_7, converterService_2) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    let ArticleRequest = class ArticleRequest extends apiRequest_6.ApiRequest {
-        constructor($resource, $window, converter) {
-            super($resource, 'Article');
-            this.$window = $window;
-            this.converter = converter;
-        }
-        update(article, tempTags) {
-            if (article.status !== ArticleStatus.ON_EDIT &&
-                article.status !== ArticleStatus.ON_REVIEW &&
-                article.status !== ArticleStatus.ON_AMENDING)
-                article.reviewedContent = null;
-            else
-                article.reviewedContent = this.converter.strToBytes(article.reviewedContent);
-            article.content = this.converter.strToBytes(article.content);
-            article.tags = tempTags.join(' ');
-            return this.saveResource(article);
-        }
-        createVersion(articleId) {
-            return this.getResource(articleId, 'NewVersion');
-        }
-        remove(articleIds) {
-            return this.removeResource(articleIds);
-        }
-        getAllArticles(query) {
-            return this.searching(query, 'All');
-        }
-        searching(query, methodName) {
-            return this.getResource(query, methodName);
-        }
-        search(query) {
-            return this.searching(query);
-        }
-        getDefaultCategories() {
-            const methodName = 'Categories';
-            const tagStr = this.$window.localStorage.getItem(methodName);
-            return new Promise((resolve, reject) => {
-                if (tagStr)
-                    resolve(JSON.parse(tagStr));
-                else
-                    this.getResource(undefined, methodName).then(data => {
-                        this.$window.localStorage.setItem(methodName, JSON.stringify(data));
-                        resolve(data);
-                    }).catch(err => reject(err));
-            });
-        }
-        getArticleTitles() {
-            return this.getResource(undefined, 'Titles');
-        }
-        view(articleId, userId) {
-            return this.getResource(userId, articleId.toString());
-        }
-        getStatusCaption(status) {
-            switch (status) {
-                case ArticleStatus.DRAFT:
-                    return 'draft';
-                case ArticleStatus.CREATED:
-                    return 'created';
-                case ArticleStatus.ON_REVIEW:
-                    return 'on review';
-                case ArticleStatus.ON_EDIT:
-                    return 'on edit';
-                case ArticleStatus.APPROVED:
-                    return 'approved';
-                case ArticleStatus.ON_AMENDING:
-                    return 'on amending';
-                default:
-                    return 'none';
-            }
-        }
-        assign(articleId) {
-            return this.setArticleAssignment(articleId, true);
-        }
-        setArticleAssignment(id, shouldAssign) {
-            return this.saveResource({ id: id, assign: shouldAssign }, 'Assignment');
-        }
-        unassign(articleId) {
-            return this.setArticleAssignment(articleId, false);
-        }
-    };
-    ArticleRequest = __decorate([
-        inject_6.inject(system_7.AppSystem.DEPENDENCY_RESOURCE, system_7.AppSystem.DEPENDENCY_WINDOW, converterService_2.ConverterService)
-    ], ArticleRequest);
-    exports.ArticleRequest = ArticleRequest;
-    var ArticleStatus;
-    (function (ArticleStatus) {
-        ArticleStatus[ArticleStatus["DRAFT"] = 0] = "DRAFT";
-        ArticleStatus[ArticleStatus["CREATED"] = 1] = "CREATED";
-        ArticleStatus[ArticleStatus["ON_REVIEW"] = 2] = "ON_REVIEW";
-        ArticleStatus[ArticleStatus["ON_EDIT"] = 3] = "ON_EDIT";
-        ArticleStatus[ArticleStatus["APPROVED"] = 4] = "APPROVED";
-        ArticleStatus[ArticleStatus["REFUSED"] = 5] = "REFUSED";
-        ArticleStatus[ArticleStatus["BLOCKED"] = 6] = "BLOCKED";
-        ArticleStatus[ArticleStatus["DELETED"] = 7] = "DELETED";
-        ArticleStatus[ArticleStatus["ON_AMENDING"] = 8] = "ON_AMENDING";
-    })(ArticleStatus || (ArticleStatus = {}));
 });
 define("services/api/notificationRequest", ["require", "exports", "services/api/apiRequest"], function (require, exports, apiRequest_7) {
     "use strict";
@@ -954,14 +1020,14 @@ define("services/api/complaintRequest", ["require", "exports", "services/api/api
         ComplaintEntityType[ComplaintEntityType["ARTICLE"] = 1] = "ARTICLE";
     })(ComplaintEntityType || (ComplaintEntityType = {}));
 });
-define("services/configurator", ["require", "exports", "services/api/userRequest", "services/api/authRequest", "services/api/contactRequest", "services/authService", "services/errorService", "services/converterService", "services/api/articleRequest", "services/api/notificationRequest", "services/api/historyRequest", "services/api/amendmentRequest", "services/api/commentRequest", "services/api/estimateRequest", "services/api/complaintRequest", "app/system"], function (require, exports, userRequest_2, authRequest_1, contactRequest_3, authService_3, errorService_3, converterService_3, articleRequest_1, notificationRequest_1, historyRequest_1, amendmentRequest_1, commentRequest_1, estimateRequest_1, complaintRequest_1, system_8) {
+define("services/configurator", ["require", "exports", "services/api/userRequest", "services/api/authRequest", "services/api/contactRequest", "services/authService", "services/errorService", "services/converterService", "services/api/articleRequest", "services/api/notificationRequest", "services/api/historyRequest", "services/api/amendmentRequest", "services/api/commentRequest", "services/api/estimateRequest", "services/api/complaintRequest", "app/system"], function (require, exports, userRequest_2, authRequest_1, contactRequest_3, authService_4, errorService_4, converterService_3, articleRequest_2, notificationRequest_1, historyRequest_1, amendmentRequest_1, commentRequest_1, estimateRequest_1, complaintRequest_1, system_9) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    const services = [authService_3.AuthService, errorService_3.ErrorService, userRequest_2.UserRequest,
-        authRequest_1.AuthRequest, contactRequest_3.ContactRequest, converterService_3.ConverterService, articleRequest_1.ArticleRequest,
+    const services = [authService_4.AuthService, errorService_4.ErrorService, userRequest_2.UserRequest,
+        authRequest_1.AuthRequest, contactRequest_3.ContactRequest, converterService_3.ConverterService, articleRequest_2.ArticleRequest,
         notificationRequest_1.NotificationRequest, historyRequest_1.HistoryRequest, amendmentRequest_1.AmmendmentRequest, commentRequest_1.CommentRequest,
         estimateRequest_1.EstimateRequest, complaintRequest_1.ComplaintRequest];
-    const module = system_8.AppSystem.appModule;
+    const module = system_9.AppSystem.appModule;
     services.forEach(srv => module.service(srv.name, srv));
 });
 //# sourceMappingURL=app.js.map

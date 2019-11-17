@@ -204,4 +204,4 @@ interface IArticleView {
     curEstimate: EstimateType;
 }
 
-export { ArticleRequest };
+export { ArticleRequest, IArticle };

@@ -1,9 +1,10 @@
 import { UserRequest, IUserInfo } from './api/userRequest'; 
 import { inject } from '../app/inject';
 import { AppSystem } from '../app/system';
+import { IPromise } from 'angular';
 
 @inject(AppSystem.DEPENDENCY_WINDOW, UserRequest, AppSystem.DEPENDENCY_COOKIES, 
-    AppSystem.DEPENDENCY_STATE)
+    AppSystem.DEPENDENCY_STATE, AppSystem.DEPENDENCY_Q_SERVICE)
 class AuthService {
     private static readonly AUTH_USER_ITEM = 'CurrentUser';
 
@@ -12,9 +13,18 @@ class AuthService {
     constructor(private $window: ng.IWindowService, 
         private userReq: UserRequest, 
         private $cookies: ng.cookies.ICookiesService, 
-        private $state: ng.ui.IStateService) { }
+        private $state: ng.ui.IStateService,
+        private $q: angular.IQService) { }
 
-    getCurrentUser(getPhoto: boolean = false): Promise<Number | IUserInfo> {
+    getCurrentUser(getPhoto: boolean = false): IPromise<Number | IUserInfo> {
+        const task = this.$q.defer<Number | IUserInfo>();
+        this.getCurrentUserInternally(getPhoto).then(result => task.resolve(result))
+            .catch(err => task.reject(err));
+
+        return task.promise;
+    }
+
+    private getCurrentUserInternally(getPhoto: boolean): Promise<Number | IUserInfo> {
         return new Promise((resolve, reject) => {
             if (!this.$cookies.get(AuthService.AUTH_COOKIE)) {
                 this.logOut();
