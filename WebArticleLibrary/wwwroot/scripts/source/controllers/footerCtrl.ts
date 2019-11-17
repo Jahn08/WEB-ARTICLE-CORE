@@ -6,7 +6,7 @@ import { BaseCtrl } from "./baseCtrl";
 
 @inject(ContactRequest, ErrorService)
 class FooterCtrl extends BaseCtrl {
-    private info: IContactResponse;
+    public info: IContactResponse;
 
     constructor(contactReq: ContactRequest, errorSrv: ErrorService) {
         super(errorSrv);

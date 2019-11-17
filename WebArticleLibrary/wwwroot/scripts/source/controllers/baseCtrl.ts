@@ -2,11 +2,11 @@ import { ErrorService } from "../services/errorService";
 import { IPromise } from "angular";
 
 class BaseCtrl {
-    private sending: boolean;
+    public sending: boolean;
 
-    private isError: boolean;
+    public isError: boolean;
 
-    private msg: string;
+    public msg: string;
 
     constructor(private errorSrv: ErrorService) {
         this.setState(true);
@@ -30,7 +30,7 @@ class BaseCtrl {
             successFn(data);
 
             this.setState(false);
-        }).catch(this.onError);    
+        }).catch(this.onError);
     }
 
     private onError(data: angular.IHttpResponse<any>) {

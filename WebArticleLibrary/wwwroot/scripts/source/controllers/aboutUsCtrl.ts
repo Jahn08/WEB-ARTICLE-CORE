@@ -5,7 +5,7 @@ import { BaseCtrl } from "./baseCtrl";
 
 @inject(ContactRequest, ErrorService)
 class AboutUsCtrl extends BaseCtrl {
-    private info: string;
+    public info: string;
 
     constructor(contactReq: ContactRequest, errorSrv: ErrorService) { 
         super(errorSrv);
