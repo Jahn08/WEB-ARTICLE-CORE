@@ -1,0 +1,19 @@
+{
+  "name": "web-article-library",
+  "version": "1.0.0",
+  "description": "",
+  "main": "wwwroot/app.js",
+  "dependencies": {
+    "@types/angular": "^1.6.56",
+    "@types/angular-cookies": "^1.4.5",
+    "@types/angular-resource": "^1.5.15",
+    "@types/angular-ui-bootstrap": "^1.0.0",
+    "@types/angular-ui-router": "^1.1.40"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "jahn_08",
+  "license": "MIT"
+}
