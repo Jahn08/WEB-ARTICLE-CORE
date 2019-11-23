@@ -1,12 +1,12 @@
 import { AppSystem } from './system';
 import * as angular from 'angular';
-import * as router from 'angular-ui-router';
+import { StateProvider, UrlRouterProvider, StateService } from '@uirouter/angularjs';
 import { AuthService } from '../services/authService';
 
 angular.module(AppSystem.APP_MODULE_NAME, 
         ['ui.router', 'ui.bootstrap', 'ngResource', 'ngCookies', 'ngSanitize'])
-    .config(($stateProvider: router.IStateProvider, 
-        $urlRouterProvider: router.IUrlRouterProvider, 
+    .config(($stateProvider: StateProvider, 
+        $urlRouterProvider: UrlRouterProvider, 
         $locationProvider: angular.ILocationProvider) => {
             $locationProvider.hashPrefix('');
 
@@ -217,7 +217,8 @@ angular.module(AppSystem.APP_MODULE_NAME,
 			});
 
 			$urlRouterProvider.otherwise('/');
-    }).run(['$state', '$rootScope', AuthService.name, function ($state: router.IStateService, 
+    }).run([AppSystem.DEPENDENCY_STATE, AppSystem.DEPENDENCY_ROOT_SCOPE_SERVICE, AuthService.name, 
+        function ($state: StateService, 
             $rootScope: angular.IRootScopeService,
             authService: AuthService) {
         $rootScope.$on('$stateChangeStart', function(event, toState) { 

@@ -17,5 +17,6 @@ window.define = function(name, required, moduleFn) {
 
 window.define.modules = {
     jquery: jQuery,
+    '@microsoft/signalr': signalR,
     angular
 };
