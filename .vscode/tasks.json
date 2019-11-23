@@ -11,7 +11,8 @@
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
-            "problemMatcher": "$msCompile"
+            "problemMatcher": "$msCompile",
+            "dependsOn": ["tsbuild"]
         },
         {
             "label": "publish",
@@ -37,6 +38,15 @@
                 "/consoleloggerparameters:NoSummary"
             ],
             "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "tsbuild",
+            "type": "typescript",
+            "tsconfig": "WebArticleLibrary/tsconfig.json",
+            "problemMatcher": [
+                "$tsc"
+            ],
+            "group": "build"
         }
     ]
 }
