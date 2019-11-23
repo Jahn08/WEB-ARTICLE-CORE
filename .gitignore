@@ -1,0 +1,7 @@
+WebArticleLibrary.Model/obj
+WebArticleLibrary.Model/bin
+WebArticleLibrary/bin
+WebArticleLibrary/obj
+WebArticleLibrary/appsettings.Development.json
+WebArticleLibrary/node_modules
+WebArticleLibrary/wwwroot/scripts/app.*
