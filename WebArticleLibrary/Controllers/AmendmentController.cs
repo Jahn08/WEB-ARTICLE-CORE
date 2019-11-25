@@ -32,7 +32,7 @@ namespace WebArticleLibrary.Controllers
 			if (article.AuthorId != curUser.id && article.AssignedToId != curUser.id)
 				return BadRequest("The user cannot see requested amendments");
 
-			return Ok(article.Amendments);
+			return ArrayResult(article.Amendments);
 		}
 
 		[HttpPost("New")]

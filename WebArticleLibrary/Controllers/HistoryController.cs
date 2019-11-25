@@ -15,21 +15,21 @@ namespace WebArticleLibrary.Controllers
         }
 
         [HttpGet]
-		public ActionResult GetArticleHistory(Int32 id)
+		public ActionResult GetArticleHistory(Int32 articleId)
 		{
-			var curArt = dbContext.Article.FirstOrDefault(a => a.Id == id);
+			var curArt = dbContext.Article.FirstOrDefault(a => a.Id == articleId);
 
 			if (curArt == null)
 				return BadRequest("The requested article does not exist in the data base");
 
-			return Ok(curArt.ArticleHistory
+			return ArrayResult(curArt.ArticleHistory
 				.GroupBy(h => h.InsertDate).OrderByDescending(h => h.Key)
 				.Select(g => new
 				{
 					date = g.Key,
 					author = g.First().Author.Login,
 					history = g
-				}).ToArray());
+				}));
 		}
 	}
 }

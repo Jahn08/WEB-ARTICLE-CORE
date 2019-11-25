@@ -3,6 +3,8 @@ using WebArticleLibrary.Models;
 using WebArticleLibrary.Model;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace WebArticleLibrary.Controllers
 {
@@ -26,6 +28,11 @@ namespace WebArticleLibrary.Controllers
         {
             Int32 id;
             return Int32.TryParse(UserStore.GetCurrentUserId(User.Identity), out id) ? id: 0;
+        }
+
+        public OkObjectResult ArrayResult<T>(IEnumerable<T> items)
+        {
+            return Ok(new { items = items.ToArray() });
         }
     }
 }

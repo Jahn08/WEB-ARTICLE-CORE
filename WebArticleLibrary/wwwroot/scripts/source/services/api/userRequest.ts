@@ -31,15 +31,18 @@ class UserRequest extends ApiRequest {
     }
 
     confirmEmail(confirmationId: string): IPromise<void> {
-        return this.getResource(confirmationId, 'ConfirmEmail');
+        return this.getResource({ confirmationId: confirmationId }, 'ConfirmEmail');
     }
 
     resetPassword(email: string): IPromise<void> {
-        return this.getResource(email, 'ResetPassword');
+        return this.getResource({ email: email }, 'ResetPassword');
     }
 
     replacePassword(newPassword: string, confirmationId: string): IPromise<void> {
-        return this.saveResource({ newPassword, confirmationId }, 'ReplacePassword');
+        return this.saveResource({ 
+            newPassword: newPassword, 
+            confirmationId: confirmationId 
+        }, 'ReplacePassword');
     }
 }
 

@@ -7,7 +7,7 @@ class HistoryRequest extends ApiRequest {
     }
 
     getHistory(articleId: number): IPromise<IHistory[]> {
-        return this.getResource(articleId);
+        return this.getArrayResource({ articleId: articleId });
     }
 }
 

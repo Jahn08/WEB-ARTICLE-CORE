@@ -1,5 +1,7 @@
 import { IPromise } from "angular";
 
+type ArrayResource<OUT> = ng.resource.IResource<IArrayResult<OUT>>;
+
 abstract class ApiRequest {
     constructor(protected $resource: ng.resource.IResourceService, 
         private controllerName: string) {
@@ -11,6 +13,11 @@ abstract class ApiRequest {
 
     private combinePaths(pathA: string, pathB: string) {
         return pathA + (pathB ? '/' + pathB: '');
+    }
+
+    protected getArrayResource<IN, OUT>(params?: IN, path: string = ''): IPromise<OUT[]> {
+        return this.$resource<ArrayResource<OUT>>(this.getCombinedPath(path))
+            .get(params).$promise.then(data => data.items);
     }
 
     protected getResource<IN, OUT>(params?: IN, path: string = ''): IPromise<OUT> {
@@ -80,6 +87,10 @@ interface IArticleEntity {
     articleId: number;
 
     authorId: number;
+}
+
+interface IArrayResult<T> {
+    items: Array<T>;
 }
 
 export { ApiRequest, ISearchQuery, ISearchResult, INameSearchResult, ColumnIndex, IArticleEntity };

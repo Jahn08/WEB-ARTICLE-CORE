@@ -35,11 +35,6 @@ class ComplaintRequest extends ApiRequest {
         return this.setAssignment(complaintId, false);
     }
 
-    // getComplaintEntityTypeEnum: function() {
-    //     return [{value: 0, name:"comment"},
-    //         {value: 1, name: "article"}];
-    // },
-
     getComplaintStatusCaption(status: ComplaintStatus): string {
         switch (status) {
             case ComplaintStatus.CREATED:

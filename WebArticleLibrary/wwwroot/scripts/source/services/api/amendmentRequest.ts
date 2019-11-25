@@ -7,7 +7,7 @@ class AmmendmentRequest extends ApiRequest {
     }
 
     getAmendments(articleId: number): IPromise<IAmendment[]> {
-        return this.getResource(articleId);
+        return this.getArrayResource({ articleId: articleId });
     }
 
     update(amendments: IAmendment[]): IPromise<void> {

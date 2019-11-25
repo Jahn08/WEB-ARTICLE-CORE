@@ -21,7 +21,7 @@ namespace WebArticleLibrary.Controllers
 		{
 			var data = dbContext.UserNotification.Where(a => a.RecipientId == userId);
 
-			return Ok(data.OrderByDescending(h => h.InsertDate).Select(n => new
+			return ArrayResult(data.OrderByDescending(h => h.InsertDate).Select(n => new
 			{
 				id = n.Id,
 				date = n.InsertDate,
@@ -29,7 +29,7 @@ namespace WebArticleLibrary.Controllers
 				text = n.Text,
 				historyId = n.ArticleHistoryId,
 				articleId = n.ArticleHistory.ArticleId
-			}).ToArray());
+			}));
 		}
 
 		[HttpDelete]

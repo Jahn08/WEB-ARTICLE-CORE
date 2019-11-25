@@ -56,10 +56,11 @@ class ArticleRequest extends ApiRequest {
             if (tagStr)
                 resolve(JSON.parse(tagStr));
             else
-                this.getResource<undefined, string[]>(undefined, methodName).then(data => {
-                    this.$window.localStorage.setItem(methodName, JSON.stringify(data));
-                    resolve(data);
-                }).catch(err => reject(err));
+                this.getArrayResource<undefined, string>(undefined, methodName)
+                    .then(data => {
+                        this.$window.localStorage.setItem(methodName, JSON.stringify(data));
+                        resolve(data);
+                    }).catch(err => reject(err));
         });        
     }
 

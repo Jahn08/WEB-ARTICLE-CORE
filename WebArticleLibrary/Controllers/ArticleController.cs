@@ -27,7 +27,7 @@ namespace WebArticleLibrary.Controllers
 		[AllowAnonymous]
 		public ActionResult GetDefaultCategories()
 		{
-			return Ok(defaultCategories);
+			return ArrayResult(defaultCategories);
 		}
 
 		[HttpPost]

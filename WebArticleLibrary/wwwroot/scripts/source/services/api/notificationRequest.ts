@@ -7,10 +7,13 @@ class NotificationRequest extends ApiRequest {
     }
 
     get(userId: number): IPromise<INotification[]> {
-        return this.getResource(userId);
+        return this.getArrayResource({ userId: userId });
     }
 
     clear(notificationIds: number[]): IPromise<void> {
+        if (!notificationIds.length)
+            return;
+
         return this.removeResource(notificationIds);
     }		
 }
