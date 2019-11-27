@@ -1,38 +1,7 @@
 ﻿(function () {
 	'use strict';
 
-	angular.module('ArticleLibraryApp').controller('RegisterModalCtrl', ['$scope', '$uibModalInstance', 'userData', '$window', '$state', 'AuthRequest', 'ErrorService',
-		function ($scope, $uibModalInstance, userData, $window, $state, AuthRequest, ErrorService) {
-			$scope.userName = userData.name;
-			$scope.userPassword = userData.password;
-
-			$scope.closeModal = function () {
-				$uibModalInstance.dismiss();
-			};
-
-			$scope.register = function () {
-				$scope.sending = false;
-				$scope.isError = false;
-				$scope.sending = true;
-				$scope.msg = "Please, wait...";
-
-				AuthRequest.register({
-					name: $scope.userName,
-					password: $scope.userPassword,
-					firstName: $scope.userFirstName,
-					lastName: $scope.userLastName,
-					patronymicName: $scope.userPatronymicName,
-					email: $scope.userEmail
-				}).then(function () {
-					$uibModalInstance.dismiss();
-					$state.go('app.afterregistration');
-				}, function (data) {
-					$scope.sending = false;
-					$scope.isError = true;
-					$scope.msg = ErrorService.processError('Registration error', data);
-				});
-			};
-		}])
+	angular.module('ArticleLibraryApp')
 		.controller('CommentModalCtrl', ['$scope', '$sce', '$uibModalInstance', 'ConverterService', 'ArticleReqFactory', 'data',
 			function ($scope, $sce, $uibModalInstance, ConverterService, ArticleReqFactory, data) {
 				$scope.parentId = data.parentId;
@@ -169,19 +138,6 @@
 				};
 				$scope.closeModal = function () {
 					$uibModalInstance.dismiss();
-				};
-			}])
-		.controller('NotificationModalCtrl', ['$scope', '$uibModalInstance', '$state', 'data',
-			function ($scope, $uibModalInstance, $state, data) {
-				$scope.notifications = data.notifications;
-
-				$scope.toHistory = function (articleId, historyId) {
-                    var url = $state.href("app.articleview", { historyId: historyId, id: articleId });
-					window.open(url);
-				}
-
-				$scope.closeModal = function (clear) {
-					$uibModalInstance.close(clear);
 				};
 			}]);
 })();

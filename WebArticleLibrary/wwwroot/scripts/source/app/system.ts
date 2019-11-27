@@ -17,6 +17,8 @@ class AppSystem {
 
     static readonly DEPENDENCY_MODAL_SERVICE: string = '$uibModal';
 
+    static readonly DEPENDENCY_MODAL_INSTANCE: string = '$uibModalInstance';
+
     static readonly DEPENDENCY_ROOT_SCOPE_SERVICE: string = '$rootScope';
 
     static get appModule(): angular.IModule {
@@ -26,8 +28,6 @@ class AppSystem {
 
 class Constants {
     static readonly NO_PHOTO_FILE_URL: string = 'images/noPhoto.png';
-
-    static readonly MODAL_CLICK_MSG: string = 'backdrop';
 }
 
 export { AppSystem, Constants };

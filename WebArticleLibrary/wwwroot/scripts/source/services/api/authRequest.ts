@@ -11,8 +11,8 @@ class AuthRequest extends ApiRequest {
         return this.getResource(undefined, 'LogOut');
     }
 
-    logIn(userData: IUserInfo): IPromise<IUserInfo> {
-        return this.saveResource(userData, 'LogIn');
+    logIn(name: string, password: string): IPromise<IUserInfo> {
+        return this.saveResource({ name, password }, 'LogIn');
     }
 
     register(userData: IUserInfo): IPromise<void> {

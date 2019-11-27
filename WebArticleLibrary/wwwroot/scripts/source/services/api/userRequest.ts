@@ -47,9 +47,9 @@ class UserRequest extends ApiRequest {
 }
 
 interface IUserInfo {
-    status: UserStatus;
+    status?: UserStatus;
 
-    id: number;
+    id?: number;
 
     name: string;
     
@@ -67,9 +67,9 @@ interface IUserInfo {
     
     photo?: string;
     
-    showPrivateInfo: boolean;
+    showPrivateInfo?: boolean;
 
-    insertDate: Date;
+    insertDate?: Date;
 
     expirationDate?: Date;
 
