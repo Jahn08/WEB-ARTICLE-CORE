@@ -6,17 +6,15 @@ import { StateService } from "@uirouter/angularjs";
 import { AuthRequest } from "../services/api/authRequest";
 import { ArticleRequest } from "../services/api/articleRequest";
 import { NotificationRequest, INotification } from "../services/api/notificationRequest";
-import { AppSystem } from "../app/system";
+import { AppSystem, Constants } from "../app/system";
 import { AuthService } from "../services/authService";
 import { IUserInfo, UserRequest } from "../services/api/userRequest";
-import * as signalR from '@microsoft/signalr';
-import { ModalCtrl } from "./modals";
+import * as signalR from "@microsoft/signalr";
 
-@inject(ArticleRequest, ErrorService, AppSystem.DEPENDENCY_MODAL_SERVICE, AppSystem.DEPENDENCY_STATE,
-    AuthRequest, AuthService, NotificationRequest, AppSystem.DEPENDENCY_ROOT_SCOPE_SERVICE)
+@inject(ArticleRequest, ErrorService, AppSystem.DEPENDENCY_MODAL_SERVICE, 
+    AppSystem.DEPENDENCY_STATE, AuthRequest, AuthService, NotificationRequest, 
+    AppSystem.DEPENDENCY_ROOT_SCOPE_SERVICE, 'section')
 class HeaderCtrl extends BaseCtrl {
-    public section: string;
-
     public categories: string[];
 
     public userName: string;
@@ -35,10 +33,9 @@ class HeaderCtrl extends BaseCtrl {
         private authReq: AuthRequest, 
         private authSrv: AuthService,
         private notificationReq: NotificationRequest,
-        private $rootScope: angular.IRootScopeService) {
+        private $rootScope: angular.IRootScopeService,
+        public section: string) {
         super(errorSrv);
-
-        this.section = $state.$current.resolve['section']();
 
         this.processRequest(authSrv.getCurrentUser(), async outcome => {
             this.categories = await articleReq.getDefaultCategories();
@@ -96,13 +93,14 @@ class HeaderCtrl extends BaseCtrl {
         if (!this.notifications)
             return;
 
-        this.processRequest(this.$modal.open(ModalCtrl.setUp({
+        this.processRequest(this.$modal.open({
             templateUrl: "views/modalDialogs/NotificationModal.html",
             controller: NotificationModalCtrl,
             resolve: {
                 notifications: this.notifications
-            }
-        })).result, async shouldClear => {
+            },
+            controllerAs: Constants.CONTROLLER_PSEUDONIM
+        }).result, async shouldClear => {
             if (shouldClear) {
                 const ids = this.notifications.map(val => val.id);
 
@@ -159,7 +157,7 @@ class HeaderCtrl extends BaseCtrl {
     }
 
 	openRegistrationModal() {
-        this.processRequest(this.$modal.open(ModalCtrl.setUp({
+        this.processRequest(this.$modal.open({
             templateUrl: "views/modalDialogs/RegisterModal.html",
             controller: "RegisterModalCtrl",
             resolve: {
@@ -167,15 +165,17 @@ class HeaderCtrl extends BaseCtrl {
                     name: this.userName,
                     password: this.userPassword
                 }
-            }
-        })).result);
+            },
+            controllerAs: Constants.CONTROLLER_PSEUDONIM
+        }).result);
     }
 			
     resetPasswordModal() {
-        this.processRequest(this.$modal.open(ModalCtrl.setUp({
+        this.processRequest(this.$modal.open({
             templateUrl: "views/modalDialogs/MarkPasswordForResetModal.html",
-            controller: MarkPasswordForResetModalCtrl
-        })).result);
+            controller: MarkPasswordForResetModalCtrl,
+            controllerAs: Constants.CONTROLLER_PSEUDONIM
+        }).result);
     }
 }
 

@@ -1,6 +1,6 @@
 ﻿<breadcrumb links="'Home:app|About Us'"></breadcrumb>
 
-<div ng-controller="AboutUsCtrl as ctrl">
+<div>
     <div ng-hide="ctrl.sending">{{ctrl.info}}</div>
     <loading msg="ctrl.msg" sending="ctrl.sending" is-error="ctrl.isError"></loading>
 </div>

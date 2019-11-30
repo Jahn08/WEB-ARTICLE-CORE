@@ -21,6 +21,8 @@ class AppSystem {
 
     static readonly DEPENDENCY_ROOT_SCOPE_SERVICE: string = '$rootScope';
 
+    static readonly DEPENDENCY_SECTION_PARAM: string = 'section';
+
     static get appModule(): angular.IModule {
         return angular.module(this.APP_MODULE_NAME);
     }
@@ -28,6 +30,8 @@ class AppSystem {
 
 class Constants {
     static readonly NO_PHOTO_FILE_URL: string = 'images/noPhoto.png';
+
+    static readonly CONTROLLER_PSEUDONIM: string = 'ctrl';
 }
 
 export { AppSystem, Constants };

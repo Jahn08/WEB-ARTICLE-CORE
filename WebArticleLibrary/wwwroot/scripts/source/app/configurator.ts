@@ -1,7 +1,12 @@
-import { AppSystem } from './system';
+import { AppSystem, Constants } from './system';
 import * as angular from 'angular';
-import { StateProvider, UrlRouterProvider, StateService } from '@uirouter/angularjs';
+import { StateProvider, UrlRouterProvider, StateService, StateParams } from '@uirouter/angularjs';
 import { AuthService } from '../services/authService';
+import { HeaderCtrl } from '../controllers/headerCtrl';
+import { HomeCtrl } from '../controllers/homeCtrl';
+import { FooterCtrl } from '../controllers/footerCtrl';
+import { AboutUsCtrl } from '../controllers/aboutUsCtrl';
+import { ArticleSearchCtrl } from '../controllers/articleSearchCtrl';
 
 angular.module(AppSystem.APP_MODULE_NAME, 
         ['ui.router', 'ui.bootstrap', 'ngResource', 'ngCookies', 'ngSanitize'])
@@ -15,15 +20,18 @@ angular.module(AppSystem.APP_MODULE_NAME,
 				views: {
 					'header': {
 						templateUrl: 'views/Header.html',
-						controller: 'HeaderCtrl'
+                        controller: HeaderCtrl,
+                        controllerAs: Constants.CONTROLLER_PSEUDONIM
 					},
 					'content': {
 						templateUrl: 'views/Home.html',
-						controller: "HomeCtrl"
+                        controller: HomeCtrl,
+                        controllerAs: Constants.CONTROLLER_PSEUDONIM
 					},
 					'footer': {
 						templateUrl: 'views/Footer.html',
-						controller: "FooterCtrl"
+                        controller: FooterCtrl,
+                        controllerAs: Constants.CONTROLLER_PSEUDONIM
 					}
 				},
 				resolve: {
@@ -154,11 +162,13 @@ angular.module(AppSystem.APP_MODULE_NAME,
 				views: {
 					'content@': {
 						templateUrl: 'views/AboutUs.html',
-						controller: 'AboutUsCtrl'
+                        controller: AboutUsCtrl,
+                        controllerAs: Constants.CONTROLLER_PSEUDONIM
 					},
 					'header@': {
 						templateUrl: 'views/Header.html',
-						controller: 'HeaderCtrl',
+                        controller: HeaderCtrl,
+                        controllerAs: Constants.CONTROLLER_PSEUDONIM
 					}
 				},
 				resolve: {
@@ -202,15 +212,17 @@ angular.module(AppSystem.APP_MODULE_NAME,
 				views: {
 					'content@': {
 						templateUrl: 'views/ArticleSearch.html',
-						controller: "ArticleSearchCtrl"
+						controller: ArticleSearchCtrl,
+                        controllerAs: Constants.CONTROLLER_PSEUDONIM
 					},
 					'header@': {
 						templateUrl: 'views/Header.html',
-						controller: 'HeaderCtrl',
+						controller: HeaderCtrl,
+                        controllerAs: Constants.CONTROLLER_PSEUDONIM
 					}
 				},
 				resolve: {
-					section: function ($stateParams) {
+					section: function ($stateParams: StateParams) {
 						return $stateParams.category || 'searcharticle';
 					}
 				}
