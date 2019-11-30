@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "target": "es6",
+        "target": "es2016",
         "sourceMap": true,
         "module": "amd",
         "outFile": "wwwroot/scripts/app.js",
