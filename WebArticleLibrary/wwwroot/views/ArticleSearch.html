@@ -8,25 +8,25 @@
 					<label class="panel-title">Search criteria</label>
 				</div>
 				<div class="panel-body">
-					<form class="form-horizontal" ng-submit="search()">
+					<form class="form-horizontal" ng-submit="ctrl.search()">
 						<div class="form-group">
 							<label class="control-label col-xs-12 col-sm-2">Text:</label>
 							<div class="col-xs-12 col-sm-10 input-group">
 								<span class="glyphicon glyphicon-search input-group-addon"></span>
-								<input class="form-control" type="search" ng-model="filter.text" placeholder="Description, name" />
+								<input class="form-control" type="search" ng-model="ctrl.query.text" placeholder="Description, name" />
 							</div>
 						</div>
 						<div class="form-group">
 							<label class="control-label col-xs-12 col-sm-2">Author:</label>
 							<div class="col-xs-12 col-sm-10 input-group">
 								<span class="glyphicon glyphicon-search input-group-addon"></span>
-								<input class="form-control" type="search" ng-model="filter.author" placeholder="Author" />
+								<input class="form-control" type="search" ng-model="ctrl.query.author" placeholder="Author" />
 							</div>
 						</div>
 						<div class="form-group">
 							<label class="control-label col-xs-12 col-sm-2">Tags:</label>
 							<div class="col-xs-12 col-sm-10 input-group">
-								<select name="categories" id="categories" class="form-control" ng-model="filter.tags" ng-change="OnCategoryChange()" multiple ng-options="item for item in allCategories"></select>
+								<select name="categories" id="categories" class="form-control" ng-model="ctrl.tags" multiple ng-options="item for item in ctrl.categories"></select>
 							</div>
 						</div>
 						<div class="form-group">
@@ -34,11 +34,11 @@
 							<div class="col-xs-12 col-sm-4">
 								<div class="input-group">
 									<span class="glyphicon glyphicon-calendar input-group-addon"></span>
-									<input class="form-control" type="date" ng-model="filter.dateStart" />
+									<input class="form-control" type="date" ng-model="ctrl.query.dateStart" />
 								</div>
 								<div class="input-group">
 									<span class="glyphicon glyphicon-calendar input-group-addon"></span>
-									<input class="form-control" type="date" ng-model="filter.dateEnd" />
+									<input class="form-control" type="date" ng-model="ctrl.query.dateEnd" />
 								</div>
 							</div>
 						</div>
@@ -51,15 +51,15 @@
 			<div class="col-xs-12">
 				<label class="col-xs-12 col-sm-2 control-label">Sort by:</label>
 				<div class="col-xs-12 col-sm-6">
-					<select class="form-control" ng-change="search()" ng-model="col">
-						<option ng-selected="c.val==col" ng-repeat="c in columns" ng-value="c.val">{{c.name}}</option>
+					<select class="form-control" ng-change="ctrl.search()" ng-model="ctrl.query.colIndex">
+						<option ng-selected="value == ctrl.query.colIndex" ng-repeat="(value, label) in ctrl.columns" ng-value="value">{{label}}</option>
 					</select>
 				</div>
 			</div>
 			<div class="col-xs-12">
 				<label class="col-xs-12 col-sm-2 control-label">Sorting direction:</label>
 				<div class="col-xs-12 col-sm-6">
-					<select class="form-control" ng-change="search()" ng-model="colAsc">
+					<select class="form-control" ng-change="ctrl.search()" ng-model="ctrl.query.asc">
 						<option selected="selected" ng-value="true">Ascending</option>
 						<option ng-value="false">Descending</option>
 					</select>
@@ -69,7 +69,7 @@
 		<div class="col-xs-12">
 			<loading msg="msg" sending="sending" is-error="isError"></loading>
 			<ul class="list-unstyled">
-				<li ng-repeat="a in articles">
+				<li ng-repeat="a in ctrl.articles">
 					<div class="bs-callout bs-callout-info">
 						<h3><a ui-sref="app.articleview({id:a.id})">{{a.name}}</a></h3>
 						<h4><a ng-repeat="t in a.hashTags" ui-sref="app.articlesearch({category:t,author:null})">#{{t}} </a></h4>
@@ -79,7 +79,7 @@
 					</div>
 				</li>
 			</ul>
-			<pagination pages="pages" cur-page="page" fn-next-page="goToPage"></pagination>
+			<pagination pages="ctrl.pages" cur-page="ctrl.query.page" fn-next-page="ctrl.goToPage"></pagination>
 		</div>
 	</div>
 </div>

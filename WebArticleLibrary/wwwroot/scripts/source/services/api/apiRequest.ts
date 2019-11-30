@@ -38,7 +38,7 @@ abstract class ApiRequest {
 }
 
 interface ISearchQuery {
-    page: string;
+    page: number;
     
     colIndex: ColumnIndex;
     

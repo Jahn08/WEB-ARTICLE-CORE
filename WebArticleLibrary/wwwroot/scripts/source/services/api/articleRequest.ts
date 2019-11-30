@@ -40,7 +40,7 @@ class ArticleRequest extends ApiRequest {
         return this.searching(query, 'All');
     }
 
-    private searching(query: IArticleSearch, methodName?: string): IPromise<IArticleList> {
+    private searching(query: IArticleSearch, methodName?: string): IPromise<IArticleSearchResult> {
         return this.getResource(query, methodName);
     }
 
@@ -189,6 +189,16 @@ interface IArticleTitles {
     userNames: Record<number, string>
 }
 
+interface IArticleSearchResult extends IArticleTitles {
+    articleCount: number;
+
+    pageLength: number;
+
+    userNames: Record<number, string>;
+
+    estimates: Record<number, EstimateType>;
+}
+
 interface IArticleView {
     article: IArticle;
 
@@ -205,4 +215,4 @@ interface IArticleView {
     curEstimate: EstimateType;
 }
 
-export { ArticleRequest, IArticle };
+export { ArticleRequest, IArticle, IArticleSearch };
