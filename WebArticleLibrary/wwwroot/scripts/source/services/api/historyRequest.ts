@@ -39,4 +39,4 @@ enum HistoryObjectType {
     COMMENT
 }
 
-export { HistoryRequest };
+export { HistoryRequest, IHistory, IHistoryRecord, HistoryObjectType };

@@ -92,52 +92,5 @@
 					amendment.content = '"' + $scope.selection + '" - ' + $scope.content;
 					$uibModalInstance.close(amendment);
 				};
-			}])
-		.controller('ArticleHistoryModalCtrl', ['$scope', '$uibModalInstance', '$state', 'data',
-			function ($scope, $uibModalInstance, $state, data) {
-				$scope.filtered = [];
-
-				$scope.items = data.data;
-				$scope.artName = data.articleName;
-				var articleApproved = data.articleApproved;
-
-				$scope.items.forEach(function (val) {
-					val.history.forEach(function (v) {
-						if (v.object) {
-							if (v.object.endsWith('VERSION'))
-								v.toArticle = true;
-							else if (articleApproved && v.object.startsWith('COMMENT'))
-								v.toComment = true;
-						}
-					});
-				});
-
-				if (data.id) {
-					$scope.selectedId = data.id;
-				}
-
-				$scope.goToObject = function (obj, id) {
-					var objType = obj.split(/[. ]/g);
-
-					$scope.filtered = $scope.items.filter(function (val) {
-						var first = val.history[0];
-						return first.object.startsWith(objType[0]) && first.objectId == id;
-					});
-				};
-				$scope.exitObject = function () {
-					$scope.filtered = [];
-				};
-				$scope.goToArticle = function (id, commentId) {
-                    var url = $state.href("app.articleview", { id: id, commentId: commentId });
-					window.open(url);
-				};
-
-				$scope.GetValueDescription = function (objName) {
-					return objName.endsWith('VERSION') ? (objName.startsWith('CHILD') ?
-						"ANOTHER VERSION WAS CREATED" : "WAS CREATED AS A NEW VERSION") : '';
-				};
-				$scope.closeModal = function () {
-					$uibModalInstance.dismiss();
-				};
 			}]);
 })();

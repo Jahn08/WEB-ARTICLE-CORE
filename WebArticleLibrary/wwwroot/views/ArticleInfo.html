@@ -5,15 +5,15 @@
 	<li><a ui-sref="app.properties">Properties</a></li>
 	<li><a ui-sref="app.commentinfo">Comments</a></li>
 	<li><a ui-sref="app.estimateinfo">Estimates</a></li>
-	<li ng-show="hasAdminStatus()"><a ui-sref="app.userinfo">Users</a></li>
-	<li ng-show="hasAdminStatus(1)"><a ui-sref="app.complaintinfo">Complaints</a></li>
+	<li ng-show="ctrl.hasAdminStatus()"><a ui-sref="app.userinfo">Users</a></li>
+	<li ng-show="ctrl.hasAdminStatus()"><a ui-sref="app.complaintinfo">Complaints</a></li>
 </ul>
 
 <div class="tab-content">
 	<div id="articles" class="active tab-pane fade in">
 		<div class="container">
 			<br />
-			<div class="row" ng-show="hasAdminStatus()">
+			<div class="row" ng-show="ctrl.hasAdminStatus()">
 				<div class="col-xs-12">
 					<div class="panel panel-primary">
 						<div class="panel-heading">
@@ -26,24 +26,24 @@
 										<label class="panel-title">Filters</label>
 									</div>
 									<div class="panel-body fade collapse" id="publicFilters">
-										<form class="form-inline" ng-submit="getFilteredArticles(1)">
+										<form class="form-inline" ng-submit="ctrl.getFilteredArticles(true)">
 											<div class="form-group input-group">
 												<span class="input-group-addon glyphicon glyphicon-search"></span>
-												<input type="search" class="input-sm" ng-model="filterPublic.text" placeholder="Name or Description" />
-												<input type="search" class="input-sm" ng-model="filterPublic.author" placeholder="Author" />
-												<input type="search" class="input-sm" ng-model="filterPublic.assignedTo" placeholder="Assigned to" />
-												<input type="search" class="input-sm" ng-model="filterPublic.tags" placeholder="Tags" />
+												<input type="search" class="input-sm" ng-model="ctrl.publicQuery.text" placeholder="Name or Description" />
+												<input type="search" class="input-sm" ng-model="ctrl.publicQuery.author" placeholder="Author" />
+												<input type="search" class="input-sm" ng-model="ctrl.publicQuery.assignedTo" placeholder="Assigned to" />
+												<input type="search" class="input-sm" ng-model="ctrl.publicQuery.tags" placeholder="Tags" />
 											</div>
 											<div class="form-group input-group">
 												<span title="Insert date period" class="input-group-addon glyphicon glyphicon-calendar"></span>
-												<input type="date" class="input-sm" ng-model="filterPublic.dateStart" />
-												<input type="date" class="input-sm" ng-model="filterPublic.dateEnd" />
+												<input type="date" class="input-sm" ng-model="ctrl.publicQuery.dateStart" />
+												<input type="date" class="input-sm" ng-model="ctrl.publicQuery.dateEnd" />
 											</div>
 											<div class="form-group input-group">
 												<span title="Status" class="input-group-addon glyphicon glyphicon-stats"></span>
-												<select class="input-sm" ng-model="filterPublic.status" placeholder="Status">
+												<select class="input-sm" ng-model="ctrl.publicQuery.status" placeholder="Status">
 													<option value="" selected>-</option>
-													<option ng-repeat="s in statuses" value="{{s}}">{{getArticleStatusCaption(s)}}</option>
+													<option ng-repeat="st in ctrl.statuses" value="{{st}}">{{ctrl.getArticleStatusCaption(st)}}</option>
 												</select>
 											</div>
 											<button type="submit" class="btn btn-success">Search</button>
@@ -52,25 +52,25 @@
 								</div>
 							</div>
 							<div class="col-xs-12 col-sm-9 btn-group btn-group-sm">
-								<a click-disabled="sending || !selectedArticle" ui-sref="app.articleedit({id:selectedArticle.id})" ng-disabled="sending || !selectedArticle || selectedArticle.assignedToId != ui.id" title="Review" type="button" class="btn btn-default">
+								<a click-disabled="ctrl.sending || !ctrl.selectedArticle" ui-sref="app.articleedit({id:ctrl.selectedArticle.id})" ng-disabled="ctrl.sending || !ctrl.selectedArticle || ctrl.selectedArticle.assignedToId !== ctrl.userId" title="Review" type="button" class="btn btn-default">
 									<span class="glyphicon glyphicon-edit"></span>
 								</a>
-								<a click-disabled="sending || !selectedArticle" ui-sref="app.articleview({id:selectedArticle.id})" ng-disabled="sending || !selectedArticle" title="Show" type="button" class="btn btn-default">
+								<a click-disabled="ctrl.sending || !ctrl.selectedArticle" ui-sref="app.articleview({id:ctrl.selectedArticle.id})" ng-disabled="ctrl.sending || !ctrl.selectedArticle" title="Show" type="button" class="btn btn-default">
 									<span class="glyphicon glyphicon-picture"></span>
 								</a>
-								<button ng-disabled="sending || !selectedArticle" title="Show article history" type="button" class="btn btn-default" ng-click="showHistory(selectedArticle)">
+								<button ng-disabled="ctrl.sending || !ctrl.selectedArticle" title="Show article history" type="button" class="btn btn-default" ng-click="ctrl.showHistory(ctrl.selectedArticle)">
 									<span class="glyphicon glyphicon-time"></span>
 								</button>
-								<button ng-disabled="sending || !selectedArticle || !isForAssign() || selectedArticle.assignedToId" title="Assign to me" type="button" ng-click="assignArticle(selectedArticle)" class="btn btn-default">
+								<button ng-disabled="ctrl.sending || !ctrl.selectedArticle || !ctrl.isForAssign() || ctrl.selectedArticle.assignedToId" title="Assign to me" type="button" ng-click="ctrl.assignArticle(ctrl.selectedArticle)" class="btn btn-default">
 									<span class="glyphicon glyphicon-check"></span>
 								</button>
-								<button ng-disabled="sending || !selectedArticle || selectedArticle.assignedToId != ui.id" title="Withdraw from my assignments" ng-click="unassignArticle(selectedArticle)" type="button" class="btn btn-default">
+								<button ng-disabled="ctrl.sending || !ctrl.selectedArticle || ctrl.selectedArticle.assignedToId !== ctrl.userId" title="Withdraw from my assignments" ng-click="ctrl.unassignArticle(ctrl.selectedArticle)" type="button" class="btn btn-default">
 									<span class="glyphicon glyphicon-share"></span>
 								</button>
-								<button title="Show all articles" type="button" class="btn btn-default" ng-click="showMine = false">
+								<button title="Show all articles" type="button" class="btn btn-default" ng-click="ctrl.showMine = false">
 									<span class="glyphicon glyphicon-eye-open"></span>
 								</button>
-								<button title="Show the articles assigned to me" type="button" class="btn btn-default" ng-click="showMine = true">
+								<button title="Show the articles assigned to me" type="button" class="btn btn-default" ng-click="ctrl.showMine = true">
 									<span class="glyphicon glyphicon-eye-close"></span>
 								</button>
 							</div>
@@ -78,37 +78,37 @@
 								<table class="table table-hover table-striped">
 									<tr>
 										<th>#</th>
-										<th><sort-btn name="'Id'" col-index="6" cur-col-index="curPublicCol" asc="curPublicColAsc" fn-click="sortPublicArticles"></sort-btn></th>
-										<th><sort-btn name="'Name'" col-index="0" cur-col-index="curPublicCol" asc="curPublicColAsc" fn-click="sortPublicArticles"></sort-btn></th>
-										<th><sort-btn name="'Date'" col-index="7" cur-col-index="curPublicCol" asc="curPublicColAsc" fn-click="sortPublicArticles"></sort-btn></th>
-										<th><sort-btn name="'Tags'" col-index="2" cur-col-index="curPublicCol" asc="curPublicColAsc" fn-click="sortPublicArticles"></sort-btn></th>
-										<th><sort-btn name="'Writer'" col-index="1" cur-col-index="curPublicCol" asc="curPublicColAsc" fn-click="sortPublicArticles"></sort-btn></th>
-										<th><sort-btn name="'Assigned to'" col-index="3" cur-col-index="curPublicCol" asc="curPublicColAsc" fn-click="sortPublicArticles"></sort-btn></th>
-										<th><sort-btn name="'State'" col-index="4" cur-col-index="curPublicCol" asc="curPublicColAsc" fn-click="sortPublicArticles"></sort-btn></th>
+										<th><sort-btn name="'Id'" col-index="6" cur-col-index="ctrl.publicQuery.colIndex" asc="ctrl.publicQuery.asc" fn-click="ctrl.sortPublicArticles"></sort-btn></th>
+										<th><sort-btn name="'Name'" col-index="0" cur-col-index="ctrl.publicQuery.colIndex" asc="ctrl.publicQuery.asc" fn-click="ctrl.sortPublicArticles"></sort-btn></th>
+										<th><sort-btn name="'Date'" col-index="7" cur-col-index="ctrl.publicQuery.colIndex" asc="ctrl.publicQuery.asc" fn-click="ctrl.sortPublicArticles"></sort-btn></th>
+										<th><sort-btn name="'Tags'" col-index="2" cur-col-index="ctrl.publicQuery.colIndex" asc="ctrl.publicQuery.asc" fn-click="ctrl.sortPublicArticles"></sort-btn></th>
+										<th><sort-btn name="'Writer'" col-index="1" cur-col-index="ctrl.publicQuery.colIndex" asc="ctrl.publicQuery.asc" fn-click="ctrl.sortPublicArticles"></sort-btn></th>
+										<th><sort-btn name="'Assigned to'" col-index="3" cur-col-index="ctrl.publicQuery.colIndex" asc="ctrl.publicQuery.asc" fn-click="ctrl.sortPublicArticles"></sort-btn></th>
+										<th><sort-btn name="'State'" col-index="4" cur-col-index="ctrl.publicQuery.colIndex" asc="ctrl.publicQuery.asc" fn-click="ctrl.sortPublicArticles"></sort-btn></th>
 									</tr>
-									<tr ng-show="!showMine || a.assignedToId == ui.id" ng-repeat="a in publicArticles" ng-class="{'text-primary': selectedArticle.id == a.id}" ng-click="selectArticleRow(a)">
+									<tr ng-show="!ctrl.showMine || a.assignedToId === ctrl.userId" ng-repeat="a in ctrl.publicArticles" ng-class="{'text-primary': ctrl.selectedArticle.id === a.id}" ng-click="ctrl.selectArticleRow(a)">
 										<td>{{$index+1}}</td>
 										<td>{{a.id}}</td>
 										<td><limited-val value="a.name" length="50"></limited-val></td>
 										<td>{{a.insertDate|date:'medium'}}</td>
 										<td><limited-val value="a.tags" length="15"></limited-val></td>
-										<td>{{getUserName(a.authorId)}}</td>
-										<td>{{getUserName(a.assignedToId)}}</td>
-										<td>{{getArticleStatusCaption(a.status)}}</td>
+										<td>{{ctrl.getUserName(a.authorId)}}</td>
+										<td>{{ctrl.getUserName(a.assignedToId)}}</td>
+										<td>{{ctrl.getArticleStatusCaption(a.status)}}</td>
 									</tr>
 								</table>
-								<pagination pages="publicArtPages" cur-page="curPublicArtPage" fn-next-page="goToArticlePage" add-param="true"></pagination>
+								<pagination pages="ctrl.publicArtPages" cur-page="ctrl.publicQuery.page" fn-next-page="ctrl.goToArticlePage" add-param="true"></pagination>
 							</div>
 							<div class="col-sm-3">
-								<div class="panel panel-info" ng-show="selectedArticle">
+								<div class="panel panel-info" ng-show="ctrl.selectedArticle">
 									<div class="panel-heading pointer" data-toggle="collapse" data-target="#otherArticleInfo">
 										<span class="panel-title">Basic Information</span>
 									</div>
 									<div style="overflow:hidden" class="panel-body fade in" id="otherArticleInfo">
 										<ul>
-											<li ng-show="isApproved(selectedArticle)"><strong>The number of comments: <span class="text-info">{{getCommentCount(selectedArticle)}}</span></strong></li>
-											<li ng-show="isApproved(selectedArticle)"><strong>Rating: <span ng-class="{'text-success':estimate >= 0,'text-danger': 0 > estimate}">{{getEstimate(selectedArticle)}}</span></strong></li>
-											<li><strong>Description: <span class="text-info">{{selectedArticle.description}}</span></strong></li>
+											<li ng-show="ctrl.isApproved(ctrl.selectedArticle)"><strong>The number of comments: <span class="text-info">{{ctrl.getCommentCount(ctrl.selectedArticle)}}</span></strong></li>
+											<li ng-show="ctrl.isApproved(ctrl.selectedArticle)"><strong>Rating: <span ng-class="{'text-success':ctrl.estimate >= 0,'text-danger': 0 > ctrl.estimate}">{{ctrl.getEstimate(ctrl.selectedArticle)}}</span></strong></li>
+											<li><strong>Description: <span class="text-info">{{ctrl.selectedArticle.description}}</span></strong></li>
 										</ul>
 									</div>
 								</div>
@@ -130,23 +130,23 @@
 										<label class="panel-title">Filters</label>
 									</div>
 									<div class="panel-body fade collapse" id="privateFilters">
-										<form class="form-inline" ng-submit="getFilteredArticles()">
+										<form class="form-inline" ng-submit="ctrl.getFilteredArticles(false)">
 											<div class="form-group input-group">
 												<span class="input-group-addon glyphicon glyphicon-search"></span>
-												<input type="search" class="input-sm" ng-model="filterPrivate.text" placeholder="Name or Description" />
-												<input type="search" class="input-sm" ng-model="filterPrivate.assignedTo" placeholder="Assigned to" />
-												<input type="search" class="input-sm" ng-model="filterPrivate.tags" placeholder="Tags" />
+												<input type="search" class="input-sm" ng-model="ctrl.privateQuery.text" placeholder="Name or Description" />
+												<input type="search" class="input-sm" ng-model="ctrl.privateQuery.assignedTo" placeholder="Assigned to" />
+												<input type="search" class="input-sm" ng-model="ctrl.privateQuery.tags" placeholder="Tags" />
 											</div>
 											<div class="form-group input-group">
 												<span title="Insert date period" class="input-group-addon glyphicon glyphicon-calendar"></span>
-												<input type="date" class="input-sm" ng-model="filterPrivate.dateStart" />
-												<input type="date" class="input-sm" ng-model="filterPrivate.dateEnd" />
+												<input type="date" class="input-sm" ng-model="ctrl.privateQuery.dateStart" />
+												<input type="date" class="input-sm" ng-model="ctrl.privateQuery.dateEnd" />
 											</div>
 											<div class="form-group input-group">
 												<span title="Status" class="input-group-addon glyphicon glyphicon-stats"></span>
-												<select class="input-sm" ng-model="filterPrivate.status" placeholder="Status">
+												<select class="input-sm" ng-model="ctrl.privateQuery.status" placeholder="Status">
 													<option value="" selected>-</option>
-													<option ng-repeat="s in statuses" value="{{s}}">{{getArticleStatusCaption(s)}}</option>
+													<option ng-repeat="st in ctrl.statuses" value="{{st}}">{{ctrl.getArticleStatusCaption(st)}}</option>
 												</select>
 											</div>
 											<button type="submit" class="btn btn-success">Search</button>
@@ -155,16 +155,16 @@
 								</div>
 							</div>
 							<div class="col-xs-12 col-sm-9 btn-group btn-group-sm">
-								<a click-disabled="sending || selectedPArticle.length != 1" ui-sref="app.articleedit({id:selectedPArticle[0].id})" ng-disabled="sending || selectedPArticle.length != 1" title="Edit" class="btn btn-default">
+								<a click-disabled="ctrl.sending || ctrl.selectedPrivateArticles.length !== 1" ui-sref="app.articleedit({id:ctrl.selectedPrivateArticles[0].id})" ng-disabled="ctrl.sending || ctrl.selectedPrivateArticles.length !== 1" title="Edit" class="btn btn-default">
 									<span class="glyphicon glyphicon-edit"></span>
 								</a>
-								<a click-disabled="sending || selectedPArticle.length != 1" ui-sref="app.articleview({id:selectedPArticle[0].id})" ng-disabled="sending || selectedPArticle.length != 1" title="Show" type="button" class="btn btn-default">
+								<a click-disabled="ctrl.sending || ctrl.selectedPrivateArticles.length !== 1" ui-sref="app.articleview({id:ctrl.selectedPrivateArticles[0].id})" ng-disabled="ctrl.sending || ctrl.selectedPrivateArticles.length != =1" title="Show" type="button" class="btn btn-default">
 									<span class="glyphicon glyphicon-picture"></span>
 								</a>
-								<button ng-disabled="sending || selectedPArticle.length != 1" title="Show article history" type="button" class="btn btn-default" ng-click="showHistory(selectedPArticle[0])">
+								<button ng-disabled="ctrl.sending || ctrl.selectedPrivateArticles.length !== 1" title="Show article history" type="button" class="btn btn-default" ng-click="ctrl.showHistory(ctrl.selectedPrivateArticles[0])">
 									<span class="glyphicon glyphicon-time"></span>
 								</button>
-								<button ng-disabled="sending || !selectedPArticle.length" title="Remove" type="button" class="btn btn-default" ng-click="removeArticle()">
+								<button ng-disabled="ctrl.sending || !ctrl.selectedPrivateArticles.length" title="Remove" type="button" class="btn btn-default" ng-click="ctrl.removeArticle()">
 									<span class="glyphicon glyphicon-remove"></span>
 								</button>								
 							</div>
@@ -172,35 +172,35 @@
 								<table class="table table-hover table-striped">
 									<tr>
 										<th>#</th>
-										<th><sort-btn name="'Id'" col-index="6" cur-col-index="curPrivateCol" asc="curPrivateColAsc" fn-click="sortArticles"></sort-btn></th>
-										<th><sort-btn name="'Name'" col-index="0" cur-col-index="curPrivateCol" asc="curPrivateColAsc" fn-click="sortArticles"></sort-btn></th>
-										<th><sort-btn name="'Date'" col-index="7" cur-col-index="curPrivateCol" asc="curPrivateColAsc" fn-click="sortArticles"></sort-btn></th>
-										<th><sort-btn name="'Tags'" col-index="2" cur-col-index="curPrivateCol" asc="curPrivateColAsc" fn-click="sortArticles"></sort-btn></th>
-										<th><sort-btn name="'Assigned to'" col-index="3" cur-col-index="curPrivateCol" asc="curPrivateColAsc" fn-click="sortArticles"></sort-btn></th>
-										<th><sort-btn name="'State'" col-index="4" cur-col-index="curPrivateCol" asc="curPrivateColAsc" fn-click="sortArticles"></sort-btn></th>
+										<th><sort-btn name="'Id'" col-index="6" cur-col-index="ctrl.privateQuery.colIndex" asc="ctrl.privateQuery.asc" fn-click="ctrl.sortArticles"></sort-btn></th>
+										<th><sort-btn name="'Name'" col-index="0" cur-col-index="ctrl.privateQuery.colIndex" asc="ctrl.privateQuery.asc" fn-click="ctrl.sortArticles"></sort-btn></th>
+										<th><sort-btn name="'Date'" col-index="7" cur-col-index="ctrl.privateQuery.colIndex" asc="ctrl.privateQuery.asc" fn-click="ctrl.sortArticles"></sort-btn></th>
+										<th><sort-btn name="'Tags'" col-index="2" cur-col-index="ctrl.privateQuery.colIndex" asc="ctrl.privateQuery.asc" fn-click="ctrl.sortArticles"></sort-btn></th>
+										<th><sort-btn name="'Assigned to'" col-index="3" cur-col-index="ctrl.privateQuery.colIndex" asc="ctrl.privateQuery.asc" fn-click="ctrl.sortArticles"></sort-btn></th>
+										<th><sort-btn name="'State'" col-index="4" cur-col-index="ctrl.privateQuery.colIndex" asc="ctrl.privateQuery.asc" fn-click="ctrl.sortArticles"></sort-btn></th>
 									</tr>
-									<tr ng-repeat="a in privateArticles" ng-class="{'text-primary': hasSelectedPArticle(a.id)}" ng-click="selectPArticleRow(a)">
+									<tr ng-repeat="a in ctrl.privateArticles" ng-class="{'text-primary': ctrl.hasSelectedPrivateArticle(a.id)}" ng-click="ctrl.selectArticleRow(a)">
 										<td>{{$index+1}}</td>
 										<td>{{a.id}}</td>
 										<td><limited-val value="a.name" length="50"></limited-val></td>
 										<td>{{a.insertDate|date:'medium'}}</td>
 										<td><limited-val value="a.tags" length="15"></limited-val></td>
-										<td>{{getUserName(a.assignedToId)}}</td>
-										<td>{{getArticleStatusCaption(a.status)}}</td>
+										<td>{{ctrl.getUserName(a.assignedToId)}}</td>
+										<td>{{ctrl.getArticleStatusCaption(a.status)}}</td>
 									</tr>
 								</table>
-								<pagination pages="privateArtPages" cur-page="curPrivateArtPage" fn-next-page="goToArticlePage"></pagination>
+								<pagination pages="ctrl.privateArtPages" cur-page="ctrl.privateQuery.page" fn-next-page="ctrl.goToArticlePage"></pagination>
 							</div>
 							<div class="col-sm-3">
-								<div class="panel panel-info" ng-show="selectedPArticle.length == 1">
+								<div class="panel panel-info" ng-show="ctrl.selectedPrivateArticles.length === 1">
 									<div class="panel-heading pointer" data-toggle="collapse" data-target="#yourArticleInfo">
 										<span class="panel-title">Basic Information</span>
 									</div>
 									<div style="overflow:hidden" class="panel-body fade in" id="yourArticleInfo">
 										<ul>
-											<li ng-show="isApproved(selectedPArticle[0])"><strong>The number of comments: <span class="text-info">{{getCommentCount(selectedPArticle[0])}}</span></strong></li>
-											<li ng-show="isApproved(selectedPArticle[0])"><strong>Rating: <span ng-class="{'text-success':pEstimate >= 0,'text-danger': 0 > pEstimate}">{{getEstimate(selectedPArticle[0],true)}}</span></strong></li>
-											<li><strong>Description: <span class="text-info">{{selectedPArticle[0].description}}</span></strong></li>
+											<li ng-show="ctrl.isApproved(ctrl.selectedPrivateArticles[0])"><strong>The number of comments: <span class="text-info">{{ctrl.getCommentCount(ctrl.selectedPrivateArticles[0])}}</span></strong></li>
+											<li ng-show="ctrl.isApproved(ctrl.selectedPrivateArticles[0])"><strong>Rating: <span ng-class="{'text-success':ctrl.privateEstimate >= 0,'text-danger': 0 > ctrl.privateEstimate}">{{ctrl.getEstimate(ctrl.selectedPrivateArticles[0],true)}}</span></strong></li>
+											<li><strong>Description: <span class="text-info">{{ctrl.selectedPrivateArticles[0].description}}</span></strong></li>
 										</ul>
 									</div>
 								</div>
@@ -213,6 +213,6 @@
 	</div>
 	
 	<div class="container">
-		<loading msg="msg" sending="sending" is-error="isError"></loading>
+		<loading msg="ctrl.msg" sending="ctrl.sending" is-error="ctrl.isError"></loading>
 	</div>
 </div>

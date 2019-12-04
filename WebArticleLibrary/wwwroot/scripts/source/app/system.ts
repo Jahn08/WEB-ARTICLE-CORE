@@ -23,6 +23,8 @@ class AppSystem {
 
     static readonly DEPENDENCY_SECTION_PARAM: string = 'section';
 
+    static readonly DEPENDENCY_DIALOG_MODEL: string = 'model';
+
     static get appModule(): angular.IModule {
         return angular.module(this.APP_MODULE_NAME);
     }
@@ -34,4 +36,21 @@ class Constants {
     static readonly CONTROLLER_PSEUDONIM: string = 'ctrl';
 }
 
-export { AppSystem, Constants };
+class EnumHelper {
+    static getKeys(enumType: any): number[] {
+        const keys: number[] = [];
+
+        for (let prop in Object.values(enumType)) {
+            const value = enumType[prop];
+
+            if (typeof value !== 'number')
+                return keys;
+
+            keys.push(value);
+        }
+
+        return keys;
+    }
+}
+
+export { AppSystem, Constants, EnumHelper };

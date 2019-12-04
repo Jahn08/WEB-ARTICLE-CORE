@@ -7,6 +7,7 @@ import { HomeCtrl } from '../controllers/homeCtrl';
 import { FooterCtrl } from '../controllers/footerCtrl';
 import { AboutUsCtrl } from '../controllers/aboutUsCtrl';
 import { ArticleSearchCtrl } from '../controllers/articleSearchCtrl';
+import { ArticleInfoCtrl } from '../controllers/articleInfoCtrl';
 
 angular.module(AppSystem.APP_MODULE_NAME, 
         ['ui.router', 'ui.bootstrap', 'ngResource', 'ngCookies', 'ngSanitize'])
@@ -105,7 +106,8 @@ angular.module(AppSystem.APP_MODULE_NAME,
 				views: {
 					'content@': {
 						templateUrl: 'views/ArticleInfo.html',
-						controller: 'ArticleInfoCtrl'
+						controller: ArticleInfoCtrl,
+						controllerAs: Constants.CONTROLLER_PSEUDONIM
 					}
 				},
 				data: {

@@ -36,16 +36,12 @@ class ArticleRequest extends ApiRequest {
         return this.removeResource(articleIds);
     }
 
-    getAllArticles(query: IArticleSearch) {
-        return this.searching(query, 'All');
+    getAllArticles(query?: IArticleSearch): IPromise<IArticleList> {
+        return this.getResource(query, 'All');
     }
 
-    private searching(query: IArticleSearch, methodName?: string): IPromise<IArticleSearchResult> {
-        return this.getResource(query, methodName);
-    }
-
-    search(query: IArticleSearch) {
-        return this.searching(query);
+    search(query: IArticleSearch): IPromise<IArticleSearchResult> {
+        return this.getResource(query);
     }
     
     getDefaultCategories(): Promise<string[]> {
@@ -215,4 +211,4 @@ interface IArticleView {
     curEstimate: EstimateType;
 }
 
-export { ArticleRequest, IArticle, IArticleSearch };
+export { ArticleRequest, ArticleStatus, IArticle, IArticleSearch };

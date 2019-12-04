@@ -102,4 +102,4 @@ interface IUserList extends ISearchResult<IUserInfo> {
     artNumber: number;
 }
 
-export { UserRequest, IUserInfo };
+export { UserRequest, IUserInfo, UserStatus };
