@@ -8,8 +8,9 @@ import { ArticleRequest } from "../services/api/articleRequest";
 import { NotificationRequest, INotification } from "../services/api/notificationRequest";
 import { AppSystem, Constants } from "../app/system";
 import { AuthService } from "../services/authService";
-import { IUserInfo, UserRequest } from "../services/api/userRequest";
+import { IUserInfo } from "../services/api/userRequest";
 import * as signalR from "@microsoft/signalr";
+import { MarkPasswordForResetModalCtrl, NotificationModalCtrl, RegisterModalCtrl } from "./modals";
 
 @inject(ArticleRequest, ErrorService, AppSystem.DEPENDENCY_MODAL_SERVICE, 
     AppSystem.DEPENDENCY_STATE, AuthRequest, AuthService, NotificationRequest, 
@@ -97,7 +98,7 @@ class HeaderCtrl extends BaseCtrl {
             templateUrl: "views/modalDialogs/NotificationModal.html",
             controller: NotificationModalCtrl,
             resolve: {
-                notifications: this.notifications
+                [AppSystem.DEPENDENCY_DIALOG_MODEL]: this.notifications
             },
             controllerAs: Constants.CONTROLLER_PSEUDONIM
         }).result, async shouldClear => {
@@ -157,14 +158,16 @@ class HeaderCtrl extends BaseCtrl {
     }
 
 	openRegistrationModal() {
+        const model: IUserInfo = { 
+            name: this.userName, 
+            password: this.userPassword 
+        };     
+
         this.processRequest(this.$modal.open({
             templateUrl: "views/modalDialogs/RegisterModal.html",
-            controller: "RegisterModalCtrl",
+            controller: RegisterModalCtrl,
             resolve: {
-                userData: {
-                    name: this.userName,
-                    password: this.userPassword
-                }
+                [AppSystem.DEPENDENCY_DIALOG_MODEL]: model
             },
             controllerAs: Constants.CONTROLLER_PSEUDONIM
         }).result);
@@ -179,72 +182,4 @@ class HeaderCtrl extends BaseCtrl {
     }
 }
 
-@inject(ErrorService, UserRequest, 
-    AppSystem.DEPENDENCY_STATE, AppSystem.DEPENDENCY_MODAL_INSTANCE)
-class MarkPasswordForResetModalCtrl extends BaseCtrl {
-    public email: string;
-
-    constructor(errorSrv: ErrorService,
-        private userReq: UserRequest,
-        private $state: StateService,
-        private $modalInstance: ui.bootstrap.IModalInstanceService) {
-        super(errorSrv);
-    }
-
-    resetPassword() {
-        this.processRequest(this.userReq.resetPassword(this.email), () => {
-            this.closeModal();
-            this.$state.go('app.aftermarkingpasswordforresetting');
-        });
-    }
-
-    closeModal() {
-        this.$modalInstance.close();
-    }
-}
-
-@inject(AppSystem.DEPENDENCY_STATE, AppSystem.DEPENDENCY_MODAL_INSTANCE, 'notifications')
-class NotificationModalCtrl {
-    constructor(private $state: StateService,
-        private $modalInstance: ui.bootstrap.IModalInstanceService,
-        public notifications: INotification[]) { }
-
-    toHistory(articleId: number, historyId: number) {
-        const url = this.$state.href("app.articleview", { historyId: historyId, id: articleId });
-        window.open(url);
-    }
-
-    closeModal(shouldClear: boolean) {
-        this.$modalInstance.close(shouldClear);
-    }
-}
-
-@inject(ErrorService, AuthRequest, AppSystem.DEPENDENCY_STATE, 
-    AppSystem.DEPENDENCY_MODAL_INSTANCE, 'userData')
-class RegisterModalCtrl extends BaseCtrl {
-    public user: IUserInfo;
-
-    constructor(errorSrv: ErrorService,
-        private authReq: AuthRequest,
-        private $state: StateService,
-        private $modalInstance: ui.bootstrap.IModalInstanceService,
-        userData: IUserInfo) { 
-            super(errorSrv);
-
-            this.user = userData;
-        }
-
-	register() {
-        this.processRequest(this.authReq.register(this.user), 
-        () => {
-            this.closeModal();
-            this.$state.go('app.afterregistration');
-        });
-    }
-
-    closeModal() {
-        this.$modalInstance.close();
-    }
-}
-
-export { HeaderCtrl, MarkPasswordForResetModalCtrl, NotificationModalCtrl, RegisterModalCtrl };
+export { HeaderCtrl };

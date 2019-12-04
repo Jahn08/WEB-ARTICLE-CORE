@@ -3,6 +3,11 @@ import { AppSystem } from "../app/system";
 import { ui } from "angular";
 import { IHistory, IHistoryRecord, HistoryObjectType } from "../services/api/historyRequest";
 import { StateService } from "@uirouter/angularjs";
+import { ErrorService } from "../services/errorService";
+import { AuthRequest } from "../services/api/authRequest";
+import { BaseCtrl } from "./baseCtrl";
+import { IUserInfo, UserRequest } from "../services/api/userRequest";
+import { INotification } from "../services/api/notificationRequest";
 
 interface IArticleHistoryDialogModel {
     histories: IHistory[];
@@ -94,4 +99,72 @@ class ArticleHistoryModalCtrl {
     }
 }
 
-export { IArticleHistoryDialogModel, ArticleHistoryModalCtrl };
+@inject(ErrorService, UserRequest, 
+    AppSystem.DEPENDENCY_STATE, AppSystem.DEPENDENCY_MODAL_INSTANCE)
+class MarkPasswordForResetModalCtrl extends BaseCtrl {
+    public email: string;
+
+    constructor(errorSrv: ErrorService,
+        private userReq: UserRequest,
+        private $state: StateService,
+        private $modalInstance: ui.bootstrap.IModalInstanceService) {
+        super(errorSrv);
+    }
+
+    resetPassword() {
+        this.processRequest(this.userReq.resetPassword(this.email), () => {
+            this.closeModal();
+            this.$state.go('app.aftermarkingpasswordforresetting');
+        });
+    }
+
+    closeModal() {
+        this.$modalInstance.close();
+    }
+}
+
+@inject(AppSystem.DEPENDENCY_STATE, AppSystem.DEPENDENCY_MODAL_INSTANCE, AppSystem.DEPENDENCY_DIALOG_MODEL)
+class NotificationModalCtrl {
+    constructor(private $state: StateService,
+        private $modalInstance: ui.bootstrap.IModalInstanceService,
+        public notifications: INotification[]) { }
+
+    toHistory(articleId: number, historyId: number) {
+        const url = this.$state.href("app.articleview", { historyId: historyId, id: articleId });
+        window.open(url);
+    }
+
+    closeModal(shouldClear: boolean) {
+        this.$modalInstance.close(shouldClear);
+    }
+}
+
+@inject(ErrorService, AuthRequest, AppSystem.DEPENDENCY_STATE, 
+    AppSystem.DEPENDENCY_MODAL_INSTANCE, AppSystem.DEPENDENCY_DIALOG_MODEL)
+class RegisterModalCtrl extends BaseCtrl {
+    public user: IUserInfo;
+
+    constructor(errorSrv: ErrorService,
+        private authReq: AuthRequest,
+        private $state: StateService,
+        private $modalInstance: ui.bootstrap.IModalInstanceService,
+        userInfo: IUserInfo) { 
+            super(errorSrv);
+
+            this.user = userInfo;
+        }
+
+	register() {
+        this.processRequest(this.authReq.register(this.user), 
+        () => {
+            this.closeModal();
+            this.$state.go('app.afterregistration');
+        });
+    }
+
+    closeModal() {
+        this.$modalInstance.close();
+    }
+}
+
+export { IArticleHistoryDialogModel, ArticleHistoryModalCtrl, RegisterModalCtrl, NotificationModalCtrl, MarkPasswordForResetModalCtrl };

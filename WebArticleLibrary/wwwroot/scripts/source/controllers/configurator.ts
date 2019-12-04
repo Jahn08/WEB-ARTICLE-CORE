@@ -2,10 +2,10 @@ import { AboutUsCtrl } from './aboutUsCtrl';
 import { AppSystem } from '../app/system';
 import { FooterCtrl } from './footerCtrl';
 import { HomeCtrl } from './homeCtrl';
-import { HeaderCtrl, MarkPasswordForResetModalCtrl, NotificationModalCtrl, RegisterModalCtrl } 
+import { HeaderCtrl } 
     from './headerCtrl';
 import { ArticleSearchCtrl } from './articleSearchCtrl';
-import { ArticleHistoryModalCtrl } from './modals';
+import { ArticleHistoryModalCtrl, MarkPasswordForResetModalCtrl, NotificationModalCtrl, RegisterModalCtrl } from './modals';
 import { ArticleInfoCtrl } from './articleInfoCtrl';
 
 const appModule = AppSystem.appModule;
