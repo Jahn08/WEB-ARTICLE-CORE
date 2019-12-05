@@ -11,9 +11,10 @@ import { HistoryRequest, IHistory } from "../services/api/historyRequest";
 import { ui } from "angular";
 import { ArticleHistoryModalCtrl, IArticleHistoryDialogModel } from "./modals";
 import { inject } from "../app/inject";
+import { PagedCtrl } from "./pagedCtrl";
 
 @inject(ErrorService, AuthService, AppSystem.DEPENDENCY_STATE, AppSystem.DEPENDENCY_MODAL_SERVICE, ArticleRequest, HistoryRequest)
-class ArticleInfoCtrl extends BaseCtrl {
+class ArticleInfoCtrl extends PagedCtrl {
     statuses: number[];
 
     publicArtPages: number[];
@@ -100,10 +101,6 @@ class ArticleInfoCtrl extends BaseCtrl {
         return this.userInfo && this.userInfo.status === UserStatus.ADMINISTRATOR;
     }
 
-    private getPageNumberArray(dataLength: number, pageLength: number): number[] {
-        return new Array(Math.ceil(dataLength / pageLength));
-    }
-
     get userId(): number { return this.userInfo ? this.userInfo.id: 0; }
 
     goToArticlePage(pageIndex: number, forPublic: boolean) {
@@ -159,8 +156,8 @@ class ArticleInfoCtrl extends BaseCtrl {
 
     getFilteredArticles(forPublic: boolean, pageIndex: number, col: ColumnIndex, asc: boolean) {
         const queryOptions: ISearchQuery = { asc: asc, colIndex: col, page: pageIndex };
-        const searchFilter: IArticleSearch = forPublic ? this.copyArticleQuery(this.publicQuery, queryOptions): 
-            this.copyArticleQuery(this.privateQuery, queryOptions);
+        const searchFilter: IArticleSearch = forPublic ? this.copySearchQuery(this.publicQuery, queryOptions): 
+            this.copySearchQuery(this.privateQuery, queryOptions);
 
         this.processRequest(this.articleReq.getAllArticles(searchFilter), artData => {
             this.selectedPrivateArticles = [];
@@ -184,21 +181,6 @@ class ArticleInfoCtrl extends BaseCtrl {
                 Object.assign(this.privateQuery, queryOptions);
             }
         });
-    }
-
-    private copyArticleQuery(source: IArticleSearch, options: ISearchQuery): IArticleSearch {
-        const newQuery = Object.assign({}, source);
-
-        if (options.page != null)
-            newQuery.page = options.page;
-            
-        if (options.colIndex != null)
-            newQuery.colIndex = options.colIndex;
-
-        if (options.asc != null)
-            newQuery.asc = options.asc;
-
-        return newQuery;
     }
 
     private unionLists<T1 extends (string | number | symbol), T2>(
