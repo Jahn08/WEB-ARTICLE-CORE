@@ -11,6 +11,7 @@ import { ArticleInfoCtrl } from '../controllers/articleInfoCtrl';
 import { UserInfoCtrl } from '../controllers/userInfoCtrl';
 import { UserConfirmationCtrl } from '../controllers/userConfirmationCtrl';
 import { EmailConfirmationCtrl } from '../controllers/emailConfirmationCtrl';
+import { ResetPasswordCtrl } from '../controllers/resetPasswordCtrl';
 
 angular.module(AppSystem.APP_MODULE_NAME, 
         ['ui.router', 'ui.bootstrap', 'ngResource', 'ngCookies', 'ngSanitize'])
@@ -161,7 +162,8 @@ angular.module(AppSystem.APP_MODULE_NAME,
 				views: {
 					'content@': {
 						templateUrl: 'views/ResetPassword.html',
-						controller: 'ResetPasswordCtrl'
+						controller: ResetPasswordCtrl,
+						controllerAs: Constants.CONTROLLER_PSEUDONIM
 					}
 				}
 			})

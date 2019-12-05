@@ -32,7 +32,7 @@ class BaseCtrl {
     }
 
     protected processRequest<T>(sendingPromise: IPromise<T>, successFn?: (response: T) => void,
-        processErrorFn?: (data: angular.IHttpResponse<any>) => string) {
+        processErrorFn?: (data: angular.IHttpResponse<any>, errorSrv: ErrorService) => string) {
         this.setState(true);
 
         sendingPromise.then(async data => {
@@ -44,7 +44,7 @@ class BaseCtrl {
     }
 
     private onError(error: angular.IHttpResponse<any>|string, 
-        processErrorFn: (error: angular.IHttpResponse<any>) => string) {
+        processErrorFn: (error: angular.IHttpResponse<any>, errorSrv: ErrorService) => string) {
         const errResp = error as angular.IHttpResponse<any>;
 
         if (BaseCtrl.systemErrors.includes(error as string) || !errResp) {
@@ -58,7 +58,7 @@ class BaseCtrl {
         let msg;
 
         if (processErrorFn)
-            msg = processErrorFn(errResp);
+            msg = processErrorFn(errResp, this.errorSrv);
 
         this.msg = msg || this.errorSrv.processError(null, errResp);
     }
