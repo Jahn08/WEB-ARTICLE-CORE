@@ -1,5 +1,4 @@
 import { ArticleRequest, ArticleStatus, IArticle, IArticleSearch } from "../services/api/articleRequest";
-import { BaseCtrl } from "./baseCtrl";
 import { ErrorService } from "../services/errorService";
 import { EnumHelper, Constants, AppSystem } from "../app/system";
 import { IUserInfo, UserStatus } from "../services/api/userRequest";
@@ -37,6 +36,12 @@ class ArticleInfoCtrl extends PagedCtrl {
 
     estimate: number;
 
+    readonly sortPublicArticles: (forPublic: boolean, col: ColumnIndex) => void;
+
+    readonly sortPrivateArticles: (forPublic: boolean, col: ColumnIndex) => void;
+
+    readonly goToArticlePage: (pageIndex: number, forPublic: boolean) => void;
+
     private userInfo: IUserInfo;
 
     private userNames: Record<number, string>;
@@ -55,7 +60,13 @@ class ArticleInfoCtrl extends PagedCtrl {
         private historyReq: HistoryRequest) {
         super(errorSrv);
 
+        this.selectedPrivateArticles = [];
+
         this.statuses = EnumHelper.getKeys(ArticleStatus);
+
+        this.sortPublicArticles = this.sortArticles.bind(this, true);
+        this.sortPrivateArticles = this.sortArticles.bind(this, false);
+        this.goToArticlePage = this.goToPage.bind(this);
 
         this.processRequest(authSrv.getCurrentUser(), userInfo => {
             if (userInfo == 0)
@@ -63,6 +74,32 @@ class ArticleInfoCtrl extends PagedCtrl {
             else if (userInfo)
                 this.initForm(userInfo as IUserInfo);
         });
+    }
+
+    private sortArticles(forPublic: boolean, col: ColumnIndex) {
+        let asc: boolean;
+
+        if (forPublic) {
+            if (!this.publicArtPages.length)
+                return;
+
+            asc = col === this.publicQuery.colIndex ? !this.publicQuery.asc: true;
+        } else {
+            if (!this.privateArtPages.length)
+                return;
+
+            asc = col === this.privateQuery.colIndex ? !this.privateQuery.asc: true;
+        }
+
+        this.getFilteredArticles(forPublic, null, col, asc);
+    }
+
+    private goToPage(pageIndex: number, forPublic: boolean) {
+        if ((!forPublic && this.privateQuery.page == pageIndex) ||
+            (forPublic && this.publicQuery.page == pageIndex))
+            return;
+
+        this.getFilteredArticles(forPublic, pageIndex, null, null);
     }
 
     private initForm(userInfo: IUserInfo) {
@@ -80,19 +117,22 @@ class ArticleInfoCtrl extends PagedCtrl {
             this.privateArtPages = this.getPageNumberArray(artData.privateDataCount, 
                 artData.pageLength);
 
-            this.privateQuery.page = 1;
-            this.privateQuery.colIndex = ColumnIndex.DATE;
-            this.privateQuery.asc = true;
+            this.privateQuery = {
+                page: 1,
+                colIndex: ColumnIndex.DATE,
+                asc: false
+            };
                         
             if (this.hasAdminStatus()) {
                 this.publicArticles = artData.publicData;
                 this.publicArtPages = this.getPageNumberArray(artData.publicDataCount, 
                     artData.pageLength);
-
-                    
-                this.privateQuery.page = 1;
-                this.privateQuery.colIndex = ColumnIndex.DATE;
-                this.privateQuery.asc = false;
+                
+                this.publicQuery = {
+                    page: 1,
+                    colIndex: ColumnIndex.DATE,
+                    asc: false
+                };
             }
         });
     }
@@ -103,36 +143,6 @@ class ArticleInfoCtrl extends PagedCtrl {
 
     get userId(): number { return this.userInfo ? this.userInfo.id: 0; }
 
-    goToArticlePage(pageIndex: number, forPublic: boolean) {
-        if ((!forPublic && this.privateQuery.page == pageIndex) ||
-            (forPublic && this.publicQuery.page == pageIndex))
-            return;
-
-        this.getFilteredArticles(forPublic, pageIndex, null, null);
-    }
-
-    sortPublicArticles(col: ColumnIndex) {
-        this.sortArticles(col, true);
-    }
-
-    sortArticles(col: ColumnIndex, forPublic: boolean) {
-        let asc: boolean;
-
-        if (forPublic) {
-            if (!this.publicArtPages.length)
-                return;
-
-            asc = col === this.publicQuery.colIndex ? !this.publicQuery.asc: true;
-        } else {
-            if (!this.privateArtPages.length)
-                return;
-
-            asc = col === this.privateQuery.colIndex ? !this.privateQuery.asc: true;
-        }
-
-        this.getFilteredArticles(forPublic, null, col, asc);
-    }
-   
     removeArticle() {
         if (!confirm('You are going to remove these articles. Continue?'))
             return;
@@ -151,7 +161,7 @@ class ArticleInfoCtrl extends PagedCtrl {
     }
     
     selectArticleRow(article: IArticle) {
-        this.selectedArticle = this.selectedArticle && this.selectedArticle.id == article.id ? null : article;
+        this.selectedArticle = this.selectedArticle && this.selectedArticle.id === article.id ? null : article;
     }
 
     getFilteredArticles(forPublic: boolean, pageIndex: number, col: ColumnIndex, asc: boolean) {

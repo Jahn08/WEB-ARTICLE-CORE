@@ -158,7 +158,7 @@
 								<a click-disabled="ctrl.sending || ctrl.selectedPrivateArticles.length !== 1" ui-sref="app.articleedit({id:ctrl.selectedPrivateArticles[0].id})" ng-disabled="ctrl.sending || ctrl.selectedPrivateArticles.length !== 1" title="Edit" class="btn btn-default">
 									<span class="glyphicon glyphicon-edit"></span>
 								</a>
-								<a click-disabled="ctrl.sending || ctrl.selectedPrivateArticles.length !== 1" ui-sref="app.articleview({id:ctrl.selectedPrivateArticles[0].id})" ng-disabled="ctrl.sending || ctrl.selectedPrivateArticles.length != =1" title="Show" type="button" class="btn btn-default">
+								<a click-disabled="ctrl.sending || ctrl.selectedPrivateArticles.length !== 1" ui-sref="app.articleview({id:ctrl.selectedPrivateArticles[0].id})" ng-disabled="ctrl.sending || ctrl.selectedPrivateArticles.length !== 1" title="Show" type="button" class="btn btn-default">
 									<span class="glyphicon glyphicon-picture"></span>
 								</a>
 								<button ng-disabled="ctrl.sending || ctrl.selectedPrivateArticles.length !== 1" title="Show article history" type="button" class="btn btn-default" ng-click="ctrl.showHistory(ctrl.selectedPrivateArticles[0])">
@@ -172,14 +172,14 @@
 								<table class="table table-hover table-striped">
 									<tr>
 										<th>#</th>
-										<th><sort-btn name="'Id'" col-index="6" cur-col-index="ctrl.privateQuery.colIndex" asc="ctrl.privateQuery.asc" fn-click="ctrl.sortArticles"></sort-btn></th>
-										<th><sort-btn name="'Name'" col-index="0" cur-col-index="ctrl.privateQuery.colIndex" asc="ctrl.privateQuery.asc" fn-click="ctrl.sortArticles"></sort-btn></th>
-										<th><sort-btn name="'Date'" col-index="7" cur-col-index="ctrl.privateQuery.colIndex" asc="ctrl.privateQuery.asc" fn-click="ctrl.sortArticles"></sort-btn></th>
-										<th><sort-btn name="'Tags'" col-index="2" cur-col-index="ctrl.privateQuery.colIndex" asc="ctrl.privateQuery.asc" fn-click="ctrl.sortArticles"></sort-btn></th>
-										<th><sort-btn name="'Assigned to'" col-index="3" cur-col-index="ctrl.privateQuery.colIndex" asc="ctrl.privateQuery.asc" fn-click="ctrl.sortArticles"></sort-btn></th>
-										<th><sort-btn name="'State'" col-index="4" cur-col-index="ctrl.privateQuery.colIndex" asc="ctrl.privateQuery.asc" fn-click="ctrl.sortArticles"></sort-btn></th>
+										<th><sort-btn name="'Id'" col-index="6" cur-col-index="ctrl.privateQuery.colIndex" asc="ctrl.privateQuery.asc" fn-click="ctrl.sortPrivateArticles"></sort-btn></th>
+										<th><sort-btn name="'Name'" col-index="0" cur-col-index="ctrl.privateQuery.colIndex" asc="ctrl.privateQuery.asc" fn-click="ctrl.sortPrivateArticles"></sort-btn></th>
+										<th><sort-btn name="'Date'" col-index="7" cur-col-index="ctrl.privateQuery.colIndex" asc="ctrl.privateQuery.asc" fn-click="ctrl.sortPrivateArticles"></sort-btn></th>
+										<th><sort-btn name="'Tags'" col-index="2" cur-col-index="ctrl.privateQuery.colIndex" asc="ctrl.privateQuery.asc" fn-click="ctrl.sortPrivateArticles"></sort-btn></th>
+										<th><sort-btn name="'Assigned to'" col-index="3" cur-col-index="ctrl.privateQuery.colIndex" asc="ctrl.privateQuery.asc" fn-click="ctrl.sortPrivateArticles"></sort-btn></th>
+										<th><sort-btn name="'State'" col-index="4" cur-col-index="ctrl.privateQuery.colIndex" asc="ctrl.privateQuery.asc" fn-click="ctrl.sortPrivateArticles"></sort-btn></th>
 									</tr>
-									<tr ng-repeat="a in ctrl.privateArticles" ng-class="{'text-primary': ctrl.hasSelectedPrivateArticle(a.id)}" ng-click="ctrl.selectArticleRow(a)">
+									<tr ng-repeat="a in ctrl.privateArticles" ng-class="{'text-primary': ctrl.hasSelectedPrivateArticle(a.id)}" ng-click="ctrl.selectPrivateArticleRow(a)">
 										<td>{{$index+1}}</td>
 										<td>{{a.id}}</td>
 										<td><limited-val value="a.name" length="50"></limited-val></td>
