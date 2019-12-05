@@ -59,8 +59,8 @@
 				<span ng-show="ctrl.user.email != ctrl.user.confirmedEmail" class="text-danger">Emails are not the same</span>
 			</div>
 		</div>
-		<loading msg="msg" sending="sending" is-error="isError"></loading>
+		<loading msg="ctrl.msg" sending="ctrl.sending" is-error="ctrl.isError"></loading>
 		<button class="btn btn-warning" type="button" ng-click="ctrl.closeModal()">Close</button>
-		<button class="btn btn-success" type="submit" ng-disabled="ctrl.sending || ctrl.user.password != ctrl.user.confirmedPassword || ctrl.user.email != ctrl.user.confirmedEmail">Submit</button>
+		<button class="btn btn-success" type="submit" ng-disabled="ctrl.sending || ctrl.user.password !== ctrl.user.confirmedPassword || ctrl.user.email !== ctrl.user.confirmedEmail">Submit</button>
 	</form>
 </div>
