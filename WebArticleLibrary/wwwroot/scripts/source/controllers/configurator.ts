@@ -8,10 +8,11 @@ import { ArticleSearchCtrl } from './articleSearchCtrl';
 import { ArticleHistoryModalCtrl, MarkPasswordForResetModalCtrl, NotificationModalCtrl, RegisterModalCtrl, CommentModalCtrl } from './modals';
 import { ArticleInfoCtrl } from './articleInfoCtrl';
 import { UserInfoCtrl } from './userInfoCtrl';
+import { UserConfirmationCtrl } from './userConfirmationCtrl';
 
 const appModule = AppSystem.appModule;
 
 [AboutUsCtrl, FooterCtrl, HomeCtrl, HeaderCtrl, MarkPasswordForResetModalCtrl, 
     NotificationModalCtrl, RegisterModalCtrl, ArticleSearchCtrl, ArticleInfoCtrl,
-    ArticleHistoryModalCtrl, UserInfoCtrl, CommentModalCtrl]
+    ArticleHistoryModalCtrl, UserInfoCtrl, CommentModalCtrl, UserConfirmationCtrl]
     .forEach(ctrl => appModule.controller(ctrl.name, ctrl));

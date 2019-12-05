@@ -9,6 +9,7 @@ import { AboutUsCtrl } from '../controllers/aboutUsCtrl';
 import { ArticleSearchCtrl } from '../controllers/articleSearchCtrl';
 import { ArticleInfoCtrl } from '../controllers/articleInfoCtrl';
 import { UserInfoCtrl } from '../controllers/userInfoCtrl';
+import { UserConfirmationCtrl } from '../controllers/userConfirmationCtrl';
 
 angular.module(AppSystem.APP_MODULE_NAME, 
         ['ui.router', 'ui.bootstrap', 'ngResource', 'ngCookies', 'ngSanitize'])
@@ -46,8 +47,9 @@ angular.module(AppSystem.APP_MODULE_NAME,
 				url: 'confirmuser/:id',
 				views: {
 					'content@': {
-						template: '<span ng-class="{\'text-success\':!error, \'text-danger\':error}">{{ConfirmationStateMsg}}</span>',
-						controller: 'UserConfirmationCtrl'
+						template: `<div><loading msg="ctrl.msg" sending="ctrl.sending" is-error="ctrl.isError"></loading></div>`,
+						controller: UserConfirmationCtrl,
+						controllerAs: Constants.CONTROLLER_PSEUDONIM
 					}
 				}
 			})
