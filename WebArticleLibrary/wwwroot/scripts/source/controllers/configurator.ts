@@ -9,10 +9,11 @@ import { ArticleHistoryModalCtrl, MarkPasswordForResetModalCtrl, NotificationMod
 import { ArticleInfoCtrl } from './articleInfoCtrl';
 import { UserInfoCtrl } from './userInfoCtrl';
 import { UserConfirmationCtrl } from './userConfirmationCtrl';
+import { EmailConfirmationCtrl } from './emailConfirmationCtrl';
 
 const appModule = AppSystem.appModule;
 
 [AboutUsCtrl, FooterCtrl, HomeCtrl, HeaderCtrl, MarkPasswordForResetModalCtrl, 
     NotificationModalCtrl, RegisterModalCtrl, ArticleSearchCtrl, ArticleInfoCtrl,
-    ArticleHistoryModalCtrl, UserInfoCtrl, CommentModalCtrl, UserConfirmationCtrl]
-    .forEach(ctrl => appModule.controller(ctrl.name, ctrl));
+    ArticleHistoryModalCtrl, UserInfoCtrl, CommentModalCtrl, UserConfirmationCtrl,
+    EmailConfirmationCtrl].forEach(ctrl => appModule.controller(ctrl.name, ctrl));
