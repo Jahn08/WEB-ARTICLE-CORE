@@ -2,35 +2,6 @@
 	'use strict';
 
 	angular.module('ArticleLibraryApp')
-		.controller('CommentModalCtrl', ['$scope', '$sce', '$uibModalInstance', 'ConverterService', 'ArticleReqFactory', 'data',
-			function ($scope, $sce, $uibModalInstance, ConverterService, ArticleReqFactory, data) {
-				$scope.parentId = data.parentId;
-				$scope.comments = data.comments;
-
-				if (!$scope.parentId) {
-					$scope.comments = $scope.comments.filter(function (val) {
-						return val.status != ArticleReqFactory.ST_DELETED;
-					});
-				}
-
-				var userNames = data.userNames;
-
-				$scope.isBlocked = function (status) {
-					return status == ArticleReqFactory.ST_BLOCKED;
-				};
-
-				$scope.getUserName = function (authorId) {
-					return authorId && userNames ? userNames[authorId] : null;
-				};
-
-				$scope.getCommentContent = function (content) {
-					return content ? $sce.trustAsHtml(ConverterService.bytesToStr(content)) : null;
-				};
-
-				$scope.closeModal = function () {
-					$uibModalInstance.dismiss();
-				};
-			}])
 		.controller('ResponseModalCtrl', ['$scope', '$uibModalInstance',
 			function ($scope, $uibModalInstance) {
 				var response = {};

@@ -5,11 +5,13 @@ import { HomeCtrl } from './homeCtrl';
 import { HeaderCtrl } 
     from './headerCtrl';
 import { ArticleSearchCtrl } from './articleSearchCtrl';
-import { ArticleHistoryModalCtrl, MarkPasswordForResetModalCtrl, NotificationModalCtrl, RegisterModalCtrl } from './modals';
+import { ArticleHistoryModalCtrl, MarkPasswordForResetModalCtrl, NotificationModalCtrl, RegisterModalCtrl, CommentModalCtrl } from './modals';
 import { ArticleInfoCtrl } from './articleInfoCtrl';
+import { UserInfoCtrl } from './userInfoCtrl';
 
 const appModule = AppSystem.appModule;
 
 [AboutUsCtrl, FooterCtrl, HomeCtrl, HeaderCtrl, MarkPasswordForResetModalCtrl, 
     NotificationModalCtrl, RegisterModalCtrl, ArticleSearchCtrl, ArticleInfoCtrl,
-    ArticleHistoryModalCtrl].forEach(ctrl => appModule.controller(ctrl.name, ctrl));
+    ArticleHistoryModalCtrl, UserInfoCtrl, CommentModalCtrl]
+    .forEach(ctrl => appModule.controller(ctrl.name, ctrl));

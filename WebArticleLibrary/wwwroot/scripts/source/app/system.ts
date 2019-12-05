@@ -21,6 +21,8 @@ class AppSystem {
 
     static readonly DEPENDENCY_ROOT_SCOPE_SERVICE: string = '$rootScope';
 
+    static readonly DEPENDENCY_ESCAPING_SERVICE: string = '$sce';
+
     static readonly DEPENDENCY_SECTION_PARAM: string = 'section';
 
     static readonly DEPENDENCY_DIALOG_MODEL: string = 'model';

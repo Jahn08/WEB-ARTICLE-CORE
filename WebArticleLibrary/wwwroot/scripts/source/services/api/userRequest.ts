@@ -98,8 +98,8 @@ interface IUserSearch extends ISearchQuery {
 
 interface IUserList extends ISearchResult<IUserInfo> {
     cmntNumber: Record<string, number>;
-    
-    artNumber: number;
+
+    artNumber: Record<string, number>;
 }
 
-export { UserRequest, IUserInfo, UserStatus };
+export { UserRequest, IUserInfo, UserStatus, IUserSearch };

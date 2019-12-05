@@ -67,7 +67,7 @@ interface ICommentSearch extends ISearchQuery {
     
     dateStart?: Date;
     
-    dateEnd: string;
+    dateEnd?: string;
     
     status?: CommentStatus;
 }
@@ -78,4 +78,4 @@ interface ICommentList extends INameSearchResult<IComment> {
     relatedCmntNumber: Record<number, number>;
 }
 
-export { CommentRequest, IComment };
+export { CommentRequest, IComment, CommentStatus };

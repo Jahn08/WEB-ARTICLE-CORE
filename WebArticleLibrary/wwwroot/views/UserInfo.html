@@ -5,8 +5,8 @@
 	<li><a ui-sref="app.properties">Properties</a></li>
 	<li><a ui-sref="app.commentinfo">Comments</a></li>
 	<li><a ui-sref="app.estimateinfo">Estimates</a></li>
-	<li class="active" ng-show="hasAdminStatus(1)"><a ui-sref="app.userinfo">Users</a></li>
-	<li ng-show="hasAdminStatus(1)"><a ui-sref="app.complaintinfo">Complaints</a></li>
+	<li class="active" ng-show="ctrl.hasAdminStatus(true)"><a ui-sref="app.userinfo">Users</a></li>
+	<li ng-show="ctrl.hasAdminStatus(true)"><a ui-sref="app.complaintinfo">Complaints</a></li>
 </ul>
 
 <div class="tab-content">
@@ -21,18 +21,18 @@
 								<label class="panel-title">Filters</label>
 							</div>
 							<div class="panel-body fade collapse" id="filters">
-								<form class="form-inline" ng-submit="getFilteredUsers()">
+								<form class="form-inline" ng-submit="ctrl.getFilteredUsers()">
 									<div class="form-group input-group">
 										<span class="input-group-addon glyphicon glyphicon-search"></span>
-										<input type="search" class="input-sm" ng-model="filter.login" placeholder="Login" />
-										<input type="search" class="input-sm" ng-model="filter.name" placeholder="Name" />
-										<input type="search" class="input-sm" ng-model="filter.email" placeholder="Email" />
+										<input type="search" class="input-sm" ng-model="ctrl.query.login" placeholder="Login" />
+										<input type="search" class="input-sm" ng-model="ctrl.query.name" placeholder="Name" />
+										<input type="search" class="input-sm" ng-model="ctrl.query.email" placeholder="Email" />
 									</div>
 									<div class="form-group input-group">
 										<span title="Status" class="input-group-addon glyphicon glyphicon-stats"></span>
-										<select class="input-sm" ng-model="filter.status" placeholder="Status">
+										<select class="input-sm" ng-model="ctrl.query.status" placeholder="Status">
 											<option value="" selected>-</option>
-											<option ng-repeat="s in statuses" value="{{s}}">{{getStatusCaption(s)}}</option>
+											<option ng-repeat="st in ctrl.statuses" value="{{st}}">{{ctrl.getStatusCaption(st)}}</option>
 										</select>
 									</div>
 									<button type="submit" class="btn btn-success">Search</button>
@@ -41,54 +41,54 @@
 						</div>
 					</div>
 					<div class="col-xs-12 col-sm-10 btn-group btn-group-sm">
-						<button ng-disabled="sending || !selectedUser" title="Show the user's articles" type="button" class="btn btn-default">
+						<button ng-disabled="ctrl.sending || !ctrl.selectedUser" title="Show the user's articles" type="button" class="btn btn-default">
 							<span class="glyphicon glyphicon-list-alt"></span>
 						</button>
-						<button ng-disabled="sending || !selectedUser || hasAdminStatus()" title="Grant administrator rights" type="button" class="btn btn-default" ng-click="setAdminStatus()">
+						<button ng-disabled="ctrl.sending || !ctrl.selectedUser || ctrl.hasAdminStatus()" title="Grant administrator rights" type="button" class="btn btn-default" ng-click="ctrl.setAdminStatus()">
 							<span class="glyphicon glyphicon-edit"></span>
 						</button>
-						<button ng-disabled="sending || !selectedUser || hasApprovedStatus()" title="Make into a regular user" type="button" class="btn btn-default" ng-click="setApprovedStatus()">
+						<button ng-disabled="ctrl.sending || !ctrl.selectedUser || ctrl.hasApprovedStatus()" title="Make into a regular user" type="button" class="btn btn-default" ng-click="ctrl.setApprovedStatus()">
 							<span class="glyphicon glyphicon-ok-circle"></span>
 						</button>
-						<button ng-disabled="sending || !selectedUser || hasBannedStatus()" title="Ban the user" type="button" class="btn btn-default" ng-click="setBannedStatus()">
+						<button ng-disabled="ctrl.sending || !ctrl.selectedUser || ctrl.hasBannedStatus()" title="Ban the user" type="button" class="btn btn-default" ng-click="ctrl.setBannedStatus()">
 							<span class="glyphicon glyphicon-ban-circle"></span>
 						</button>
 					</div>
 					<div class="col-xs-12 col-sm-7">
-						<table class="table table-hover table-striped" ng-disabled="sending">
+						<table class="table table-hover table-striped" ng-disabled="ctrl.sending">
 							<tr>
 								<th>#</th>
-								<th><sort-btn name="'Name'" col-index="0" cur-col-index="usersCol" asc="usersColAsc" fn-click="sortUsers"></sort-btn></th>
-								<th><sort-btn name="'State'" col-index="4" cur-col-index="usersCol" asc="usersColAsc" fn-click="sortUsers"></sort-btn></th>
+								<th><sort-btn name="'Name'" col-index="0" cur-col-index="ctrl.query.colIndex" asc="ctrl.query.asc" fn-click="ctrl.sortUsers"></sort-btn></th>
+								<th><sort-btn name="'State'" col-index="4" cur-col-index="ctrl.query.colIndex" asc="ctrl.query.asc" fn-click="ctrl.sortUsers"></sort-btn></th>
 							</tr>
-							<tr ng-repeat="u in users | filter:{ id: '!' + ui.id }" ng-class="{'text-primary': selectedUser.id == u.id}" ng-click="selectRow(u)">
+							<tr ng-repeat="u in ctrl.users | filter:{ id: '!' + ui.id }" ng-class="{'text-primary': ctrl.selectedUser.id === u.id}" ng-click="ctrl.selectRow(u)">
 								<th>{{$index + 1}}</th>
 								<td>{{u.name}}</td>
-								<td>{{getStatusCaption(u.status)}}</td>
+								<td>{{ctrl.getStatusCaption(u.status)}}</td>
 							</tr>
 						</table>
-						<pagination pages="usersPages" cur-page="usersPage" fn-next-page="goToUserPage"></pagination>					
+						<pagination pages="ctrl.userPages" cur-page="ctrl.query.page" fn-next-page="ctrl.goToUserPage"></pagination>					
 					</div>
 					<div class="col-xs-12 col-sm-5">
-							<div class="panel panel-info" ng-show="selectedUser">
+							<div class="panel panel-info" ng-show="ctrl.selectedUser">
 								<div class="panel-heading pointer" data-toggle="collapse" data-target="#publicUserHistory">
 									<span class="panel-title">Additional Information</span>
 								</div>
 								<div style="overflow:hidden;" class="panel-body fade in" id="publicUserHistory">
 									<ul>
-										<li><strong>The date of creation: <span class="text-info">{{selectedUser.insertDate | date: 'medium'}}</span></strong></li>
-										<li><strong>The number of articles: <span class="text-info">{{getArticleCount()}}</span></strong></li>
-										<li ng-show="selectedUser.email"><strong>Email: <span class="text-info">{{selectedUser.email}}</span></strong></li>
-										<li ng-show="selectedUser.firstName"><strong>First Name: <span class="text-info">{{selectedUser.firstName}}</span></strong></li>
-										<li ng-show="selectedUser.lastName"><strong>Last Name: <span class="text-info">{{selectedUser.lastName}}</span></strong></li>
-										<li ng-show="selectedUser.patronymicName"><strong>Patronymic Name: <span class="text-info">{{selectedUser.patronymicName}}</span></strong></li>
-										<li ng-show="selectedUser.newEmailExpirationDate">
-											<strong> The new email address expiration date: <span class="text-warning">{{selectedUser.newEmailExpirationDate | date: 'medium'}}</span> <span class="glyphicon glyphicon-info-sign"></span></strong>
+										<li><strong>The date of creation: <span class="text-info">{{ctrl.selectedUser.insertDate | date: 'medium'}}</span></strong></li>
+										<li><strong>The number of articles: <span class="text-info">{{ctrl.getArticleCount()}}</span></strong></li>
+										<li ng-show="ctrl.selectedUser.email"><strong>Email: <span class="text-info">{{ctrl.selectedUser.email}}</span></strong></li>
+										<li ng-show="ctrl.selectedUser.firstName"><strong>First Name: <span class="text-info">{{ctrl.selectedUser.firstName}}</span></strong></li>
+										<li ng-show="ctrl.selectedUser.lastName"><strong>Last Name: <span class="text-info">{{ctrl.selectedUser.lastName}}</span></strong></li>
+										<li ng-show="ctrl.selectedUser.patronymicName"><strong>Patronymic Name: <span class="text-info">{{ctrl.selectedUser.patronymicName}}</span></strong></li>
+										<li ng-show="ctrl.selectedUser.newEmailExpirationDate">
+											<strong> The new email address expiration date: <span class="text-warning">{{ctrl.selectedUser.newEmailExpirationDate | date: 'medium'}}</span> <span class="glyphicon glyphicon-info-sign"></span></strong>
 										</li>
-										<li ng-show="selectedUser.resetPasswordExpirationDate">
-											<strong>The resetting password expiration date: <span class="text-warning">{{selectedUser.resetPasswordExpirationDate | date: 'medium'}}</span> <span class="glyphicon glyphicon-info-sign"></span></strong>
+										<li ng-show="ctrl.selectedUser.resetPasswordExpirationDate">
+											<strong>The resetting password expiration date: <span class="text-warning">{{ctrl.selectedUser.resetPasswordExpirationDate | date: 'medium'}}</span> <span class="glyphicon glyphicon-info-sign"></span></strong>
 										</li>
-										<li ng-show="getCommentCount()"><strong>The number of comments: <button ng-click="goToCommentsList()" class="btn-link">{{getCommentCount()}}</button></strong></li>
+										<li ng-show="ctrl.getCommentCount()"><strong>The number of comments: <button ng-click="ctrl.goToCommentsList()" class="btn-link">{{ctrl.getCommentCount()}}</button></strong></li>
 									</ul>
 								</div>
 							</div>
@@ -99,6 +99,6 @@
 	</div>
 
 	<div class="container">
-		<loading msg="msg" sending="sending" is-error="isError"></loading>
+		<loading msg="ctrl.msg" sending="ctrl.sending" is-error="ctrl.isError"></loading>
 	</div>
 </div>
