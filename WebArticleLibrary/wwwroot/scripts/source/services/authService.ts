@@ -32,7 +32,7 @@ class AuthService {
                 resolve(0);
             }
             else {
-                const user = this.$window.localStorage.getItem(AuthService.AUTH_COOKIE);
+                const user = this.$window.localStorage.getItem(AuthService.AUTH_USER_ITEM);
     
                 if (user)
                     resolve(JSON.parse(user));
@@ -59,8 +59,9 @@ class AuthService {
     }
 
     logIn(data: IUserInfo, force: boolean = false): void {
-        if (!this.$window.localStorage.getItem(AuthService.AUTH_COOKIE) || force)
-            this.$window.localStorage.setItem(AuthService.AUTH_COOKIE, JSON.stringify(data));
+        if (!this.$window.localStorage.getItem(AuthService.AUTH_USER_ITEM) || force)
+            this.$window.localStorage.setItem(AuthService.AUTH_USER_ITEM, 
+                JSON.stringify(data));
     }
 
     reloadState(): void {
