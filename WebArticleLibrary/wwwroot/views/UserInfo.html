@@ -61,7 +61,7 @@
 								<th><sort-btn name="'Name'" col-index="0" cur-col-index="ctrl.query.colIndex" asc="ctrl.query.asc" fn-click="ctrl.sortUsers"></sort-btn></th>
 								<th><sort-btn name="'State'" col-index="4" cur-col-index="ctrl.query.colIndex" asc="ctrl.query.asc" fn-click="ctrl.sortUsers"></sort-btn></th>
 							</tr>
-							<tr ng-repeat="u in ctrl.users | filter:{ id: '!' + ui.id }" ng-class="{'text-primary': ctrl.selectedUser.id === u.id}" ng-click="ctrl.selectRow(u)">
+							<tr ng-repeat="u in ctrl.users | filter:{ id: '!' + ctrl.userInfo.id }" ng-class="{'text-primary': ctrl.selectedUser.id === u.id}" ng-click="ctrl.selectRow(u)">
 								<th>{{$index + 1}}</th>
 								<td>{{u.name}}</td>
 								<td>{{ctrl.getStatusCaption(u.status)}}</td>

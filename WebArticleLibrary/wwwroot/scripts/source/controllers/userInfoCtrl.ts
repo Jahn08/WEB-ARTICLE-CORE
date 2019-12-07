@@ -1,7 +1,6 @@
 import { ErrorService } from "../services/errorService";
 import { AuthService } from "../services/authService";
 import { UserRequest, UserStatus, IUserInfo, IUserSearch } from "../services/api/userRequest";
-import { ArticleRequest } from "../services/api/articleRequest";
 import { EnumHelper, AppSystem, Constants } from "../app/system";
 import { PagedCtrl } from "./pagedCtrl";
 import { ColumnIndex } from "../services/api/apiRequest";
@@ -40,6 +39,12 @@ class UserInfoCtrl extends PagedCtrl {
         private $modal: ui.bootstrap.IModalService) {
         super(errorSrv);
 
+        this.query = {
+            asc: false,
+            colIndex: ColumnIndex.NAME,
+            page: 1
+        };
+
         this.statuses = EnumHelper.getKeys(UserStatus);
 
         this.goToUserPage = this.goToPage.bind(this);
@@ -73,7 +78,7 @@ class UserInfoCtrl extends PagedCtrl {
 
     hasAdminStatus(forCurUser: boolean): boolean {
         const user = forCurUser ? this.userInfo : this.selectedUser;
-        return  user.status === UserStatus.ADMINISTRATOR;
+        return user && user.status === UserStatus.ADMINISTRATOR;
     }
 
     getStatusCaption(status: UserStatus): string { return this.userReq.getStatusCaption(status); }
@@ -122,9 +127,7 @@ class UserInfoCtrl extends PagedCtrl {
             this.artNumber = userData.artNumber;
             
             this.userPages = this.getPageNumberArray(userData.dataCount, userData.pageLength);
-            this.query.page = filterOptions.page;
-            this.query.colIndex = filterOptions.colIndex;
-            this.query.asc = filterOptions.asc;
+            Object.assign(this.query, copiedQuery);
         });
     }
 

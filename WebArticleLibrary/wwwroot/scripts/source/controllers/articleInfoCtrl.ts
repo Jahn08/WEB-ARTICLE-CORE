@@ -181,14 +181,14 @@ class ArticleInfoCtrl extends PagedCtrl {
                 this.publicArtPages = this.getPageNumberArray(artData.publicDataCount, 
                     artData.pageLength);
 
-                Object.assign(this.publicQuery, queryOptions);
+                Object.assign(this.publicQuery, searchFilter);
             }
             else {
                 this.privateArticles = artData.privateData;
                 this.privateArtPages = this.getPageNumberArray(artData.privateDataCount, 
                     artData.pageLength);
 
-                Object.assign(this.privateQuery, queryOptions);
+                Object.assign(this.privateQuery, searchFilter);
             }
         });
     }
