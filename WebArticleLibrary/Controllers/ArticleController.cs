@@ -448,7 +448,8 @@ namespace WebArticleLibrary.Controllers
 					source = asc ? source.OrderBy(s => s.Author.Login) : source.OrderByDescending(s => s.Author.Login);
 					break;
 				case ColumnIndex.STATUS:
-					source = asc ? source.OrderBy(s => s.Status) : source.OrderByDescending(s => s.Status);
+					source = asc ? source.OrderBy(s => s.Status.ToString()) : 
+                        source.OrderByDescending(s => s.Status.ToString());
 					break;
 				case ColumnIndex.ASSIGNED_TO:
 					source = asc ? source.OrderBy(s => s.AssignedTo == null ? null : s.AssignedTo.Login) :

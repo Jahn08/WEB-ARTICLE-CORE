@@ -141,8 +141,8 @@ namespace WebArticleLibrary.Controllers
                         source.OrderByDescending(s => s.Login);
 					break;
 				case ColumnIndex.STATUS:
-					source = asc ? source.OrderBy(s => s.Status) : 
-                        source.OrderByDescending(s => s.Status);
+					source = asc ? source.OrderBy(s => s.Status.ToString()) : 
+                        source.OrderByDescending(s => s.Status.ToString());
 					break;
 			}
 

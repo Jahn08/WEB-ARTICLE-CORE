@@ -71,7 +71,8 @@ namespace WebArticleLibrary.Controllers
 					source = asc ? source.OrderBy(s => s.InsertDate) : source.OrderByDescending(s => s.InsertDate);
 					break;
 				case ColumnIndex.STATUS:
-					source = asc ? source.OrderByDescending(s => s.Estimate) : source.OrderBy(s => s.Estimate);
+					source = asc ? source.OrderByDescending(s => s.Estimate.ToString()) : 
+                        source.OrderBy(s => s.Estimate.ToString());
 					break;
 				case ColumnIndex.ID:
 					source = asc ? source.OrderBy(s => s.Id) : source.OrderByDescending(s => s.Id);
