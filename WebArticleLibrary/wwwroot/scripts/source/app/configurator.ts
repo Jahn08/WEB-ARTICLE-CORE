@@ -12,6 +12,7 @@ import { UserInfoCtrl } from '../controllers/userInfoCtrl';
 import { UserConfirmationCtrl } from '../controllers/userConfirmationCtrl';
 import { EmailConfirmationCtrl } from '../controllers/emailConfirmationCtrl';
 import { ResetPasswordCtrl } from '../controllers/resetPasswordCtrl';
+import { PropertiesCtrl } from '../controllers/propertiesCtrl';
 
 angular.module(AppSystem.APP_MODULE_NAME, 
         ['ui.router', 'ui.bootstrap', 'ngResource', 'ngCookies', 'ngSanitize'])
@@ -150,7 +151,8 @@ angular.module(AppSystem.APP_MODULE_NAME,
 				views: {
 					'content@': {
 						templateUrl: 'views/Properties.html',
-						controller: 'PropertiesCtrl'
+                        controller: PropertiesCtrl,
+                        controllerAs: Constants.CONTROLLER_PSEUDONIM
 					}
 				},
 				data: {
