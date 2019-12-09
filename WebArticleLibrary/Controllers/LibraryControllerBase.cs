@@ -26,8 +26,7 @@ namespace WebArticleLibrary.Controllers
 
         protected Int32 GetCurrentUserId()
         {
-            Int32 id;
-            return Int32.TryParse(UserStore.GetCurrentUserId(User.Identity), out id) ? id: 0;
+            return UserStore.GetCurrentUserId(User.Identity);
         }
 
         public OkObjectResult ArrayResult<T>(IEnumerable<T> items)

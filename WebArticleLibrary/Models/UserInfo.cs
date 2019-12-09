@@ -34,11 +34,8 @@ namespace WebArticleLibrary.Models
 		
 		public static explicit operator User(UserInfo user)
 		{
-			Int32 _id;
-			Int32.TryParse(user.Id, out _id);
-
 			return new User {
-				Id = _id,
+				Id = user.id,
 				Login = user.UserName,
 				FirstName = user.firstName,
 				LastName = user.lastName,

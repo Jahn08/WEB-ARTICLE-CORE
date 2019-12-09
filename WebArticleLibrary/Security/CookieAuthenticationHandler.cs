@@ -81,7 +81,7 @@ namespace WebArticleLibrary.Security
 				if (id == -1)
 					return null;
 
-				var user = us.FindByIdAsync(id.ToString()).Result;
+				var user = us.FindByIdAsync(id).Result;
 
 				if (user == null)
                     return null;

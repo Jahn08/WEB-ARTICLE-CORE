@@ -25,19 +25,20 @@ namespace WebArticleLibrary.Helpers
 		public UserInfo GetCurrentUserInfo(IIdentity identity)
 		{
             var userId = GetCurrentUserId(identity);
-            return userId == null ? null: this.FindByIdAsync(userId).Result;
+            return userId == 0 ? null: this.FindByIdAsync(userId).Result;
 		}
 
-        public static String GetCurrentUserId(IIdentity identity)
+        public static Int32 GetCurrentUserId(IIdentity identity)
         {
 			ClaimsIdentity claimsIdentity;
 			Claim claim = null;
 
             if ((claimsIdentity = identity as ClaimsIdentity) == null ||
 				(claim = claimsIdentity.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Sid)) == null)
-				return null;
+				return 0;
 
-            return claim.Value;
+			Int32 userId;
+            return Int32.TryParse(claim.Value, out userId) ? userId: 0;
         }
 
 		public Task AddClaimAsync(UserInfo user, Claim claim)
@@ -117,7 +118,13 @@ namespace WebArticleLibrary.Helpers
 			return true;
 		}
 
-		public Task<UserInfo> FindByIdAsync(string userId)
+		public Task<UserInfo> FindByIdAsync(String userId)
+		{
+			Int32 _userId;
+			return Int32.TryParse(userId, out _userId) ? FindByIdAsync(_userId): null;
+		}
+
+		public Task<UserInfo> FindByIdAsync(Int32 userId)
 		{
 			return Task<UserInfo>.Run(() => {
 				var res = FindUser(userId);
@@ -125,9 +132,9 @@ namespace WebArticleLibrary.Helpers
 			});
 		}
 
-		private User FindUser(String userId)
+		private User FindUser(Int32 userId)
 		{
-			return db.User.FirstOrDefault(u => u.Id.ToString() == userId && u.ExpirationDate == null);
+			return db.User.FirstOrDefault(u => u.Id == userId && u.ExpirationDate == null);
 		}
 
 		public UserInfo MarkForResettingPassword(String email, out Guid confirmationId)
@@ -220,7 +227,7 @@ namespace WebArticleLibrary.Helpers
 			{
 				List<Claim> claims = new List<Claim>();
 				claims.Add(new Claim(ClaimTypes.NameIdentifier, user.UserName));
-				claims.Add(new Claim(ClaimTypes.Sid, user.Id.ToString()));
+				claims.Add(new Claim(ClaimTypes.Sid, user.id.ToString()));
 				claims.Add(new Claim(ClaimTypes.Role, user.status.ToString()));
 
 				return (IList<Claim>)claims;
@@ -261,7 +268,7 @@ namespace WebArticleLibrary.Helpers
 
 		public Guid? Update(UserInfo user)
 		{
-			var u = FindUser(user.Id);
+			var u = FindUser(user.id);
 
 			if (u == null)
 				throw new Exception("No user was found");
