@@ -46,12 +46,7 @@ class ArticleSearchCtrl extends BaseCtrl {
         private articleReq: ArticleRequest) {
         super(errorSrv);
 
-        // TODO: Otherwise here is a clash between the RequireJS and NodeJS dependencies
-        ($('#categories') as any).select2({
-            tags: true,
-            tokenSeparators: [',', '.', ' ', ':'],
-            width: "100%"
-        });
+        this.initCategoryControl();
     
         this.processRequest(articleReq.getDefaultCategories(), categories => {
             this.categories = categories;

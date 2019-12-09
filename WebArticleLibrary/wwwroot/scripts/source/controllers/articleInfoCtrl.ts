@@ -42,8 +42,6 @@ class ArticleInfoCtrl extends PagedCtrl {
 
     readonly goToArticlePage: (pageIndex: number, forPublic: boolean) => void;
 
-    private userInfo: IUserInfo;
-
     private userNames: Record<number, string>;
 
     private estimates: Record<number, EstimateType>;
@@ -68,12 +66,7 @@ class ArticleInfoCtrl extends PagedCtrl {
         this.sortPrivateArticles = this.sortArticles.bind(this, false);
         this.goToArticlePage = this.goToPage.bind(this);
 
-        this.processRequest(authSrv.getCurrentUser(), userInfo => {
-            if (userInfo == 0)
-                $state.go('app');
-            else if (userInfo)
-                this.initForm(userInfo as IUserInfo);
-        });
+        this.setCurrentUser(authSrv, this.initForm.bind(this), $state);
     }
 
     private sortArticles(forPublic: boolean, col: ColumnIndex) {

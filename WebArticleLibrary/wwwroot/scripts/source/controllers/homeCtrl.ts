@@ -10,32 +10,25 @@ import * as $ from "jquery";
 
 @inject(AuthService, ErrorService, AppSystem.DEPENDENCY_TIMEOUT, ArticleRequest)
 class HomeCtrl extends BaseCtrl {
-    public userInfo: IUserInfo;
-
-    public slides: ISlide[];
+    slides: ISlide[];
 
     private userNames: Record<number, string>;
 
     constructor(authSrv: AuthService, errorSrv: ErrorService, 
         private $timeout: angular.ITimeoutService, 
-        private articlReq: ArticleRequest) { 
+        private articleReq: ArticleRequest) { 
         super(errorSrv);
 
         this.slides = [];
 
-        this.processRequest(authSrv.getCurrentUser(), 
-            outcome => this.setUserInfo(outcome as IUserInfo));
+        this.setCurrentUser(authSrv, this.setUserInfo.bind(this));
     }
     
-    public getUserName(userId: number) {
-        return this.userNames ? this.userNames[userId] : null;
-    }
-
     private setUserInfo(userInfo: IUserInfo) {
-        this.articlReq.getArticleTitles().then(artData => {
+        this.articleReq.getArticleTitles().then(artData => {
             this.userInfo = userInfo;
 
-            this.articlReq.getDefaultCategories().then(categories => {
+            this.articleReq.getDefaultCategories().then(categories => {
                 this.userNames = artData.userNames;
 
                 if (artData.articles.length <= 3) {
@@ -73,6 +66,12 @@ class HomeCtrl extends BaseCtrl {
             });
         })
     }
+
+    getUserName(userId: number) {
+        return this.userNames ? this.userNames[userId] : null;
+    }
+
+    hasUser() { return this.userInfo != null; }
 
     private getRandomInt(min: number, max: number) {
         return Math.floor(Math.random() * (max - min + 1)) + min;

@@ -38,11 +38,11 @@ class HeaderCtrl extends BaseCtrl {
         public section: string) {
         super(errorSrv);
 
-        this.processRequest(authSrv.getCurrentUser(), async outcome => {
+        this.setCurrentUser(authSrv, async ui => {
             this.categories = await articleReq.getDefaultCategories();
-
-            await this.setUserInfo(outcome as IUserInfo);
-        });
+            
+            await this.setUserInfo(ui);
+        }, $state);
     }
 
     private async setUserInfo(ui: IUserInfo) {

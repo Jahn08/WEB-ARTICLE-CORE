@@ -10,23 +10,17 @@ import { inject } from "../app/inject";
 class PropertiesCtrl extends BaseCtrl {
     private oldEmail: string;
 
-    private userInfo: IUserInfo;
-    
     constructor(errorSrv: ErrorService,
         private authSrv: AuthService,
         private userReq: UserRequest,
         private $state: StateService) {
         super(errorSrv);
 
-        this.processRequest(this.authSrv.getCurrentUser(true), outcome => {
-            if (outcome == 0)
-                $state.go('app');
-            else if (outcome) {
-                this.setUserInfo(outcome as IUserInfo);
-                this.initPhoto();
-                this.showConfirmationMessage();
-            }
-        });
+        this.setCurrentUser(this.authSrv, ui => {
+            this.setUserInfo(ui);
+            this.initPhoto();
+            this.showConfirmationMessage();
+        }, $state);
     }
 
     private setUserInfo(userInfo: IUserInfo) {

@@ -29,8 +29,6 @@ class UserInfoCtrl extends PagedCtrl {
     private artNumber: Record<string, number>;
     
     private cmntNumber: Record<string, number>;
-    
-    private userInfo: IUserInfo;
 
     constructor(errorSrv: ErrorService, authSrv: AuthService, 
         $state: StateService,
@@ -51,17 +49,10 @@ class UserInfoCtrl extends PagedCtrl {
         
         this.sortUsers = this.sortUsersInternally.bind(this);
 
-        this.processRequest(authSrv.getCurrentUser(), userInfo => {
-            let returnToApp = false;
-            
-            if (userInfo === 0)
-                returnToApp = true;
-            else if (userInfo)
-                returnToApp = !this.setUserInfo(userInfo as IUserInfo);
-
-            if (returnToApp)
+        this.setCurrentUser(authSrv, ui => {
+            if (!this.setUserInfo(ui))
                 $state.go('app');
-        });
+        }, $state);
     }
 
     private setUserInfo(userInfo: IUserInfo): boolean {

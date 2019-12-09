@@ -16,10 +16,10 @@
 							<h3 class="text-danger">#{{s.category}} (<span class="glyphicon glyphicon-thumbs-up"></span> {{s.article.estimate}})</h3>
 						</a>
 						<div ng-show="!s.article">
-							<a ng-if="ctrl.userInfo" ui-sref="app.articleedit({category:s.category})">
+							<a ng-if="ctrl.hasUser()" ui-sref="app.articleedit({category:s.category})">
 								<h3 class="text-danger">Try to create your own article of #{{s.category}}</h3>
 							</a>
-							<h3 ng-if="!ctrl.userInfo" class="text-danger">Here your own article can be. Just register on the site</h3>
+							<h3 ng-if="!ctrl.hasUser()" class="text-danger">Here your own article can be. Just register on the site</h3>
 						</div>
 					</div>
 				</div>
