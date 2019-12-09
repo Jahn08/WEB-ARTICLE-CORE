@@ -111,7 +111,7 @@ interface IArticle {
 
     description?: string;
 
-    tags: string;
+    tags?: string;
     
     insertDate?: Date;
     

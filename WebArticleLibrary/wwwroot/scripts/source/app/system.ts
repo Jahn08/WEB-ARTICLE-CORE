@@ -26,7 +26,11 @@ class AppSystem {
     static readonly DEPENDENCY_SECTION_PARAM: string = 'section';
 
     static readonly DEPENDENCY_DIALOG_MODEL: string = 'model';
+    
+    static readonly DEPENDENCY_LOCATION: string = '$location';
 
+    static readonly DEPENDENCY_SCROLL_SERVICE: string = '$anchorScroll';
+    
     static get appModule(): angular.IModule {
         return angular.module(this.APP_MODULE_NAME);
     }

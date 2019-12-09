@@ -31,4 +31,4 @@ interface IAmendment extends IArticleEntity {
     archived: boolean;
 }
 
-export { AmmendmentRequest };
+export { AmmendmentRequest, IAmendment };
