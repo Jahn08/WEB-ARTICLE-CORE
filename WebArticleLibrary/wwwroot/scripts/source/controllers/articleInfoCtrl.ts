@@ -58,6 +58,8 @@ class ArticleInfoCtrl extends PagedCtrl {
         private historyReq: HistoryRequest) {
         super(errorSrv);
 
+        this.artHistories = {};
+
         this.selectedPrivateArticles = [];
 
         this.statuses = EnumHelper.getKeys(ArticleStatus);

@@ -85,6 +85,12 @@ class ArticleEditCtrl extends BaseCtrl {
 
         this.paramArticleId = $state.params.id;
 
+        this.article = {
+            id: 0,
+            name: '',
+            status: ArticleStatus.DRAFT
+        };
+
         this.initCategoryControl();
 
 		if (this.paramArticleId)
@@ -92,15 +98,8 @@ class ArticleEditCtrl extends BaseCtrl {
                 this.initExistentArticle(ui, $timeout);
                 this.initAmendingMode($scope, $timeout);
             }, $state);
-        else {
-            this.article = {
-                id: 0,
-                name: '',
-                status: ArticleStatus.DRAFT
-            };
-
+        else
             this.setControls($timeout);
-        }
     }
 
     private async initExistentArticle(userInfo: IUserInfo, $timeout: ITimeoutService) {
@@ -270,7 +269,7 @@ class ArticleEditCtrl extends BaseCtrl {
     }
 
     private set articleContent(html: string) { 
-        const artEditCtrl = this._articleContentCtrl;
+        const artEditCtrl = this.articleContentCtrl;
         artEditCtrl.html(html); 
         (artEditCtrl as any).wysiwyg(); 
     }
