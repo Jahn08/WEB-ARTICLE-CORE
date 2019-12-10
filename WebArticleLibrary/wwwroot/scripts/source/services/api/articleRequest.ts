@@ -29,7 +29,7 @@ class ArticleRequest extends ApiRequest {
     }
     
     createVersion(articleId: number): IPromise<{ newVersionId: number }> {
-        return this.getResource(articleId, 'NewVersion');
+        return this.getResource({ id: articleId }, 'NewVersion');
     }
 
     remove(articleIds: number[]): IPromise<IArticleList> {
@@ -65,7 +65,7 @@ class ArticleRequest extends ApiRequest {
     }
 
     view(articleId: number, userId?: number): IPromise<IArticleView> {
-        return this.getResource(userId, articleId.toString());
+        return this.getResource({ id: articleId, userId: userId });
     }
 
     getStatusCaption(status: ArticleStatus): string {

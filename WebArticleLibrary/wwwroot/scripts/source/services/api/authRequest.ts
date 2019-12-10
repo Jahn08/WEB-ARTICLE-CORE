@@ -20,7 +20,7 @@ class AuthRequest extends ApiRequest {
     }
 
     confirm(confirmationId): IPromise<void> {
-        return this.getResource(confirmationId, 'Confirm');
+        return this.getResource({ confirmationId: confirmationId }, 'Confirm');
     }
 }
 

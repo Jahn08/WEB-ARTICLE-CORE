@@ -7,7 +7,7 @@ class UserRequest extends ApiRequest {
     }
 
     getUserInfo(userId: number, getPhoto: boolean): IPromise<IUserInfo> {
-        return this.getResource({ userId, getPhoto });
+        return this.getResource({ userId: userId, getPhoto: getPhoto });
     }
 
     getUsers(query: IUserSearch): IPromise<IUserList> {
