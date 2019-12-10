@@ -5,7 +5,9 @@ import { HomeCtrl } from './homeCtrl';
 import { HeaderCtrl } 
     from './headerCtrl';
 import { ArticleSearchCtrl } from './articleSearchCtrl';
-import { ArticleHistoryModalCtrl, MarkPasswordForResetModalCtrl, NotificationModalCtrl, RegisterModalCtrl, CommentModalCtrl } from './modals';
+import { ArticleHistoryModalCtrl, MarkPasswordForResetModalCtrl, NotificationModalCtrl, 
+    RegisterModalCtrl, CommentModalCtrl, AmendmentModalCtrl, 
+    ComplaintModalCtrl, ResponseModalCtrl } from './modals';
 import { ArticleInfoCtrl } from './articleInfoCtrl';
 import { UserInfoCtrl } from './userInfoCtrl';
 import { UserConfirmationCtrl } from './userConfirmationCtrl';
@@ -19,5 +21,6 @@ const appModule = AppSystem.appModule;
 [AboutUsCtrl, FooterCtrl, HomeCtrl, HeaderCtrl, MarkPasswordForResetModalCtrl, 
     NotificationModalCtrl, RegisterModalCtrl, ArticleSearchCtrl, ArticleInfoCtrl,
     ArticleHistoryModalCtrl, UserInfoCtrl, CommentModalCtrl, UserConfirmationCtrl,
-    EmailConfirmationCtrl, ResetPasswordCtrl, PropertiesCtrl, ArticleEditCtrl]
+    EmailConfirmationCtrl, ResetPasswordCtrl, PropertiesCtrl, ArticleEditCtrl,
+    AmendmentModalCtrl, ComplaintModalCtrl, ResponseModalCtrl]
     .forEach(ctrl => appModule.controller(ctrl.name, ctrl));

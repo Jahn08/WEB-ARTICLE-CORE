@@ -8,7 +8,8 @@ import { INgModelController, IPromise, ILocationService, IAnchorScrollService, I
 import { AuthService } from "../services/authService";
 import { ConverterService } from "../services/converterService";
 import { inject } from "../app/inject";
-import { AppSystem } from "../app/system";
+import { AppSystem, Constants } from "../app/system";
+import { AmendmentModalCtrl, IAmendmentDialogModel } from "./modals";
 
 interface ISelection {
     selectedText?: string;
@@ -369,20 +370,23 @@ class ArticleEditCtrl extends BaseCtrl {
 
         let amendment: IAmendment = this.amendments[selIndex];
 
+        const model: IAmendmentDialogModel = {
+            selectionText: selText,
+            amendment: amendment,
+            isReadonly: !this.isOnAmending || (amendment && (amendment.resolved || amendment.archived))
+        };
+
         this.processRequest(this.$modal.open({
             templateUrl: "views/modalDialogs/AmendmentModal.html",
-            controller: "AmendmentModalCtrl",
+            controller: AmendmentModalCtrl,
+            controllerAs: Constants.CONTROLLER_PSEUDONIM,
             resolve: {
-                data: {
-                    selection: selText,
-                    amendment: amendment,
-                    readonly: !this.isOnAmending || (amendment && (amendment.resolved || amendment.archived))
-                }
+                [AppSystem.DEPENDENCY_DIALOG_MODEL]: model
             }
-        }).result, async (data: IAmendment) => {
-            amendment = data;
+        }).result, async (content: string) => {
+            amendment.content = content;
 
-            if (data.id)
+            if (amendment.id)
                 await this.amendmentReq.update([amendment]);
             else {
                 amendment.articleId = this.article.id;

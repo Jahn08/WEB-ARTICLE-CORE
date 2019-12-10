@@ -10,6 +10,7 @@ import { IUserInfo, UserRequest } from "../services/api/userRequest";
 import { INotification } from "../services/api/notificationRequest";
 import { IComment, CommentStatus } from "../services/api/commentRequest";
 import { ConverterService } from "../services/converterService";
+import { IAmendment } from "../services/api/amendmentRequest";
 
 interface IArticleHistoryDialogModel {
     histories: IHistory[];
@@ -209,5 +210,92 @@ class CommentModalCtrl {
         closeModal() { this.$modalInstance.close(); }
 }
 
+
+@inject(AppSystem.DEPENDENCY_MODAL_INSTANCE)
+class ResponseModalCtrl {
+    content: string;
+
+    constructor(private $modalInstance: ui.bootstrap.IModalInstanceService) { }
+
+    closeModal() {
+        if (confirm('Without a comment you cannot change the state. Continue?'))
+            this.$modalInstance.close();
+    }
+
+    save() { this.$modalInstance.close(this.content); }
+}
+
+interface IComplaintDialogModel {
+    isForComment: boolean;
+}
+
+@inject(AppSystem.DEPENDENCY_DIALOG_MODEL, AppSystem.DEPENDENCY_MODAL_INSTANCE)
+class ComplaintModalCtrl {
+    content: string;
+
+    readonly typeAddition: string;
+
+    constructor(model: IComplaintDialogModel,
+        private $modalInstance: ui.bootstrap.IModalInstanceService) {
+            this.typeAddition = model.isForComment ? "a comment": "an article";
+        }
+
+        closeModal() { this.$modalInstance.close(); }
+        
+        save() { this.$modalInstance.close(this.content); }
+}
+
+interface IAmendmentDialogModel {
+    selectionText?: string;
+
+    isGlobal?: boolean;
+    
+    isReadonly?: boolean;
+
+    amendment?: IAmendment;
+}
+
+@inject(AppSystem.DEPENDENCY_DIALOG_MODEL, AppSystem.DEPENDENCY_MODAL_INSTANCE)
+class AmendmentModalCtrl {
+    content: string;
+
+    readonly selectionText: string;
+
+    readonly cutSelectionText: string;
+
+    readonly typeAddition: string;
+
+    readonly isGlobal: boolean;
+
+    readonly isReadonly: boolean;
+
+    constructor(model: IAmendmentDialogModel,
+        private $modalInstance: ui.bootstrap.IModalInstanceService) {
+            if (model.amendment) {
+                const strs = model.amendment.content.split(' - ');
+                this.content = strs.length > 1 ? strs[1] : model.amendment.content;
+
+                if (!model.selectionText)
+                    model.selectionText = strs[0].replace(/\"/g, '');
+            }
+
+            const selection = model.selectionText || '';
+            this.isGlobal = !selection.length ? true : model.isGlobal;
+            
+            this.selectionText = selection;
+            this.cutSelectionText = selection.length > 100 ? selection.substr(0, 100) + "..." : selection;
+            
+            this.isReadonly = model.isReadonly;
+        }
+
+        closeModal() { this.$modalInstance.close(); }
+        
+        save() {
+            this.content = `"${this.selectionText}" - ${this.content}`;
+            this.$modalInstance.close(this.content);
+        }
+}
+
 export { IArticleHistoryDialogModel, ArticleHistoryModalCtrl, RegisterModalCtrl, 
-    NotificationModalCtrl, MarkPasswordForResetModalCtrl, ICommentDialogModel, CommentModalCtrl };
+    NotificationModalCtrl, MarkPasswordForResetModalCtrl, ICommentDialogModel, CommentModalCtrl, 
+    ResponseModalCtrl, ComplaintModalCtrl, IAmendmentDialogModel, AmendmentModalCtrl };
