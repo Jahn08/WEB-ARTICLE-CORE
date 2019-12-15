@@ -56,7 +56,7 @@ interface IComplaint extends IArticleEntity {
     
     text: string;
 
-    status: ComplaintStatus;
+    status?: ComplaintStatus;
 
     cmntAuthorId?: number;
     

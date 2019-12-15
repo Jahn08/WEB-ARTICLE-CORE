@@ -80,13 +80,13 @@ enum ColumnIndex {
 }
 
 interface IArticleEntity {
-    id: number;
+    id?: number;
 
-    insertDate: Date;
+    insertDate?: Date;
     
     articleId: number;
 
-    authorId: number;
+    authorId?: number;
 }
 
 interface IArrayResult<T> {

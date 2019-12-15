@@ -14,6 +14,7 @@ import { EmailConfirmationCtrl } from '../controllers/emailConfirmationCtrl';
 import { ResetPasswordCtrl } from '../controllers/resetPasswordCtrl';
 import { PropertiesCtrl } from '../controllers/propertiesCtrl';
 import { ArticleEditCtrl } from '../controllers/articleEditCtrl';
+import { ArticleViewCtrl } from '../controllers/articleViewCtrl';
 
 angular.module(AppSystem.APP_MODULE_NAME, 
         ['ui.router', 'ui.bootstrap', 'ngResource', 'ngCookies', 'ngSanitize'])
@@ -218,7 +219,8 @@ angular.module(AppSystem.APP_MODULE_NAME,
 				views: {
 					'content@': {
 						templateUrl: 'views/ArticleView.html',
-						controller: 'ArticleViewCtrl'
+						controller: ArticleViewCtrl,
+						controllerAs: Constants.CONTROLLER_PSEUDONIM
 					}
 				}
 			})

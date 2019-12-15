@@ -1,93 +1,91 @@
 ﻿<breadcrumb links="'Home:app|Article View'"></breadcrumb>
 
 <div class="container">
-	<div ng-show="!sending" class="row">
+	<div ng-show="!ctrl.sending" class="row">
 		<div class="col-xs-12">
-			<h2>{{art.name}}</h2>
-			<h4><a ng-repeat="t in art.hashTags" ui-sref="app.articlesearch({category:t})">#{{t}} </a></h4>
-			<h4>{{art.tempTags}}</h4>
+			<h2>{{ctrl.article.name}}</h2>
+			<h4><a ng-repeat="t in ctrl.article.hashTags" ui-sref="app.articlesearch({category:t})">#{{t}} </a></h4>
 			<div class="bs-callout bs-callout-warning">
 				<div class="media">
 					<div class="media-left">
-						<img class="media-object" ng-src="{{getUserPhoto(art.authorId)}}" />
+						<img class="media-object" ng-src="{{ctrl.getUserPhoto(ctrl.article.authorId)}}" />
 					</div>
 					<div class="media-body">
 						<div class="media-heading">
 							<h4>
-								<span><span class="glyphicon glyphicon-user"></span><button class="btn btn-link" ng-click="searchForUserArticles()" type="button"><h4>{{authorName}}</h4></button></span>
-								<span><span class="glyphicon glyphicon-calendar"></span> Inserted: {{art.insertDate|date:'medium'}}</span>
+								<span><span class="glyphicon glyphicon-user"></span><button class="btn btn-link" ng-click="ctrl.searchForUserArticles(ctrl.article.authorId)" type="button"><h4>{{ctrl.getUserName(ctrl.article.authorId)}}</h4></button></span>
+								<span><span class="glyphicon glyphicon-calendar"></span> Inserted: {{ctrl.article.insertDate|date:'medium'}}</span>
 								<br />
-								<span ng-show="ui"><span class="glyphicon glyphicon-time"></span><button type="button" class="btn btn-link" ng-click="showHistory()"><h4>history</h4></button></span>
-								<span><span class="glyphicon glyphicon-calendar"></span> Updated: {{updatedDate|date:'medium'}}</span>
+								<span ng-show="ctrl.userId"><span class="glyphicon glyphicon-time"></span><button type="button" class="btn btn-link" ng-click="ctrl.showHistory()"><h4>history</h4></button></span>
+								<span><span class="glyphicon glyphicon-calendar"></span> Updated: {{ctrl.updatedDate|date:'medium'}}</span>
 							</h4>
 						</div>
 					</div>
 				</div>
 			</div>
-			<div ng-show="!isError">
+			<div ng-show="!ctrl.isError">
 				<div class="bs-callout bs-callout-info">
-					<div><h4><b><i>{{art.description}}</i></b></h4></div>
+					<div><h4><b><i>{{ctrl.article.description}}</i></b></h4></div>
 				</div>
 				<div class="bs-callout bs-callout-success">
-					<div class="article-content" ng-bind-html="art.tempContent" tabindex="1" id="artContent"></div>
+					<div class="article-content" ng-bind-html="ctrl.articleHtmlContent" tabindex="1" id="artContent"></div>
 				</div>
 			</div>
 		</div>
 	</div>
-	<loading msg="msg" sending="sending" is-error="isError"></loading>
+	<loading msg="ctrl.msg" sending="ctrl.sending" is-error="ctrl.isError"></loading>
 	
-	<div ng-show="!sending">
+	<div ng-show="!ctrl.sending">
 		<div class="row">
 			<div class="col-xs-12">
-				<span ng-class="{'text-success': estimate >= 0, 'text-danger': 0 > estimate}">Current rating: {{estimate}}</span>
+				<span ng-class="{'text-success': ctrl.estimate >= 0, 'text-danger': ctrl.estimate < 0}">Current rating: {{ctrl.estimate}}</span>
 			</div>
 		</div>		
-		<div class="row" ng-show="comment">
-			<div class="col-xs-12" ng-show="art.authorId != ui.id">
-				<button ng-disabled="estimateState>0" type="button" class="btn-link" title="Like" ng-click="assess(true)"><span class="glyphicon glyphicon-thumbs-up text-success" ng-class="{'estimate-active':estimateState>0}"></span></button>
-				<button ng-disabled="estimateState<0" type="button" class="btn-link" title="Dislike" ng-click="assess()"><span class="glyphicon glyphicon-thumbs-down text-danger" ng-class="{'estimate-active':estimateState<0}"></span></button>
-				<button type="button" class="btn-link" title="Complain" ng-click="articleComplaint()"><span class="glyphicon glyphicon-exclamation-sign text-warning"></span></button>
-				<button type="button" ng-show="hasAdminStatus()" class="btn-link" title="Ban" ng-click="articleBan()"><span class="glyphicon glyphicon-ban-circle text-warning"></span></button>
+		<div class="row" ng-show="ctrl.comment">
+			<div class="col-xs-12" ng-show="ctrl.article.authorId !== ctrl.userId">
+				<button ng-disabled="ctrl.estimateType>0" type="button" class="btn-link" title="Like" ng-click="ctrl.assess(true)"><span class="glyphicon glyphicon-thumbs-up text-success" ng-class="{'estimate-active':ctrl.estimateType>0}"></span></button>
+				<button ng-disabled="ctrl.estimateType<0" type="button" class="btn-link" title="Dislike" ng-click="ctrl.assess()"><span class="glyphicon glyphicon-thumbs-down text-danger" ng-class="{'estimate-active':ctrl.estimateType<0}"></span></button>
+				<button type="button" class="btn-link" title="Complain" ng-click="ctrl.complainAboutArticle()"><span class="glyphicon glyphicon-exclamation-sign text-warning"></span></button>
+				<button type="button" ng-show="ctrl.hasAdminStatus()" class="btn-link" title="Ban" ng-click="ctrl.banArticle()"><span class="glyphicon glyphicon-ban-circle text-warning"></span></button>
 			</div>
 			<div class="col-xs-12">
 				<div class="panel panel-info">
 					<div class="panel-heading pointer" data-toggle="collapse" data-target="#comments">Comments</div>
-					<div class="panel-body fade collapse" ng-class="{'in':showComments,'collapse':!showComments}" id="comments">
-						<button title="Show all comments" type="button" ng-disabled="showBanned" class="btn btn-default" ng-click="showBanned=true">
+					<div class="panel-body fade collapse" ng-class="{'in':ctrl.showComments,'collapse':!ctrl.showComments}" id="comments">
+						<button title="Show all comments" type="button" ng-disabled="ctrl.showBanned" class="btn btn-default" ng-click="ctrl.showBanned=true">
 							<span class="glyphicon glyphicon-eye-open"></span>
 						</button>
-						<button title="Hide unavailable comments" type="button" ng-disabled="!showBanned" class="btn btn-default" ng-click="showBanned=false">
+						<button title="Hide unavailable comments" type="button" ng-disabled="!ctrl.showBanned" class="btn btn-default" ng-click="ctrl.showBanned=false">
 							<span class="glyphicon glyphicon-eye-close"></span>
 						</button>
-						<div ng-show="!(commentIsBlocked(cmnt.status) || commentIsDeleted(cmnt.status)) || showBanned" ng-repeat="cmnt in comments" id="{{cmnt.id}}" ng-class="{'comment-chosen': comment.responseToId == cmnt.id, 'comment-half-opaque': commentIsBlocked(cmnt.status)}" class="media media-comment">
+						<div ng-show="!(ctrl.isCommentBlocked(cmnt.status) || ctrl.isCommentDeleted(cmnt.status)) || ctrl.showBanned" ng-repeat="cmnt in ctrl.comments" id="{{cmnt.id}}" ng-class="{'comment-chosen': ctrl.comment.responseToId === cmnt.id, 'comment-half-opaque': ctrl.isCommentBlocked(cmnt.status)}" class="media media-comment">
 							<div class="media-left">
-								<img ng-if="cmnt && cmnt.authorId" class="media-object" ng-src="{{getUserPhoto(cmnt.authorId)}}" />
+								<img ng-if="cmnt && cmnt.authorId" class="media-object" ng-src="{{ctrl.getUserPhoto(cmnt.authorId)}}" />
 							</div>
 							<div class="media-body">
 								<h4 class="media-heading">
-									#{{cmnt.id}} {{cmnt.author}}, {{cmnt.insertDate|date:'medium'}}
-									<button class="btn-link" type="button" ng-show="cmnt.responseToId" ng-disabled="commentIsDeletedById(cmnt.responseToId)" ng-click="toComment(cmnt.responseToId)">to the comment #{{cmnt.responseToId}}</button>
+									#{{cmnt.id}} {{ctrl.getUserName(cmnt.authorId)}}, {{cmnt.insertDate|date:'medium'}}
+									<button class="btn-link" type="button" ng-show="cmnt.responseToId" ng-disabled="ctrl.isCommentDeletedById(cmnt.responseToId)" ng-click="ctrl.goToComment(cmnt.responseToId)">to the comment #{{cmnt.responseToId}}</button>
 								</h4>
-								<div ng-show="!commentIsBlocked(cmnt.status) && !commentIsDeleted(cmnt.status)">
-									<div class="media-comment-content" ng-click="respondTo(cmnt.id)" ng-bind-html="cmnt.tempContent"></div>
-
-									<div ng-show="cmnt.authorId != ui.id">
-										<button type="button" class="btn-link" title="Complain" ng-click="commentComplaint(cmnt.id)"><span class="glyphicon glyphicon-exclamation-sign text-warning"></span></button>
-										<button type="button" ng-show="hasAdminStatus()" class="btn-link" title="Ban" ng-click="commentBan(cmnt)"><span class="glyphicon glyphicon-ban-circle text-warning"></span></button>
+								<div ng-show="!ctrl.isCommentBlocked(cmnt.status) && !ctrl.isCommentDeleted(cmnt.status)">
+									<div class="media-comment-content" ng-click="ctrl.respondTo(cmnt.id)" ng-bind-html="ctrl.getCommentHtml(cmnt.content)"></div>
+									<div ng-show="cmnt.authorId !== ctrl.userId">
+										<button type="button" class="btn-link" title="Complain" ng-click="ctrl.complainAboutComment(cmnt.id)"><span class="glyphicon glyphicon-exclamation-sign text-warning"></span></button>
+										<button type="button" ng-show="ctrl.hasAdminStatus()" class="btn-link" title="Ban" ng-click="ctrl.banComment(cmnt)"><span class="glyphicon glyphicon-ban-circle text-warning"></span></button>
 									</div>
-									<button type="button" ng-show="cmnt.authorId == ui.id" class="btn-link" title="Remove" ng-click="commentRemove(cmnt)"><span class="glyphicon glyphicon-remove text-warning"></span></button>
+									<button type="button" ng-show="cmnt.authorId === ctrl.userId" class="btn-link" title="Remove" ng-click="ctrl.removeComment(cmnt)"><span class="glyphicon glyphicon-remove text-warning"></span></button>
 								</div>
-								<div ng-show="commentIsBlocked(cmnt.status)">
+								<div ng-show="ctrl.isCommentBlocked(cmnt.status)">
 									<div class="text-warning">The content was banned</div>
-									<button type="button" ng-show="hasAdminStatus()" class="btn-link" title="Recover" ng-click="commentBan(cmnt,true)"><span class="glyphicon glyphicon-ok-circle text-warning"></span></button>
+									<button type="button" ng-show="ctrl.hasAdminStatus()" class="btn-link" title="Recover" ng-click="ctrl.banComment(cmnt,true)"><span class="glyphicon glyphicon-ok-circle text-warning"></span></button>
 								</div>
-								<div ng-show="commentIsDeleted(cmnt.status)">
+								<div ng-show="ctrl.isCommentDeleted(cmnt.status)">
 									<div class="text-warning">The content was removed</div>
 								</div>								
 							</div>
 						</div>
 						<br />
-						<form name="addCommentForm" class="form-horizontal" ng-submit="sendComment()">
+						<form name="addCommentForm" class="form-horizontal" ng-submit="ctrl.sendComment()">
 							<div class="btn-toolbar" data-role="editor-toolbar" data-target="#comment">
 								<div class="btn-group">
 									<a class="btn btn-primary dropdown-toggle" data-toggle="dropdown" title="" data-original-title="Font"><i class="glyphicon glyphicon-font"></i><b class="caret"></b></a>
@@ -153,15 +151,15 @@
 							</div>
 							<div class="form-group">
 								<div class="col-xs-12">
-									<div class="form-control" id="comment" ng-keyup="onTextInput()" contenteditable="true"></div>
-									<div ng-show="comment.responseToId">
-										<button type="button" class="btn-link" ng-click="toComment(comment.responseToId)">As a response to the comment</button>
-										<button type="button" class="btn-link" ng-click="cancelResponse()">(cancel)</button>
+									<div class="form-control" id="comment" contenteditable="true" ng-keyup="ctrl.onTextInput()"></div>
+									<div ng-show="ctrl.comment.responseToId">
+										<button type="button" class="btn-link" ng-click="ctrl.goToComment(ctrl.comment.responseToId)">As a response to the comment</button>
+										<button type="button" class="btn-link" ng-click="ctrl.cancelResponse()">(cancel)</button>
 									</div>
-									<span ng-show="!comment.content" class="text-danger">The comment content is empty</span>
+									<span ng-show="!ctrl.comment.content" class="text-danger">The comment content is empty</span>
 								</div>
 							</div>
-							<button type="submit" class="btn btn-info" ng-disabled="sending || !comment.content">Send</button>
+							<button type="submit" class="btn btn-info" ng-disabled="ctrl.sending || !ctrl.comment.content">Send</button>
 						</form>
 					</div>
 				</div>
@@ -170,6 +168,6 @@
 	</div>
 
 	<div class="row">
-		<button type="button" ng-click="close()" class="btn btn-warning">Close</button>
+		<button type="button" ng-click="ctrl.close()" class="btn btn-warning">Close</button>
 	</div>
 </div>
