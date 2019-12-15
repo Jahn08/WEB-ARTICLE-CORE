@@ -5,8 +5,8 @@
 	<li><a ui-sref="app.properties">Properties</a></li>
 	<li><a ui-sref="app.commentinfo">Comments</a></li>
 	<li><a ui-sref="app.estimateinfo">Estimates</a></li>
-	<li class="active" ng-show="ctrl.hasAdminStatus(true)"><a ui-sref="app.userinfo">Users</a></li>
-	<li ng-show="ctrl.hasAdminStatus(true)"><a ui-sref="app.complaintinfo">Complaints</a></li>
+	<li class="active" ng-show="ctrl.hasAdminStatus()"><a ui-sref="app.userinfo">Users</a></li>
+	<li ng-show="ctrl.hasAdminStatus()"><a ui-sref="app.complaintinfo">Complaints</a></li>
 </ul>
 
 <div class="tab-content">
@@ -44,7 +44,7 @@
 						<button ng-disabled="ctrl.sending || !ctrl.selectedUser" title="Show the user's articles" type="button" class="btn btn-default">
 							<span class="glyphicon glyphicon-list-alt"></span>
 						</button>
-						<button ng-disabled="ctrl.sending || !ctrl.selectedUser || ctrl.hasAdminStatus()" title="Grant administrator rights" type="button" class="btn btn-default" ng-click="ctrl.setAdminStatus()">
+						<button ng-disabled="ctrl.sending || !ctrl.selectedUser || ctrl.userHasAdminStatus()" title="Grant administrator rights" type="button" class="btn btn-default" ng-click="ctrl.setAdminStatus()">
 							<span class="glyphicon glyphicon-edit"></span>
 						</button>
 						<button ng-disabled="ctrl.sending || !ctrl.selectedUser || ctrl.hasApprovedStatus()" title="Make into a regular user" type="button" class="btn btn-default" ng-click="ctrl.setApprovedStatus()">

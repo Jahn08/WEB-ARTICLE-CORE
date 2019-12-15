@@ -58,7 +58,7 @@ class UserInfoCtrl extends PagedCtrl {
     private setUserInfo(userInfo: IUserInfo): boolean {
         this.userInfo = userInfo;
 
-        if (!this.hasAdminStatus(true))
+        if (!this.hasAdminStatus())
             return false;
 
         if (!this.users)
@@ -67,8 +67,8 @@ class UserInfoCtrl extends PagedCtrl {
         return true;
     }
 
-    hasAdminStatus(forCurUser: boolean): boolean {
-        const user = forCurUser ? this.userInfo : this.selectedUser;
+    userHasAdminStatus(): boolean {
+        const user = this.selectedUser;
         return user && user.status === UserStatus.ADMINISTRATOR;
     }
 
