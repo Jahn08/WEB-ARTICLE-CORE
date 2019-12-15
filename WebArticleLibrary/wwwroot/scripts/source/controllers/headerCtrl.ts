@@ -42,7 +42,7 @@ class HeaderCtrl extends BaseCtrl {
             this.categories = await articleReq.getDefaultCategories();
             
             await this.setUserInfo(ui);
-        }, $state);
+        });
     }
 
     private async setUserInfo(ui: IUserInfo) {
