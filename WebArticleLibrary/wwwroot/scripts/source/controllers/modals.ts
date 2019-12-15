@@ -1,6 +1,6 @@
 import { inject } from "../app/inject";
-import { AppSystem } from "../app/system";
-import { ui } from "angular";
+import { AppSystem, Constants } from "../app/system";
+import { ui, IPromise } from "angular";
 import { IHistory, IHistoryRecord, HistoryObjectType } from "../services/api/historyRequest";
 import { StateService } from "@uirouter/angularjs";
 import { ErrorService } from "../services/errorService";
@@ -17,7 +17,7 @@ interface IArticleHistoryDialogModel {
 
     articleName: string;
     
-    articleIsApproved: boolean;
+    isArticleApproved: boolean;
 
     historyId?: number;
 }
@@ -37,11 +37,13 @@ class HistoryRelationalRecord implements IHistoryRecord {
 
     readonly toArticle: boolean;
 
-    constructor(public readonly record: IHistoryRecord, articleIsApproved: boolean) {
-        if (record.object) {
-            if (record.object.endsWith('VERSION'))
+    constructor(record: IHistoryRecord, articleIsApproved: boolean) {
+        Object.assign(this, record);
+
+        if (this.object) {
+            if (this.object.endsWith('VERSION'))
                 this.toArticle = true;
-            else if (articleIsApproved && record.object.startsWith('COMMENT'))
+            else if (articleIsApproved && this.object.startsWith('COMMENT'))
                 this.toComment = true;
         }
     }
@@ -57,23 +59,21 @@ class ArticleHistoryModalCtrl {
 
     readonly histories: IHistory[];
 
-    private model: IArticleHistoryDialogModel;
-
     constructor(private $state: StateService,
         private $modalInstance: ui.bootstrap.IModalInstanceService,
-        model: IArticleHistoryDialogModel) {
-            this.articleName = model.articleName;
+        private model: IArticleHistoryDialogModel) {
+            this.articleName = this.model.articleName;
 
             this.filteredHistories = [];
 
-            const articleApproved = this.model.articleIsApproved;
+            const articleApproved = this.model.isArticleApproved;
             this.histories = this.model.histories.map(h => {
                 h.history = h.history.map(hr => new HistoryRelationalRecord(hr, articleApproved));
                 return h;
             });
 
-            if (model.historyId)
-                this.selectedId = model.historyId;
+            if (this.model.historyId)
+                this.selectedId = this.model.historyId;
         }
 
     closeModal() { this.$modalInstance.close(); }
@@ -229,8 +229,33 @@ interface IComplaintDialogModel {
     isForComment: boolean;
 }
 
+class ModalOpener {
+    constructor(private $modal: ui.bootstrap.IModalService) { }
+
+    openComplaintModal(model: IComplaintDialogModel): IPromise<string> {
+        return this.open(model, ComplaintModalCtrl, 'Complaint');
+    }
+
+    private open<In, Out>(model: In, controller: Function, templateName: string): IPromise<Out> {
+        return this.$modal.open({
+            templateUrl: `views/modalDialogs/${templateName}Modal.html`,
+            controller: controller,
+            controllerAs: Constants.CONTROLLER_PSEUDONIM,
+            resolve: { [AppSystem.DEPENDENCY_DIALOG_MODEL]: model }
+        }).result;
+    }
+
+    openAmendmentModal(model: IAmendmentDialogModel): IPromise<string> {
+        return this.open(model, AmendmentModalCtrl, 'Amendment');
+    }
+
+    openArticleHistoryModal(model: IArticleHistoryDialogModel): IPromise<void> {
+        return this.open(model, ArticleHistoryModalCtrl, 'ArticleHistory');
+    }
+}
+
 @inject(AppSystem.DEPENDENCY_DIALOG_MODEL, AppSystem.DEPENDENCY_MODAL_INSTANCE)
-class ComplaintModalCtrl {
+class ComplaintModalCtrl  {
     content: string;
 
     readonly typeAddition: string;
@@ -240,9 +265,9 @@ class ComplaintModalCtrl {
             this.typeAddition = model.isForComment ? "a comment": "an article";
         }
 
-        closeModal() { this.$modalInstance.close(); }
-        
-        save() { this.$modalInstance.close(this.content); }
+    closeModal() { this.$modalInstance.close(); }
+    
+    save() { this.$modalInstance.close(this.content); }
 }
 
 interface IAmendmentDialogModel {
@@ -296,6 +321,6 @@ class AmendmentModalCtrl {
         }
 }
 
-export { IArticleHistoryDialogModel, ArticleHistoryModalCtrl, RegisterModalCtrl, 
+export { ArticleHistoryModalCtrl, RegisterModalCtrl, 
     NotificationModalCtrl, MarkPasswordForResetModalCtrl, ICommentDialogModel, CommentModalCtrl, 
-    ResponseModalCtrl, ComplaintModalCtrl, IAmendmentDialogModel, AmendmentModalCtrl };
+    ResponseModalCtrl, ComplaintModalCtrl, AmendmentModalCtrl, ModalOpener };

@@ -2,16 +2,14 @@ import * as angular from "angular";
 import { StateService } from "@uirouter/core";
 import { BaseCtrl } from "./baseCtrl";
 import { ErrorService } from "../services/errorService";
-import { ArticleRequest, IArticleSearch, IArticle } from "../services/api/articleRequest";
-import { ColumnIndex, ISearchQuery } from "../services/api/apiRequest";
+import { ArticleRequest, IArticleSearch, Article } from "../services/api/articleRequest";
+import { ColumnIndex } from "../services/api/apiRequest";
 import { inject } from "../app/inject";
 import { AppSystem } from "../app/system";
 import * as $ from "jquery";
 
-interface ISearchedArticle extends IArticle {
-    author?: string;
-
-    hashTags?: string[];
+class SearchedArticle extends Article {
+    authorName?: string;
 }
 
 @inject(ErrorService, AppSystem.DEPENDENCY_TIMEOUT, AppSystem.DEPENDENCY_STATE, ArticleRequest)
@@ -30,7 +28,7 @@ class ArticleSearchCtrl extends BaseCtrl {
 
     public pages: number[] = [1];
 
-    public articles: ISearchedArticle[];
+    public articles: SearchedArticle[];
 
     public userNames: Record<number, string>;
 
@@ -106,10 +104,8 @@ class ArticleSearchCtrl extends BaseCtrl {
             this.articles = data.articles;
             this.userNames = data.userNames;
 
-            this.articles.forEach(val => {
-                val.author = this.userNames ? this.userNames[val.authorId] : null;
-                val.hashTags = val.tags.split(this.TAG_SEPARATOR);
-            });
+            this.articles.forEach(art =>
+                art.authorName = this.userNames ? this.userNames[art.authorId] : null);
         });
     }
 

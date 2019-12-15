@@ -1,4 +1,4 @@
-import { ArticleRequest, ArticleStatus, IArticle, IArticleSearch } from "../services/api/articleRequest";
+import { ArticleRequest, ArticleStatus, Article, IArticleSearch } from "../services/api/articleRequest";
 import { ErrorService } from "../services/errorService";
 import { EnumHelper, Constants, AppSystem } from "../app/system";
 import { IUserInfo, UserStatus } from "../services/api/userRequest";
@@ -8,7 +8,7 @@ import { AuthService } from "../services/authService";
 import { StateService } from "@uirouter/angularjs";
 import { HistoryRequest, IHistory } from "../services/api/historyRequest";
 import { ui } from "angular";
-import { ArticleHistoryModalCtrl, IArticleHistoryDialogModel } from "./modals";
+import { ModalOpener } from "./modals";
 import { inject } from "../app/inject";
 import { PagedCtrl } from "./pagedCtrl";
 
@@ -24,13 +24,13 @@ class ArticleInfoCtrl extends PagedCtrl {
 
     privateQuery: IArticleSearch;
 
-    selectedPrivateArticles: IArticle[];
+    selectedPrivateArticles: Article[];
     
-    selectedArticle: IArticle;
+    selectedArticle: Article;
 
-    privateArticles: IArticle[];
+    privateArticles: Article[];
 
-    publicArticles: IArticle[];
+    publicArticles: Article[];
 
     privateEstimate: number;
 
@@ -155,7 +155,7 @@ class ArticleInfoCtrl extends PagedCtrl {
         });
     }
     
-    selectArticleRow(article: IArticle) {
+    selectArticleRow(article: Article) {
         this.selectedArticle = this.selectedArticle && this.selectedArticle.id === article.id ? null : article;
     }
 
@@ -203,11 +203,11 @@ class ArticleInfoCtrl extends PagedCtrl {
         return this.userNames[userId];
     }
     
-    getCommentCount(art: IArticle): number {
+    getCommentCount(art: Article): number {
         return art ? this.cmntNumber[art.id] : 0;
     }
     
-    getEstimate(art: IArticle, isPrivate: boolean): number {
+    getEstimate(art: Article, isPrivate: boolean): number {
         let est: number;
 
         if (this.estimates) {
@@ -222,18 +222,18 @@ class ArticleInfoCtrl extends PagedCtrl {
         return est;
     }
 
-    isApproved(art: IArticle): boolean {
+    isApproved(art: Article): boolean {
         return art ? art.status === ArticleStatus.APPROVED : false;
     }
 
-    assignArticle(art: IArticle) {
+    assignArticle(art: Article) {
         this.processRequest(this.articleReq.assign(art.id), () => {
             art.assignedToId = this.userInfo.id;
             art.status = ArticleStatus.ON_REVIEW;
         });
     }
 
-    unassignArticle(art: IArticle) {
+    unassignArticle(art: Article) {
         this.processRequest(this.articleReq.unassign(art.id), () => {
             art.assignedToId = null;
             art.status = ArticleStatus.CREATED;
@@ -249,7 +249,7 @@ class ArticleInfoCtrl extends PagedCtrl {
         return this.articleReq.getStatusCaption(artStatus);
     }
 
-    selectPrivateArticleRow(art: IArticle) {
+    selectPrivateArticleRow(art: Article) {
         if (this.hasSelectedPrivateArticle(art.id))
             this.selectedPrivateArticles = this.selectedPrivateArticles.filter(a => a.id !== art.id);
         else
@@ -260,7 +260,7 @@ class ArticleInfoCtrl extends PagedCtrl {
         return this.selectedPrivateArticles.some(val => val.id === id);
     }
 
-    showHistory(art: IArticle) {
+    showHistory(art: Article) {
         const history = this.artHistories[art.id];
 
         if (history)
@@ -272,21 +272,12 @@ class ArticleInfoCtrl extends PagedCtrl {
             });
     };
 
-    openHistoryModal(histories: IHistory[], art: IArticle) {
-        const model: IArticleHistoryDialogModel = {  
+    openHistoryModal(histories: IHistory[], art: Article) {
+        this.processRequest(new ModalOpener(this.$modal).openArticleHistoryModal({
             histories: histories,
             articleName: art.name,
-            articleIsApproved: this.isApproved(art)
-        };
-
-        this.processRequest(this.$modal.open({
-            templateUrl: "views/modalDialogs/ArticleHistoryModal.html",
-            controller: ArticleHistoryModalCtrl,
-            controllerAs: Constants.CONTROLLER_PSEUDONIM,
-            resolve: {
-                [AppSystem.DEPENDENCY_DIALOG_MODEL]: model
-            }
-        }).result);
+            isArticleApproved: this.isApproved(art)
+        }));
     }
 }
 

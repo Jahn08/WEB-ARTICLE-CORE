@@ -3,7 +3,7 @@ import { inject } from "../app/inject";
 import { BaseCtrl } from "./baseCtrl";
 import { AppSystem } from "../app/system";
 import { AuthService } from "../services/authService";
-import { ArticleRequest, IArticle } from "../services/api/articleRequest";
+import { ArticleRequest, Article } from "../services/api/articleRequest";
 import { IUserInfo } from "../services/api/userRequest";
 import * as angular from "angular";
 import * as $ from "jquery";
@@ -84,7 +84,7 @@ class HomeCtrl extends BaseCtrl {
 }
 
 interface ISlide {
-    article: IArticle;
+    article: Article;
 
     index: number;
 

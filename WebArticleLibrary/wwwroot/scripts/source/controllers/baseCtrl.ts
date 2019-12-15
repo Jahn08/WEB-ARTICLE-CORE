@@ -1,8 +1,9 @@
 import { ErrorService } from "../services/errorService";
 import { IPromise } from "angular";
 import { AuthService } from "../services/authService";
-import { IUserInfo } from "../services/api/userRequest";
+import { IUserInfo, UserStatus } from "../services/api/userRequest";
 import { StateService } from "@uirouter/angularjs";
+import { JQueryFeatures } from "../app/jQueryFeatures";
 
 class BaseCtrl {
     public sending: boolean;
@@ -75,21 +76,19 @@ class BaseCtrl {
                 return;
             }
 
-            if (userInfo)
-                this.userInfo = userInfo as IUserInfo;
+            this.userInfo = userInfo as IUserInfo;
 
             if (setUserInfoFn)
-                await setUserInfoFn(userInfo as IUserInfo);
+                await setUserInfoFn(this.userInfo);
         });
     }
 
     protected initCategoryControl() {
-        // TODO: Otherwise here is a clash between the RequireJS and NodeJS dependencies
-        ($('#categories') as any).select2({
-            tags: true,
-            tokenSeparators: [',', '.', ' ', ':'],
-            width: "100%"
-        });
+        new JQueryFeatures($('#categories')).initTagSelector();
+    }
+
+    hasAdminStatus() {
+        return this.userInfo && this.userInfo.status === UserStatus.ADMINISTRATOR;
     }
 }
 

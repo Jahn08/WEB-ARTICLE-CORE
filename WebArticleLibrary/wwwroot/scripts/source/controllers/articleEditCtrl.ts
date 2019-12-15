@@ -1,15 +1,17 @@
 import { BaseCtrl } from "./baseCtrl";
 import { ErrorService } from "../services/errorService";
-import { ArticleStatus, IArticle, ArticleRequest } from "../services/api/articleRequest";
+import { ArticleStatus, Article, ArticleRequest } from "../services/api/articleRequest";
 import { IAmendment, AmmendmentRequest } from "../services/api/amendmentRequest";
 import { StateService } from "@uirouter/angularjs";
 import { IUserInfo } from "../services/api/userRequest";
-import { INgModelController, IPromise, ILocationService, IAnchorScrollService, IRootScopeService, ITimeoutService } from "angular";
+import { INgModelController, IPromise, ILocationService, IAnchorScrollService, 
+    IRootScopeService, ITimeoutService } from "angular";
 import { AuthService } from "../services/authService";
 import { ConverterService } from "../services/converterService";
 import { inject } from "../app/inject";
-import { AppSystem, Constants } from "../app/system";
-import { AmendmentModalCtrl, IAmendmentDialogModel } from "./modals";
+import { AppSystem } from "../app/system";
+import { ModalOpener } from "./modals";
+import { JQueryFeatures } from "../app/jQueryFeatures";
 
 interface ISelection {
     selectedText?: string;
@@ -26,7 +28,7 @@ class ArticleEditCtrl extends BaseCtrl {
     
     editArticleForm: INgModelController;    
 
-    article: IArticle;
+    article: Article;
     
     amendments: IAmendment[];
 
@@ -85,11 +87,7 @@ class ArticleEditCtrl extends BaseCtrl {
 
         this.paramArticleId = $state.params.id;
 
-        this.article = {
-            id: 0,
-            name: '',
-            status: ArticleStatus.DRAFT
-        };
+        this.article = new Article();
 
         this.initCategoryControl();
 
@@ -122,7 +120,7 @@ class ArticleEditCtrl extends BaseCtrl {
         if (this.article.reviewedContent)
             this.article.reviewedContent = this.converterSrv.bytesToStr(this.article.reviewedContent);
 
-        this.tempTags = this.article.tags.split(' ');
+        this.tempTags = this.article.hashTags;
 
         await this.setControls($timeout);
     }
@@ -136,7 +134,7 @@ class ArticleEditCtrl extends BaseCtrl {
                 this.initAmendingState();
             });
 
-            $timeout(() => ($('#amendmentPanel') as any).affix({ offset: { top: 20 } }));
+            $timeout(() => new JQueryFeatures($('#amendmentPanel')).fixateElement());
 
             if (!this.isOnAmending)
                 return;
@@ -271,7 +269,8 @@ class ArticleEditCtrl extends BaseCtrl {
     private set articleContent(html: string) { 
         const artEditCtrl = this.articleContentCtrl;
         artEditCtrl.html(html); 
-        (artEditCtrl as any).wysiwyg(); 
+
+        new JQueryFeatures(artEditCtrl).initHtmlEditor();
     }
 
     private getTags(): string[] {
@@ -369,20 +368,11 @@ class ArticleEditCtrl extends BaseCtrl {
 
         let amendment: IAmendment = this.amendments[selIndex];
 
-        const model: IAmendmentDialogModel = {
+        this.processRequest(new ModalOpener(this.$modal).openAmendmentModal({
             selectionText: selText,
             amendment: amendment,
             isReadonly: !this.isOnAmending || (amendment && (amendment.resolved || amendment.archived))
-        };
-
-        this.processRequest(this.$modal.open({
-            templateUrl: "views/modalDialogs/AmendmentModal.html",
-            controller: AmendmentModalCtrl,
-            controllerAs: Constants.CONTROLLER_PSEUDONIM,
-            resolve: {
-                [AppSystem.DEPENDENCY_DIALOG_MODEL]: model
-            }
-        }).result, async (content: string) => {
+        }), async content => {
             amendment.content = content;
 
             if (amendment.id)

@@ -26,9 +26,9 @@ class AmmendmentRequest extends ApiRequest {
 interface IAmendment extends IArticleEntity {
     content: string;
 
-    resolved: boolean;
+    resolved?: boolean;
 
-    archived: boolean;
+    archived?: boolean;
 }
 
 export { AmmendmentRequest, IAmendment };

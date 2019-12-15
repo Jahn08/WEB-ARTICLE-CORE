@@ -14,7 +14,7 @@ class ArticleRequest extends ApiRequest {
         super($resource, 'Article');
     }
 
-    update(article: IArticle, tempTags: string[]): IPromise<void> {
+    update(article: Article, tempTags: string[]): IPromise<void> {
         if (article.status !== ArticleStatus.ON_EDIT && 
             article.status !== ArticleStatus.ON_REVIEW && 
             article.status !== ArticleStatus.ON_AMENDING)
@@ -65,7 +65,7 @@ class ArticleRequest extends ApiRequest {
     }
 
     view(articleId: number, userId?: number): IPromise<IArticleView> {
-        return this.getResource({ id: articleId, userId: userId });
+        return this.getResource({ userId: userId }, articleId.toString());
     }
 
     getStatusCaption(status: ArticleStatus): string {
@@ -100,7 +100,7 @@ class ArticleRequest extends ApiRequest {
     }
 }
 
-interface IArticle {
+class Article {
     id: number;
 
     authorId?: number;
@@ -120,6 +120,18 @@ interface IArticle {
     content?: string;
 
     reviewedContent?: string;
+
+    constructor() {
+        this.id = 0,
+        
+        this.name = '';
+
+        this.status = ArticleStatus.DRAFT;
+    }
+
+    get hashTags(): string[] {
+        return this.tags ? this.tags.split(' '): [];
+    }
 }
 
 enum ArticleStatus
@@ -162,11 +174,11 @@ interface IArticleSearch extends ISearchQuery {
 }
 
 interface IArticleList {
-    privateData: IArticle[];
+    privateData: Article[];
 
     privateDataCount: number;
 
-    publicData: IArticle[];
+    publicData: Article[];
 
     publicDataCount: number;
 
@@ -180,7 +192,7 @@ interface IArticleList {
 }
 
 interface IArticleTitles {
-    articles: IArticle[];
+    articles: Article[];
     
     userNames: Record<number, string>
 }
@@ -196,7 +208,7 @@ interface IArticleSearchResult extends IArticleTitles {
 }
 
 interface IArticleView {
-    article: IArticle;
+    article: Article;
 
     updatedDate: Date;
 
@@ -211,4 +223,4 @@ interface IArticleView {
     curEstimate: EstimateType;
 }
 
-export { ArticleRequest, ArticleStatus, IArticle, IArticleSearch };
+export { ArticleRequest, ArticleStatus, Article, IArticleSearch };
