@@ -16,7 +16,7 @@ class CommentRequest extends ApiRequest {
         return this.saveResource(comment);
     }
 
-    getComments(query: ICommentSearch): IPromise<ICommentList> {
+    get(query: ICommentSearch): IPromise<ICommentList> {
         return this.getResource(query);
     }
 
@@ -78,4 +78,4 @@ interface ICommentList extends INameSearchResult<IComment> {
     relatedCmntNumber: Record<number, number>;
 }
 
-export { CommentRequest, IComment, CommentStatus };
+export { CommentRequest, IComment, CommentStatus, ICommentSearch };

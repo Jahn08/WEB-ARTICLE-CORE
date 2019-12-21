@@ -15,6 +15,7 @@ import { ResetPasswordCtrl } from '../controllers/resetPasswordCtrl';
 import { PropertiesCtrl } from '../controllers/propertiesCtrl';
 import { ArticleEditCtrl } from '../controllers/articleEditCtrl';
 import { ArticleViewCtrl } from '../controllers/articleViewCtrl';
+import { CommentInfoCtrl } from '../controllers/commentInfoCtrl';
 
 angular.module(AppSystem.APP_MODULE_NAME, 
         ['ui.router', 'ui.bootstrap', 'ngResource', 'ngCookies', 'ngSanitize'])
@@ -129,7 +130,8 @@ angular.module(AppSystem.APP_MODULE_NAME,
 				views: {
 					'content@': {
 						templateUrl: 'views/CommentInfo.html',
-						controller: 'CommentInfoCtrl'
+                        controller: CommentInfoCtrl,
+						controllerAs: Constants.CONTROLLER_PSEUDONIM
 					}
 				},
 				data: {
