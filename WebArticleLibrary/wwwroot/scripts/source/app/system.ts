@@ -44,18 +44,21 @@ class Constants {
 
 class EnumHelper {
     static getKeys(enumType: any): number[] {
-        const keys: number[] = [];
+        const _keys: number[] = [];
 
-        for (let prop in Object.values(enumType)) {
-            const value = enumType[prop];
+        const keys = Object.keys(enumType);
+        const length = keys.length;
 
-            if (typeof value !== 'number')
-                return keys;
+        for (let i = 0; i < length; ++i) {
+            const key = Number(keys[i]);
 
-            keys.push(value);
+            if (isNaN(key))
+                return _keys;
+
+            _keys.push(key);
         }
 
-        return keys;
+        return _keys;
     }
 }
 
