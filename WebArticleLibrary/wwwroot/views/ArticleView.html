@@ -68,7 +68,7 @@
 									<button class="btn-link" type="button" ng-show="cmnt.responseToId" ng-disabled="ctrl.isCommentDeletedById(cmnt.responseToId)" ng-click="ctrl.goToComment(cmnt.responseToId)">to the comment #{{cmnt.responseToId}}</button>
 								</h4>
 								<div ng-show="!ctrl.isCommentBlocked(cmnt.status) && !ctrl.isCommentDeleted(cmnt.status)">
-									<div class="media-comment-content" ng-click="ctrl.respondTo(cmnt.id)" ng-bind-html="ctrl.getCommentHtml(cmnt.content)"></div>
+									<div class="media-comment-content" ng-click="ctrl.respondTo(cmnt.id)" ng-bind-html="ctrl.getHtml(cmnt.content)"></div>
 									<div ng-show="cmnt.authorId !== ctrl.userId">
 										<button type="button" class="btn-link" title="Complain" ng-click="ctrl.complainAboutComment(cmnt.id)"><span class="glyphicon glyphicon-exclamation-sign text-warning"></span></button>
 										<button type="button" ng-show="ctrl.hasAdminStatus()" class="btn-link" title="Ban" ng-click="ctrl.banComment(cmnt)"><span class="glyphicon glyphicon-ban-circle text-warning"></span></button>

@@ -102,8 +102,7 @@ class ArticleViewCtrl extends BaseCtrl {
             this.estimate = articleData.estimate;
             this.estimateType = articleData.curEstimate;
 
-            this.articleHtmlContent = this.$sce.trustAsHtml(
-                this.converterSrv.bytesToStr(this.article.content));
+            this.articleHtmlContent = this.getHtml(this.article.content);
 
             $timeout(() => $('#artContent').find('.amendment').remove());
 
@@ -166,8 +165,8 @@ class ArticleViewCtrl extends BaseCtrl {
         return this.userNames[userId]; 
     }
 
-    getCommentHtml(content: string): string {
-        return this.$sce.trustAsHtml(this.converterSrv.bytesToStr(content));
+    getHtml(content: string): string {
+        return this.converterSrv.convertByteStringToHtml(this.$sce, content);
     }
 
     searchForUserArticles(userId: number) {
