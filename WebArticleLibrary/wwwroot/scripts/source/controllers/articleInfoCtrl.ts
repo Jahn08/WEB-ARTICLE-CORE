@@ -14,7 +14,7 @@ import { PagedCtrl } from "./pagedCtrl";
 
 @inject(ErrorService, AuthService, AppSystem.DEPENDENCY_STATE, AppSystem.DEPENDENCY_MODAL_SERVICE, ArticleRequest, HistoryRequest)
 class ArticleInfoCtrl extends PagedCtrl {
-    statuses: number[];
+    readonly statuses: number[];
 
     publicArtPages: number[];
 
@@ -130,10 +130,6 @@ class ArticleInfoCtrl extends PagedCtrl {
                 };
             }
         });
-    }
-    
-    hasAdminStatus(): boolean {
-        return this.userInfo && this.userInfo.status === UserStatus.ADMINISTRATOR;
     }
 
     get userId(): number { return this.userInfo ? this.userInfo.id: 0; }

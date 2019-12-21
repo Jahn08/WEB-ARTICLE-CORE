@@ -75,10 +75,6 @@ class PropertiesCtrl extends BaseCtrl {
             Constants.NO_PHOTO_FILE_URL;
     }
 
-    hasAdminStatus(): boolean {
-        return this.userInfo && this.userInfo.status === UserStatus.ADMINISTRATOR;
-    }
-
     save() {
         this.processRequest(this.userReq.saveUserInfo(this.userInfo),
             async () => {
