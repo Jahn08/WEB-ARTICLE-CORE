@@ -6,7 +6,7 @@ import { PagedCtrl } from "./pagedCtrl";
 import { ColumnIndex } from "../services/api/apiRequest";
 import { CommentRequest } from "../services/api/commentRequest";
 import { ui } from "angular";
-import { CommentModalCtrl, ICommentDialogModel } from "./modals";
+import { ModalOpener } from "./modals";
 import { StateService } from "@uirouter/angularjs";
 import { inject } from "../app/inject";
 
@@ -143,20 +143,13 @@ class UserInfoCtrl extends PagedCtrl {
     goToCommentsList() {
         const user = this.selectedUser;
 
-        this.processRequest(this.commentReq.getComments({ 
+        this.processRequest(this.commentReq.get({ 
             page: 1, colIndex: ColumnIndex.DATE, asc: true, userId: user.id, all: true 
         }), async commentData => {
-            const model: ICommentDialogModel = {
+            await new ModalOpener(this.$modal).openCommentModal({
                 comments: commentData.data,
                 userNames: commentData.userNames
-            };
-
-            await this.$modal.open({
-                templateUrl: "views/modalDialogs/CommentModal.html",
-                controller: CommentModalCtrl,
-                resolve: { [AppSystem.DEPENDENCY_DIALOG_MODEL]: model },
-                controllerAs: Constants.CONTROLLER_PSEUDONIM
-            }).result;
+            });
         });
     }
 }

@@ -252,6 +252,10 @@ class ModalOpener {
     openArticleHistoryModal(model: IArticleHistoryDialogModel): IPromise<void> {
         return this.open(model, ArticleHistoryModalCtrl, 'ArticleHistory');
     }
+
+    openCommentModal(model: ICommentDialogModel): IPromise<void> {
+        return this.open(model, CommentModalCtrl, 'Comment');
+    }
 }
 
 @inject(AppSystem.DEPENDENCY_DIALOG_MODEL, AppSystem.DEPENDENCY_MODAL_INSTANCE)
@@ -322,5 +326,5 @@ class AmendmentModalCtrl {
 }
 
 export { ArticleHistoryModalCtrl, RegisterModalCtrl, 
-    NotificationModalCtrl, MarkPasswordForResetModalCtrl, ICommentDialogModel, CommentModalCtrl, 
+    NotificationModalCtrl, MarkPasswordForResetModalCtrl, CommentModalCtrl, 
     ResponseModalCtrl, ComplaintModalCtrl, AmendmentModalCtrl, ModalOpener };
