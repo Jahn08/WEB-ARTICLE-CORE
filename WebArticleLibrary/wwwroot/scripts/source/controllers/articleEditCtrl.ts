@@ -10,7 +10,7 @@ import { AuthService } from "../services/authService";
 import { ConverterService } from "../services/converterService";
 import { inject } from "../app/inject";
 import { AppSystem } from "../app/system";
-import { ModalOpener } from "./modals";
+import { ModalOpener } from "../app/modalOpener";
 import { JQueryFeatures } from "../app/jQueryFeatures";
 
 interface ISelection {
@@ -19,8 +19,10 @@ interface ISelection {
     focusNode?: Node;
 }
 
-@inject(ErrorService, AuthService, AppSystem.DEPENDENCY_ROOT_SCOPE_SERVICE, AppSystem.DEPENDENCY_TIMEOUT, ArticleRequest, AmmendmentRequest,
-    AppSystem.DEPENDENCY_STATE, AppSystem.DEPENDENCY_MODAL_SERVICE, AppSystem.DEPENDENCY_LOCATION, AppSystem.DEPENDENCY_SCROLL_SERVICE, ConverterService)
+@inject(ErrorService, AuthService, AppSystem.DEPENDENCY_ROOT_SCOPE_SERVICE, 
+    AppSystem.DEPENDENCY_TIMEOUT, AppSystem.DEPENDENCY_MODAL_SERVICE, ArticleRequest, 
+    AmmendmentRequest, AppSystem.DEPENDENCY_STATE, AppSystem.DEPENDENCY_LOCATION, 
+    AppSystem.DEPENDENCY_SCROLL_SERVICE, ConverterService)
 class ArticleEditCtrl extends BaseCtrl {
     allCategories: string[];
 
@@ -52,6 +54,8 @@ class ArticleEditCtrl extends BaseCtrl {
 
     private readonly paramArticleId: number;
 
+    private readonly modalOpener: ModalOpener;
+
     private isDraft: boolean;
     
     private _articleContentCtrl: JQuery<HTMLElement>;
@@ -72,15 +76,17 @@ class ArticleEditCtrl extends BaseCtrl {
         authSrv: AuthService,
         $scope: IRootScopeService,
         $timeout: ITimeoutService,
+        $modal: angular.ui.bootstrap.IModalService,
         private artReq: ArticleRequest,
         private amendmentReq: AmmendmentRequest, 
         private $state: StateService,
-        private $modal: angular.ui.bootstrap.IModalService,
         private $location: ILocationService,
         private $anchorScroll: IAnchorScrollService,
         private converterSrv: ConverterService) {
         super(errorSrv);
         
+        this.modalOpener = new ModalOpener($modal);
+
 		this.amendments = [];
         this.selectedAmendmentIndexes = [];
         this.allCategories = [];
@@ -368,7 +374,7 @@ class ArticleEditCtrl extends BaseCtrl {
 
         let amendment: IAmendment = this.amendments[selIndex];
 
-        this.processRequest(new ModalOpener(this.$modal).openAmendmentModal({
+        this.processRequest(this.modalOpener.openAmendmentModal({
             selectionText: selText,
             amendment: amendment,
             isReadonly: !this.isOnAmending || (amendment && (amendment.resolved || amendment.archived))

@@ -5,14 +5,14 @@ import { ISearchQuery, ColumnIndex } from "../services/api/apiRequest";
 import { StateService } from "@uirouter/core";
 import { ConverterService } from "../services/converterService";
 import { ISCEService } from "angular";
-import { ModalOpener } from "./modals";
+import { ModalOpener } from "../app/modalOpener";
 import { AuthService } from "../services/authService";
 import { EnumHelper, AppSystem } from "../app/system";
 import { inject } from "../app/inject";
 import { BaseCtrl } from "./baseCtrl";
 
-@inject(ErrorService, AuthService, CommentRequest, ConverterService, 
-    AppSystem.DEPENDENCY_MODAL_SERVICE, AppSystem.DEPENDENCY_STATE, 
+@inject(ErrorService, AuthService, AppSystem.DEPENDENCY_MODAL_SERVICE,
+    CommentRequest, ConverterService, AppSystem.DEPENDENCY_STATE, 
     AppSystem.DEPENDENCY_ESCAPING_SERVICE)
 class CommentInfoCtrl extends BaseCtrl {
     query: ICommentSearch;
@@ -29,6 +29,8 @@ class CommentInfoCtrl extends BaseCtrl {
 
     readonly sortComments: (col: ColumnIndex) => void;
 
+    private readonly modalOpener: ModalOpener;
+
     private pagedQuery: PagedQuery<ICommentSearch>;
 
     private articleNames: Record<number, string>;
@@ -39,12 +41,14 @@ class CommentInfoCtrl extends BaseCtrl {
 
     constructor(errorSrv: ErrorService,
         authSrv: AuthService, 
+        $modal: angular.ui.bootstrap.IModalService,
         private commentReq: CommentRequest,
         private converterSrv: ConverterService,
-        private $modal: angular.ui.bootstrap.IModalService,
         private $state: StateService,
         private $sce: ISCEService) {
         super(errorSrv);
+
+        this.modalOpener = new ModalOpener($modal);
 
         this.query = {
             asc: false,
@@ -128,7 +132,7 @@ class CommentInfoCtrl extends BaseCtrl {
             page: 1,
             colIndex: ColumnIndex.DATE
         }), async commentData => {
-            await new ModalOpener(this.$modal).openCommentModal({
+            await this.modalOpener.openCommentModal({
                 comments: commentData.data,
                 userNames: commentData.userNames,
                 parentId: cmnt.id

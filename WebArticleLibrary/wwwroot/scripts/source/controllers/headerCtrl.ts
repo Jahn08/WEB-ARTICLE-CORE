@@ -10,7 +10,7 @@ import { AppSystem, Constants } from "../app/system";
 import { AuthService } from "../services/authService";
 import { IUserInfo } from "../services/api/userRequest";
 import * as signalR from "@microsoft/signalr";
-import { MarkPasswordForResetModalCtrl, NotificationModalCtrl, RegisterModalCtrl } from "./modals";
+import { ModalOpener } from "../app/modalOpener";
 
 @inject(ArticleRequest, ErrorService, AppSystem.DEPENDENCY_MODAL_SERVICE, 
     AppSystem.DEPENDENCY_STATE, AuthRequest, AuthService, NotificationRequest, 
@@ -28,8 +28,10 @@ class HeaderCtrl extends BaseCtrl {
 
     private hubServer: signalR.HubConnection;
 
+    private readonly modelOpener: ModalOpener;
+
     constructor(articleReq: ArticleRequest, errorSrv: ErrorService,
-        private $modal: ui.bootstrap.IModalService,
+        $modal: ui.bootstrap.IModalService,
         private $state: StateService,
         private authReq: AuthRequest, 
         private authSrv: AuthService,
@@ -37,6 +39,8 @@ class HeaderCtrl extends BaseCtrl {
         private $rootScope: angular.IRootScopeService,
         public section: string) {
         super(errorSrv);
+
+        this.modelOpener = new ModalOpener($modal);
 
         this.setCurrentUser(authSrv, async ui => {
             this.categories = await articleReq.getDefaultCategories();
@@ -94,22 +98,16 @@ class HeaderCtrl extends BaseCtrl {
         if (!this.notifications)
             return;
 
-        this.processRequest(this.$modal.open({
-            templateUrl: "views/modalDialogs/NotificationModal.html",
-            controller: NotificationModalCtrl,
-            resolve: {
-                [AppSystem.DEPENDENCY_DIALOG_MODEL]: this.notifications
-            },
-            controllerAs: Constants.CONTROLLER_PSEUDONIM
-        }).result, async shouldClear => {
-            if (shouldClear) {
-                const ids = this.notifications.map(val => val.id);
+        this.processRequest(this.modelOpener.openNotificationModal(this.notifications),
+            async shouldClear => {
+                if (shouldClear) {
+                    const ids = this.notifications.map(val => val.id);
 
-                await this.notificationReq.clear(ids);
+                    await this.notificationReq.clear(ids);
 
-                this.notifications = null;
-            }
-        });
+                    this.notifications = null;
+                }
+            });
     }
             
     shouldShowUser(): boolean {
@@ -158,27 +156,14 @@ class HeaderCtrl extends BaseCtrl {
     }
 
 	openRegistrationModal() {
-        const model: IUserInfo = { 
+        this.processRequest(this.modelOpener.openRegistrationModal({ 
             name: this.userName, 
             password: this.userPassword 
-        };     
-
-        this.processRequest(this.$modal.open({
-            templateUrl: "views/modalDialogs/RegisterModal.html",
-            controller: RegisterModalCtrl,
-            resolve: {
-                [AppSystem.DEPENDENCY_DIALOG_MODEL]: model
-            },
-            controllerAs: Constants.CONTROLLER_PSEUDONIM
-        }).result);
+        }));
     }
 			
     resetPasswordModal() {
-        this.processRequest(this.$modal.open({
-            templateUrl: "views/modalDialogs/MarkPasswordForResetModal.html",
-            controller: MarkPasswordForResetModalCtrl,
-            controllerAs: Constants.CONTROLLER_PSEUDONIM
-        }).result);
+        this.processRequest(this.modelOpener.openPasswordMarkForResetModal());
     }
 }
 

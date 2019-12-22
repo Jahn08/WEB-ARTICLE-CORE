@@ -8,7 +8,7 @@ import { AuthService } from "../services/authService";
 import { StateService } from "@uirouter/angularjs";
 import { HistoryRequest, IHistory } from "../services/api/historyRequest";
 import { ui } from "angular";
-import { ModalOpener } from "./modals";
+import { ModalOpener } from "../app/modalOpener";
 import { inject } from "../app/inject";
 import { PagedQuery } from "../app/pagedQuery";
 import { BaseCtrl } from "./baseCtrl";
@@ -37,6 +37,8 @@ class ArticleInfoCtrl extends BaseCtrl {
 
     estimate: number;
 
+    private readonly modalOpener: ModalOpener;
+
     private privatePagedQuery: PagedQuery<IArticleSearch>;
 
     private publicPagedQuery: PagedQuery<IArticleSearch>;
@@ -58,10 +60,12 @@ class ArticleInfoCtrl extends BaseCtrl {
     constructor(errorSrv: ErrorService,
         authSrv: AuthService,
         $state: StateService,
-        private $modal: ui.bootstrap.IModalService,
+        $modal: ui.bootstrap.IModalService,
         private articleReq: ArticleRequest,
         private historyReq: HistoryRequest) {
         super(errorSrv);
+
+        this.modalOpener = new ModalOpener($modal);
 
         this.artHistories = {};
 
@@ -267,7 +271,7 @@ class ArticleInfoCtrl extends BaseCtrl {
     };
 
     openHistoryModal(histories: IHistory[], art: Article) {
-        this.processRequest(new ModalOpener(this.$modal).openArticleHistoryModal({
+        this.processRequest(this.modalOpener.openArticleHistoryModal({
             histories: histories,
             articleName: art.name,
             isArticleApproved: this.isApproved(art)

@@ -4,7 +4,7 @@ import { StateService } from "@uirouter/core";
 import { EstimateRequest, EstimateType } from "../services/api/estimateRequest";
 import { Article, ArticleRequest, ArticleStatus } from "../services/api/articleRequest";
 import { ui, ILocationService, IAnchorScrollService, IPromise, ITimeoutService } from "angular";
-import { ModalOpener } from "./modals";
+import { ModalOpener } from "../app/modalOpener";
 import { ComplaintRequest } from "../services/api/complaintRequest";
 import { IComment, CommentRequest, CommentStatus } from "../services/api/commentRequest";
 import { AmmendmentRequest } from "../services/api/amendmentRequest";
@@ -42,7 +42,7 @@ class ArticleViewCtrl extends BaseCtrl {
 
     private artHistories: IHistory[];
 
-    private modalOpener: ModalOpener;
+    private readonly modalOpener: ModalOpener;
 
     private userPhotos: Record<number, string>;
 
@@ -177,9 +177,6 @@ class ArticleViewCtrl extends BaseCtrl {
         if (!this.comment)
             return;
 
-        //this.comment.articleId = this.article.id;
-        //this.comment.content = this.commentCtrl.html();
-
         this.processRequest(this.commentReq.create(this.comment), () => this.reloadPage());
     }
 
@@ -310,11 +307,11 @@ class ArticleViewCtrl extends BaseCtrl {
 
     showHistory(historyId?: number) {
         if (this.artHistories)
-            this.openHistoryModal(this.artHistories, historyId);
+            this.processRequest(this.openHistoryModal(this.artHistories, historyId));
         else
-            this.processRequest(this.historyReq.getHistory(this.article.id), histories => {
+            this.processRequest(this.historyReq.getHistory(this.article.id), async histories => {
                 this.artHistories = histories;
-                this.openHistoryModal(this.artHistories, historyId);
+                await this.openHistoryModal(this.artHistories, historyId);
             });
     }
 

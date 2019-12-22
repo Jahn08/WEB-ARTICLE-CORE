@@ -1,17 +1,18 @@
 import { ErrorService } from "../services/errorService";
 import { AuthService } from "../services/authService";
 import { UserRequest, UserStatus, IUserInfo, IUserSearch } from "../services/api/userRequest";
-import { EnumHelper, AppSystem, Constants } from "../app/system";
+import { EnumHelper, AppSystem } from "../app/system";
 import { PagedQuery } from "../app/pagedQuery";
 import { ColumnIndex } from "../services/api/apiRequest";
 import { CommentRequest } from "../services/api/commentRequest";
 import { ui } from "angular";
-import { ModalOpener } from "./modals";
+import { ModalOpener } from "../app/modalOpener";
 import { StateService } from "@uirouter/angularjs";
 import { inject } from "../app/inject";
 import { BaseCtrl } from "./baseCtrl";
 
-@inject(ErrorService, AuthService, AppSystem.DEPENDENCY_STATE, UserRequest, CommentRequest, AppSystem.DEPENDENCY_MODAL_SERVICE)
+@inject(ErrorService, AuthService, AppSystem.DEPENDENCY_STATE,
+    AppSystem.DEPENDENCY_MODAL_SERVICE, UserRequest, CommentRequest)
 class UserInfoCtrl extends BaseCtrl {
     readonly statuses: number[];
     
@@ -27,6 +28,8 @@ class UserInfoCtrl extends BaseCtrl {
 
     readonly sortUsers: (col: ColumnIndex) => void;
 
+    private readonly modalOpener: ModalOpener;
+
     private pagedQuery: PagedQuery<IUserSearch>;
 
     private artNumber: Record<string, number>;
@@ -35,10 +38,12 @@ class UserInfoCtrl extends BaseCtrl {
 
     constructor(errorSrv: ErrorService, authSrv: AuthService, 
         $state: StateService,
+        $modal: ui.bootstrap.IModalService,
         private userReq: UserRequest,
-        private commentReq: CommentRequest,
-        private $modal: ui.bootstrap.IModalService) {
+        private commentReq: CommentRequest) {
         super(errorSrv);
+
+        this.modalOpener = new ModalOpener($modal);
 
         this.query = {
             asc: false,
@@ -136,7 +141,7 @@ class UserInfoCtrl extends BaseCtrl {
         this.processRequest(this.commentReq.get({ 
             page: 1, colIndex: ColumnIndex.DATE, asc: true, userId: user.id, all: true 
         }), async commentData => {
-            await new ModalOpener(this.$modal).openCommentModal({
+            await this.modalOpener.openCommentModal({
                 comments: commentData.data,
                 userNames: commentData.userNames
             });
