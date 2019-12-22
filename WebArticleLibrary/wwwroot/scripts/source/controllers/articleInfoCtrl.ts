@@ -1,8 +1,8 @@
 import { ArticleRequest, ArticleStatus, Article, IArticleSearch } from "../services/api/articleRequest";
 import { ErrorService } from "../services/errorService";
-import { EnumHelper, Constants, AppSystem } from "../app/system";
-import { IUserInfo, UserStatus } from "../services/api/userRequest";
-import { ColumnIndex, ISearchQuery } from "../services/api/apiRequest";
+import { EnumHelper, AppSystem } from "../app/system";
+import { IUserInfo } from "../services/api/userRequest";
+import { ColumnIndex } from "../services/api/apiRequest";
 import { EstimateType } from "../services/api/estimateRequest";
 import { AuthService } from "../services/authService";
 import { StateService } from "@uirouter/angularjs";
@@ -10,19 +10,20 @@ import { HistoryRequest, IHistory } from "../services/api/historyRequest";
 import { ui } from "angular";
 import { ModalOpener } from "./modals";
 import { inject } from "../app/inject";
-import { PagedCtrl } from "./pagedCtrl";
+import { PagedQuery } from "../app/pagedQuery";
+import { BaseCtrl } from "./baseCtrl";
 
 @inject(ErrorService, AuthService, AppSystem.DEPENDENCY_STATE, AppSystem.DEPENDENCY_MODAL_SERVICE, ArticleRequest, HistoryRequest)
-class ArticleInfoCtrl extends PagedCtrl {
+class ArticleInfoCtrl extends BaseCtrl {
     readonly statuses: number[];
-
-    publicArtPages: number[];
 
     privateArtPages: number[];
 
-    publicQuery: IArticleSearch;
-
     privateQuery: IArticleSearch;
+
+    publicArtPages: number[];
+
+    publicQuery: IArticleSearch;
 
     selectedPrivateArticles: Article[];
     
@@ -36,11 +37,15 @@ class ArticleInfoCtrl extends PagedCtrl {
 
     estimate: number;
 
+    private privatePagedQuery: PagedQuery<IArticleSearch>;
+
+    private publicPagedQuery: PagedQuery<IArticleSearch>;
+
     readonly sortPublicArticles: (forPublic: boolean, col: ColumnIndex) => void;
 
     readonly sortPrivateArticles: (forPublic: boolean, col: ColumnIndex) => void;
 
-    readonly goToArticlePage: (pageIndex: number, forPublic: boolean) => void;
+    readonly goToPage: (pageIndex: number, forPublic: boolean) => void;
 
     private userNames: Record<number, string>;
 
@@ -66,35 +71,23 @@ class ArticleInfoCtrl extends PagedCtrl {
 
         this.sortPublicArticles = this.sortArticles.bind(this, true);
         this.sortPrivateArticles = this.sortArticles.bind(this, false);
-        this.goToArticlePage = this.goToPage.bind(this);
+        this.goToPage = this.goToArticlePage.bind(this);
 
         this.setCurrentUser(authSrv, this.initForm.bind(this), $state);
     }
 
     private sortArticles(forPublic: boolean, col: ColumnIndex) {
-        let asc: boolean;
-
-        if (forPublic) {
-            if (!this.publicArtPages.length)
-                return;
-
-            asc = col === this.publicQuery.colIndex ? !this.publicQuery.asc: true;
-        } else {
-            if (!this.privateArtPages.length)
-                return;
-
-            asc = col === this.privateQuery.colIndex ? !this.privateQuery.asc: true;
-        }
-
-        this.getFilteredArticles(forPublic, null, col, asc);
+        if (forPublic)
+            this.publicPagedQuery.sortItems(col, this.publicArtPages);
+        else
+            this.privatePagedQuery.sortItems(col, this.privateArtPages);
     }
 
-    private goToPage(pageIndex: number, forPublic: boolean) {
-        if ((!forPublic && this.privateQuery.page == pageIndex) ||
-            (forPublic && this.publicQuery.page == pageIndex))
-            return;
-
-        this.getFilteredArticles(forPublic, pageIndex, null, null);
+    private goToArticlePage(pageIndex: number, forPublic: boolean) {
+        if (forPublic)
+            this.publicPagedQuery.goToPage(pageIndex);
+        else
+            this.privatePagedQuery.goToPage(pageIndex);
     }
 
     private initForm(userInfo: IUserInfo) {
@@ -109,7 +102,7 @@ class ArticleInfoCtrl extends PagedCtrl {
                 this.userNames[this.userInfo.id] = this.userInfo.name;
 
             this.privateArticles = artData.privateData;
-            this.privateArtPages = this.getPageNumberArray(artData.privateDataCount, 
+            this.privateArtPages = PagedQuery.getPageNumberArray(artData.privateDataCount, 
                 artData.pageLength);
 
             this.privateQuery = {
@@ -118,9 +111,12 @@ class ArticleInfoCtrl extends PagedCtrl {
                 asc: false
             };
                         
+            this.privatePagedQuery = new PagedQuery(this.privateQuery, 
+                query => this.filterItems(false, query));
+
             if (this.hasAdminStatus()) {
                 this.publicArticles = artData.publicData;
-                this.publicArtPages = this.getPageNumberArray(artData.publicDataCount, 
+                this.publicArtPages = PagedQuery.getPageNumberArray(artData.publicDataCount, 
                     artData.pageLength);
                 
                 this.publicQuery = {
@@ -128,6 +124,9 @@ class ArticleInfoCtrl extends PagedCtrl {
                     colIndex: ColumnIndex.DATE,
                     asc: false
                 };
+
+                this.publicPagedQuery = new PagedQuery(this.publicQuery, 
+                    query => this.filterItems(true, query));
             }
         });
     }
@@ -143,7 +142,8 @@ class ArticleInfoCtrl extends PagedCtrl {
         this.processRequest(this.articleReq.remove(ids), artData => {
             this.selectedPrivateArticles = [];
             this.privateArticles = artData.privateData;
-            this.privateArtPages = this.getPageNumberArray(artData.privateDataCount, artData.pageLength);
+            this.privateArtPages = PagedQuery
+                .getPageNumberArray(artData.privateDataCount, artData.pageLength);
 
             this.privateQuery.page = 1;
             this.privateQuery.colIndex = ColumnIndex.NAME;
@@ -155,12 +155,12 @@ class ArticleInfoCtrl extends PagedCtrl {
         this.selectedArticle = this.selectedArticle && this.selectedArticle.id === article.id ? null : article;
     }
 
-    getFilteredArticles(forPublic: boolean, pageIndex: number, col: ColumnIndex, asc: boolean) {
-        const queryOptions: ISearchQuery = { asc: asc, colIndex: col, page: pageIndex };
-        const searchFilter: IArticleSearch = forPublic ? this.copySearchQuery(this.publicQuery, queryOptions): 
-            this.copySearchQuery(this.privateQuery, queryOptions);
+    filterArticles(forPublic: boolean) {
+        (forPublic ? this.publicPagedQuery: this.privatePagedQuery).filterItems();
+    }
 
-        this.processRequest(this.articleReq.getAllArticles(searchFilter), artData => {
+    private filterItems(forPublic: boolean, filterQuery: IArticleSearch) {
+        this.processRequest(this.articleReq.getAllArticles(filterQuery), artData => {
             this.selectedPrivateArticles = [];
 
             this.unionLists(this.userNames, artData.userNames);
@@ -169,17 +169,15 @@ class ArticleInfoCtrl extends PagedCtrl {
 
             if (forPublic) {
                 this.publicArticles = artData.publicData;
-                this.publicArtPages = this.getPageNumberArray(artData.publicDataCount, 
-                    artData.pageLength);
-
-                Object.assign(this.publicQuery, searchFilter);
+                this.publicArtPages =
+                    PagedQuery.getPageNumberArray(artData.publicDataCount, artData.pageLength);
+                Object.assign(this.publicQuery, filterQuery);
             }
             else {
                 this.privateArticles = artData.privateData;
-                this.privateArtPages = this.getPageNumberArray(artData.privateDataCount, 
-                    artData.pageLength);
-
-                Object.assign(this.privateQuery, searchFilter);
+                this.privateArtPages = 
+                    PagedQuery.getPageNumberArray(artData.privateDataCount, artData.pageLength);
+                Object.assign(this.privateQuery, filterQuery);
             }
         });
     }

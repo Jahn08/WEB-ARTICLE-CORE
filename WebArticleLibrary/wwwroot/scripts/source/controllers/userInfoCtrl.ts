@@ -2,29 +2,32 @@ import { ErrorService } from "../services/errorService";
 import { AuthService } from "../services/authService";
 import { UserRequest, UserStatus, IUserInfo, IUserSearch } from "../services/api/userRequest";
 import { EnumHelper, AppSystem, Constants } from "../app/system";
-import { PagedCtrl } from "./pagedCtrl";
+import { PagedQuery } from "../app/pagedQuery";
 import { ColumnIndex } from "../services/api/apiRequest";
 import { CommentRequest } from "../services/api/commentRequest";
 import { ui } from "angular";
 import { ModalOpener } from "./modals";
 import { StateService } from "@uirouter/angularjs";
 import { inject } from "../app/inject";
+import { BaseCtrl } from "./baseCtrl";
 
 @inject(ErrorService, AuthService, AppSystem.DEPENDENCY_STATE, UserRequest, CommentRequest, AppSystem.DEPENDENCY_MODAL_SERVICE)
-class UserInfoCtrl extends PagedCtrl {
+class UserInfoCtrl extends BaseCtrl {
     readonly statuses: number[];
     
     selectedUser: IUserInfo;
 
-    query: IUserSearch;
-
     users: IUserInfo[];
 
-    userPages: number[];
+    query: IUserSearch;
 
-    readonly goToUserPage: (pageIndex: number) => void;
+    pages: number[];
+
+    readonly goToPage: (pageIndex: number) => void;
 
     readonly sortUsers: (col: ColumnIndex) => void;
+
+    private pagedQuery: PagedQuery<IUserSearch>;
 
     private artNumber: Record<string, number>;
     
@@ -43,17 +46,30 @@ class UserInfoCtrl extends PagedCtrl {
             page: 1
         };
 
-        this.statuses = EnumHelper.getKeys(UserStatus);
+        this.pagedQuery = new PagedQuery(this.query, this.filterItems.bind(this));
+        this.goToPage = this.pagedQuery.goToPage.bind(this.pagedQuery);
+        this.sortUsers = this.sortItems.bind(this);
 
-        this.goToUserPage = this.goToPage.bind(this);
-        
-        this.sortUsers = this.sortUsersInternally.bind(this);
+        this.statuses = EnumHelper.getKeys(UserStatus);
 
         this.setCurrentUser(authSrv, ui => {
             if (!this.setUserInfo(ui))
                 $state.go('app');
         }, $state);
     }
+
+    private filterItems(filterQuery: IUserSearch) {
+        this.processRequest(this.userReq.getUsers(filterQuery), userData => {
+            this.users = userData.data;
+            this.cmntNumber = userData.cmntNumber;
+            this.artNumber = userData.artNumber;
+            
+            this.pages = PagedQuery.getPageNumberArray(userData.dataCount, userData.pageLength);
+            Object.assign(this.query, filterQuery);
+        });
+    }
+
+    private sortItems(col: ColumnIndex) { this.pagedQuery.sortItems(col, this.pages); }
 
     private setUserInfo(userInfo: IUserInfo): boolean {
         this.userInfo = userInfo;
@@ -62,7 +78,7 @@ class UserInfoCtrl extends PagedCtrl {
             return false;
 
         if (!this.users)
-            this.getFilteredUsers();
+            this.filterUsers();
 
         return true;
     }
@@ -70,6 +86,10 @@ class UserInfoCtrl extends PagedCtrl {
     userHasAdminStatus(): boolean {
         const user = this.selectedUser;
         return user && user.status === UserStatus.ADMINISTRATOR;
+    }
+
+    filterUsers() {
+        this.pagedQuery.filterItems();
     }
 
     getStatusCaption(status: UserStatus): string { return this.userReq.getStatusCaption(status); }
@@ -95,31 +115,9 @@ class UserInfoCtrl extends PagedCtrl {
     }
 
     hasApprovedStatus(): boolean { return this.hasStatus(UserStatus.USER); }
-
     
     selectRow(user: IUserInfo) {
         this.selectedUser = this.selectedUser && this.selectedUser.id === user.id ? null : user;
-    }
-
-    private goToPage(pageIndex: number) {
-        if (this.query.page === pageIndex)
-            return;
-
-        this.getFilteredUsers(pageIndex);
-    }
-        
-    getFilteredUsers(pageIndex?: number, col?: ColumnIndex, asc?: boolean) {
-        const filterOptions =  { asc: asc, colIndex: col, page: pageIndex };
-        const copiedQuery = this.copySearchQuery(this.query, filterOptions);
-
-        this.processRequest(this.userReq.getUsers(copiedQuery), userData => {
-            this.users = userData.data;
-            this.cmntNumber = userData.cmntNumber;
-            this.artNumber = userData.artNumber;
-            
-            this.userPages = this.getPageNumberArray(userData.dataCount, userData.pageLength);
-            Object.assign(this.query, copiedQuery);
-        });
     }
 
     getCommentCount(): number {
@@ -130,14 +128,6 @@ class UserInfoCtrl extends PagedCtrl {
     getArticleCount(): number {
         const user = this.selectedUser;
         return (user ? this.artNumber[user.id] : null) || 0;
-    }
-
-    private sortUsersInternally(col: ColumnIndex) {
-        if (!this.userPages.length)
-            return;
-
-        const asc = col === this.query.colIndex ? !this.query.asc : true;
-        this.getFilteredUsers(null, col, asc);
     }
 
     goToCommentsList() {

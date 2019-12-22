@@ -21,7 +21,7 @@
 								<label class="panel-title">Filters</label>
 							</div>
 							<div class="panel-body fade collapse" id="filters">
-								<form class="form-inline" ng-submit="ctrl.getFilteredItems()">
+								<form class="form-inline" ng-submit="ctrl.filterComments()">
 									<div class="form-group input-group">
 										<span class="input-group-addon glyphicon glyphicon-search"></span>
 										<input type="search" class="input-sm" ng-model="ctrl.query.id" placeholder="ID" />
@@ -53,10 +53,10 @@
 						<table class="table table-hover table-striped" ng-disabled="ctrl.sending">
 							<tr>
 								<th>#</th>
-								<th><sort-btn name="'Id'" col-index="6" cur-col-index="ctrl.query.colIndex" asc="ctrl.query.asc" fn-click="ctrl.sortItems"></sort-btn></th>
-								<th><sort-btn name="'Date'" col-index="7" cur-col-index="ctrl.query.colIndex" asc="ctrl.query.asc" fn-click="ctrl.sortItems"></sort-btn></th>
-								<th><sort-btn name="'Article'" col-index="8" cur-col-index="ctrl.query.colIndex" asc="ctrl.query.asc" fn-click="ctrl.sortItems"></sort-btn></th>
-								<th><sort-btn name="'State'" col-index="4" cur-col-index="ctrl.query.colIndex" asc="ctrl.query.asc" fn-click="ctrl.sortItems"></sort-btn></th>
+								<th><sort-btn name="'Id'" col-index="6" cur-col-index="ctrl.query.colIndex" asc="ctrl.query.asc" fn-click="ctrl.sortComments"></sort-btn></th>
+								<th><sort-btn name="'Date'" col-index="7" cur-col-index="ctrl.query.colIndex" asc="ctrl.query.asc" fn-click="ctrl.sortComments"></sort-btn></th>
+								<th><sort-btn name="'Article'" col-index="8" cur-col-index="ctrl.query.colIndex" asc="ctrl.query.asc" fn-click="ctrl.sortComments"></sort-btn></th>
+								<th><sort-btn name="'State'" col-index="4" cur-col-index="ctrl.query.colIndex" asc="ctrl.query.asc" fn-click="ctrl.sortComments"></sort-btn></th>
 							</tr>
 							<tr ng-repeat="c in ctrl.comments" ng-class="{'text-primary': ctrl.selectedComment.id === c.id}" ng-click="ctrl.selectComment(c)">
 								<td>{{$index + 1}}</td>

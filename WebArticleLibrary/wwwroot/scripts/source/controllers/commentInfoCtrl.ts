@@ -1,5 +1,5 @@
 import { ErrorService } from "../services/errorService";
-import { PagedCtrl } from "./pagedCtrl";
+import { PagedQuery } from "../app/pagedQuery";
 import { IComment, ICommentSearch, CommentRequest, CommentStatus } from "../services/api/commentRequest";
 import { ISearchQuery, ColumnIndex } from "../services/api/apiRequest";
 import { StateService } from "@uirouter/core";
@@ -9,16 +9,17 @@ import { ModalOpener } from "./modals";
 import { AuthService } from "../services/authService";
 import { EnumHelper, AppSystem } from "../app/system";
 import { inject } from "../app/inject";
+import { BaseCtrl } from "./baseCtrl";
 
 @inject(ErrorService, AuthService, CommentRequest, ConverterService, 
     AppSystem.DEPENDENCY_MODAL_SERVICE, AppSystem.DEPENDENCY_STATE, 
     AppSystem.DEPENDENCY_ESCAPING_SERVICE)
-class CommentInfoCtrl extends PagedCtrl {
+class CommentInfoCtrl extends BaseCtrl {
     query: ICommentSearch;
-    
-    comments: IComment[];
 
     pages: number[];
+
+    comments: IComment[];
 
     selectedComment: IComment;
 
@@ -26,7 +27,9 @@ class CommentInfoCtrl extends PagedCtrl {
 
     readonly goToPage: (pageIndex: number) => void;
 
-    readonly sortItems: (col: ColumnIndex) => void;
+    readonly sortComments: (col: ColumnIndex) => void;
+
+    private pagedQuery: PagedQuery<ICommentSearch>;
 
     private articleNames: Record<number, string>;
 
@@ -43,55 +46,40 @@ class CommentInfoCtrl extends PagedCtrl {
         private $sce: ISCEService) {
         super(errorSrv);
 
-        this.goToPage = this.goToPageInternally.bind(this);
-        
-        this.sortItems = this.sortItemsInternally.bind(this);
-
         this.query = {
             asc: false,
             page: 1,
             colIndex: ColumnIndex.DATE
         };
 
+        this.pagedQuery = new PagedQuery(this.query, this.filterItems.bind(this));
+        this.goToPage = this.pagedQuery.goToPage.bind(this.pagedQuery);
+        this.sortComments = this.sortItems.bind(this);
+
         this.comments = [];
 
         this.statuses = EnumHelper.getKeys(CommentStatus);
 
-        super.setCurrentUser(authSrv, () => 
-            this.getFilteredItems(this.query.page, this.query.colIndex, this.query.asc), this.$state);
+        super.setCurrentUser(authSrv, () => this.filterComments(), this.$state);
     }
 
-    private goToPageInternally(pageIndex: number) {
-        if (this.query.page === pageIndex)
-            return;
-
-        this.getFilteredItems(pageIndex, null, null);
-    }
-
-    getFilteredItems(pageIndex: number, col: ColumnIndex, asc: boolean) {
-        const queryOptions: ISearchQuery = { asc: asc, colIndex: col, page: pageIndex };
-        const searchFilter: ICommentSearch = this.copySearchQuery(this.query, queryOptions);
-
-        this.processRequest(this.commentReq.get(searchFilter), cmntInfo => {
+    private filterItems(filterQuery: ICommentSearch) {
+        this.processRequest(this.commentReq.get(filterQuery), cmntInfo => {
             this.comments = cmntInfo.data;
             this.articleNames = cmntInfo.articleNames;
             this.complaintNumber = cmntInfo.complaintNumber;
             this.relatedCmntNumber = cmntInfo.relatedCmntNumber;
 
-            this.pages = this.getPageNumberArray(cmntInfo.dataCount, cmntInfo.pageLength);
-            Object.assign(this.query, searchFilter);
+            this.pages = PagedQuery.getPageNumberArray(cmntInfo.dataCount, cmntInfo.pageLength);
+            Object.assign(this.query, filterQuery);
 
             this.selectedComment = null;
         });
     }
 
-    private sortItemsInternally(col: ColumnIndex) {
-        if (!this.pages.length)
-            return;
-
-        const asc = col === this.query.colIndex ? !this.query.asc : true;
-        this.getFilteredItems(null, col, asc);
-    }
+    private sortItems(col: ColumnIndex) { this.pagedQuery.sortItems(col, this.pages); }
+    
+    filterComments() { this.pagedQuery.filterItems(); }
 
     getArticleName(cmnt: IComment): string {
         return cmnt ? this.articleNames[cmnt.articleId] : null;

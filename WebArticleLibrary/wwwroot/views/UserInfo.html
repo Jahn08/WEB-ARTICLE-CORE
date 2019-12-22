@@ -21,7 +21,7 @@
 								<label class="panel-title">Filters</label>
 							</div>
 							<div class="panel-body fade collapse" id="filters">
-								<form class="form-inline" ng-submit="ctrl.getFilteredUsers()">
+								<form class="form-inline" ng-submit="ctrl.filterUsers()">
 									<div class="form-group input-group">
 										<span class="input-group-addon glyphicon glyphicon-search"></span>
 										<input type="search" class="input-sm" ng-model="ctrl.query.login" placeholder="Login" />
@@ -58,7 +58,7 @@
 						<table class="table table-hover table-striped" ng-disabled="ctrl.sending">
 							<tr>
 								<th>#</th>
-								<th><sort-btn name="'Name'" col-index="0" cur-col-index="ctrl.query.colIndex" asc="ctrl.query.asc" fn-click="ctrl.sortUsers"></sort-btn></th>
+								<th><sort-btn name="'Login'" col-index="0" cur-col-index="ctrl.query.colIndex" asc="ctrl.query.asc" fn-click="ctrl.sortUsers"></sort-btn></th>
 								<th><sort-btn name="'State'" col-index="4" cur-col-index="ctrl.query.colIndex" asc="ctrl.query.asc" fn-click="ctrl.sortUsers"></sort-btn></th>
 							</tr>
 							<tr ng-repeat="u in ctrl.users | filter:{ id: '!' + ctrl.userInfo.id }" ng-class="{'text-primary': ctrl.selectedUser.id === u.id}" ng-click="ctrl.selectRow(u)">
@@ -67,7 +67,7 @@
 								<td>{{ctrl.getStatusCaption(u.status)}}</td>
 							</tr>
 						</table>
-						<pagination pages="ctrl.userPages" cur-page="ctrl.query.page" fn-next-page="ctrl.goToUserPage"></pagination>					
+						<pagination pages="ctrl.pages" cur-page="ctrl.query.page" fn-next-page="ctrl.goToPage"></pagination>					
 					</div>
 					<div class="col-xs-12 col-sm-5">
 							<div class="panel panel-info" ng-show="ctrl.selectedUser">

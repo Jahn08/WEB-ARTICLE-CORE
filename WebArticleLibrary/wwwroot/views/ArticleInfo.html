@@ -26,7 +26,7 @@
 										<label class="panel-title">Filters</label>
 									</div>
 									<div class="panel-body fade collapse" id="publicFilters">
-										<form class="form-inline" ng-submit="ctrl.getFilteredArticles(true)">
+										<form class="form-inline" ng-submit="ctrl.filterArticles(true)">
 											<div class="form-group input-group">
 												<span class="input-group-addon glyphicon glyphicon-search"></span>
 												<input type="search" class="input-sm" ng-model="ctrl.publicQuery.text" placeholder="Name or Description" />
@@ -97,7 +97,7 @@
 										<td>{{ctrl.getArticleStatusCaption(a.status)}}</td>
 									</tr>
 								</table>
-								<pagination pages="ctrl.publicArtPages" cur-page="ctrl.publicQuery.page" fn-next-page="ctrl.goToArticlePage" add-param="true"></pagination>
+								<pagination pages="ctrl.publicArtPages" cur-page="ctrl.publicQuery.page" fn-next-page="ctrl.goToPage" add-param="true"></pagination>
 							</div>
 							<div class="col-sm-3">
 								<div class="panel panel-info" ng-show="ctrl.selectedArticle">
@@ -130,7 +130,7 @@
 										<label class="panel-title">Filters</label>
 									</div>
 									<div class="panel-body fade collapse" id="privateFilters">
-										<form class="form-inline" ng-submit="ctrl.getFilteredArticles(false)">
+										<form class="form-inline" ng-submit="ctrl.filterArticles(false)">
 											<div class="form-group input-group">
 												<span class="input-group-addon glyphicon glyphicon-search"></span>
 												<input type="search" class="input-sm" ng-model="ctrl.privateQuery.text" placeholder="Name or Description" />
@@ -189,7 +189,7 @@
 										<td>{{ctrl.getArticleStatusCaption(a.status)}}</td>
 									</tr>
 								</table>
-								<pagination pages="ctrl.privateArtPages" cur-page="ctrl.privateQuery.page" fn-next-page="ctrl.goToArticlePage"></pagination>
+								<pagination pages="ctrl.privateArtPages" cur-page="ctrl.privateQuery.page" fn-next-page="ctrl.goToPage"></pagination>
 							</div>
 							<div class="col-sm-3">
 								<div class="panel panel-info" ng-show="ctrl.selectedPrivateArticles.length === 1">
