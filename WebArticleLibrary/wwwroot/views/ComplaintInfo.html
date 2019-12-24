@@ -5,8 +5,8 @@
 	<li><a ui-sref="app.properties">Properties</a></li>
 	<li><a ui-sref="app.commentinfo">Comments</a></li>
 	<li><a ui-sref="app.estimateinfo">Estimates</a></li>
-	<li ng-show="hasAdminStatus(1)"><a ui-sref="app.userinfo">Users</a></li>
-	<li class="active" ng-show="hasAdminStatus(1)"><a ui-sref="app.complaintinfo">Complaints</a></li>
+	<li ng-show="ctrl.hasAdminStatus()"><a ui-sref="app.userinfo">Users</a></li>
+	<li class="active" ng-show="ctrl.hasAdminStatus()"><a ui-sref="app.complaintinfo">Complaints</a></li>
 </ul>
 
 <div class="tab-content">
@@ -21,85 +21,82 @@
 							<label class="panel-title">Filters</label>
 						</div>
 						<div class="panel-body fade collapse" id="filters">
-							<form class="form-inline" ng-submit="getFilteredItems()">
+							<form class="form-inline" ng-submit="ctrl.filterComplaints()">
 								<div class="form-group input-group">
 									<span class="input-group-addon glyphicon glyphicon-search"></span>
-									<input type="search" class="input-sm" ng-model="filter.text" placeholder="Text" />
-									<input type="search" class="input-sm" ng-model="filter.entity" placeholder="Entity" />
-									<input type="search" class="input-sm" ng-model="filter.author" placeholder="Author" />
-									<input type="search" class="input-sm" ng-model="filter.assignedTo" placeholder="Assigned To" />
+									<input type="search" class="input-sm" ng-model="ctrl.query.text" placeholder="Text" />
+									<input type="search" class="input-sm" ng-model="ctrl.query.author" placeholder="Author" />
+									<input type="search" class="input-sm" ng-model="ctrl.query.assignedTo" placeholder="Assigned To" />
 								</div>
 								<div class="form-group input-group">
 									<span title="Creation date period" class="input-group-addon glyphicon glyphicon-calendar"></span>
-									<input type="date" class="input-sm" ng-model="filter.dateStart" />
-									<input type="date" class="input-sm" ng-model="filter.dateEnd" />
+									<input type="date" class="input-sm" ng-model="ctrl.query.dateStart" />
+									<input type="date" class="input-sm" ng-model="ctrl.query.dateEnd" />
 								</div>
 								<div class="form-group input-group">
 									<span title="Status & Entity Type" class="input-group-addon glyphicon glyphicon-stats"></span>
-									<select class="input-sm" ng-model="filter.status" placeholder="Status">
+									<select class="input-sm" ng-model="ctrl.query.status" placeholder="Status">
 										<option value="" selected>-</option>
-										<option ng-repeat="s in statuses" value="{{s}}">{{getCmplStatusCaption(s)}}</option>
+										<option ng-repeat="s in ctrl.statuses" value="{{s}}">{{ctrl.getComplaintStatusCaption(s)}}</option>
 									</select>
-									<select class="input-sm" ng-model="filter.entityType" placeholder="Entity Type">
+									<select class="input-sm" ng-model="ctrl.query.entityType" placeholder="Entity Type">
 										<option value="" selected>-</option>
-										<option ng-repeat="t in entityTypes" value="{{t.value}}">{{t.name}}</option>
+										<option ng-repeat="t in ctrl.entityTypes" value="{{t}}">{{ctrl.getEntityTypeCaption(t)}}</option>
 									</select>
-								</div>
-								<button type="submit" class="btn btn-success">Search</button>
+                                </div>
+                                <div>
+                                    <button type="submit" class="btn btn-success">Search</button>
+                                </div>
 							</form>
 						</div>
 					</div>
 				</div>
 				<div class="col-xs-12">
 					<div class="col-xs-12 col-sm-10 btn-group btn-group-sm">
-						<button ng-disabled="sending || !selectedCmpl || !cmplIsCreated() || selectedCmpl.assignedToId != ui.id" title="Approve the comlaint" type="button" class="btn btn-default" ng-click="approveComplaint()">
+						<button ng-disabled="ctrl.sending || !ctrl.selectedComplaint || !ctrl.isComplaintCreated() || ctrl.selectedComplaint.assignedToId !== ctrl.userInfo.id" title="Approve the comlaint" type="button" class="btn btn-default" ng-click="ctrl.approveComplaint()">
 							<span class="glyphicon glyphicon-ok-circle"></span>
 						</button>
-						<button ng-disabled="sending || !selectedCmpl || !cmplIsCreated() || selectedCmpl.assignedToId != ui.id" title="Refuse the complaint" type="button" class="btn btn-default" ng-click="refuseComplaint()">
+						<button ng-disabled="ctrl.sending || !ctrl.selectedComplaint || !ctrl.isComplaintCreated() || ctrl.selectedComplaint.assignedToId !== ctrl.userInfo.id" title="Refuse the complaint" type="button" class="btn btn-default" ng-click="ctrl.refuseComplaint()">
 							<span class="glyphicon glyphicon-ban-circle"></span>
 						</button>
-						<button ng-disabled="sending || !selectedCmpl || !cmplIsCreated() || selectedCmpl.assignedToId || userIsRelatedToIssue()" title="Assign to me" type="button" ng-click="assignCmpl()" class="btn btn-default">
+						<button ng-disabled="ctrl.sending || !ctrl.selectedComplaint || !ctrl.isComplaintCreated() || ctrl.selectedComplaint.assignedToId || ctrl.isUserRelatedToIssue()" title="Assign to me" type="button" ng-click="ctrl.assignComplaint()" class="btn btn-default">
 							<span class="glyphicon glyphicon-check"></span>
 						</button>
-						<button ng-disabled="sending || !selectedCmpl || selectedCmpl.assignedToId != ui.id" title="Withdraw from my assignments" ng-click="unassignCmpl()" type="button" class="btn btn-default">
+						<button ng-disabled="ctrl.sending || !ctrl.selectedComplaint || ctrl.selectedComplaint.assignedToId !== ctrl.userInfo.id" title="Withdraw from my assignments" ng-click="ctrl.unassignComplaint()" type="button" class="btn btn-default">
 							<span class="glyphicon glyphicon-share"></span>
 						</button>
-						<div class="input-group left-sm-spacious">
-							<span class="input-group-addon glyphicon glyphicon-search"></span>
-							<input type="search" class="input-sm" ng-model="search" id="search" placeholder="Find by fields" />
-						</div>
 					</div>
 					<div class="col-xs-12 col-sm-8">
-						<table class="table table-hover table-striped" ng-disabled="sending">
+						<table class="table table-hover table-striped" ng-disabled="ctrl.sending">
 							<tr>
 								<th>#</th>
-								<th><sort-btn name="'Text'" col-index="5" cur-col-index="col" asc="colAsc" fn-click="sortItems"></sort-btn></th>
-								<th><sort-btn name="'Date'" col-index="7" cur-col-index="col" asc="colAsc" fn-click="sortItems"></sort-btn></th>
-								<th><sort-btn name="'Entity'" col-index="6" cur-col-index="col" asc="colAsc" fn-click="sortItems"></sort-btn></th>
-								<th><sort-btn name="'Author'" col-index="1" cur-col-index="col" asc="colAsc" fn-click="sortItems"></sort-btn></th>
-								<th><sort-btn name="'Assigned to'" col-index="3" cur-col-index="col" asc="colAsc" fn-click="sortItems"></sort-btn></th>
-								<th><sort-btn name="'State'" col-index="4" cur-col-index="col" asc="colAsc" fn-click="sortItems"></sort-btn></th>
+								<th><sort-btn name="'Text'" col-index="5" cur-col-index="ctrl.query.colIndex" asc="ctrl.query.asc" fn-click="ctrl.sortComplaints"></sort-btn></th>
+								<th><sort-btn name="'Date'" col-index="7" cur-col-index="ctrl.query.colIndex" asc="ctrl.query.asc" fn-click="ctrl.sortComplaints"></sort-btn></th>
+								<th><sort-btn name="'Entity'" col-index="6" cur-col-index="ctrl.query.colIndex" asc="ctrl.query.asc" fn-click="ctrl.sortComplaints"></sort-btn></th>
+								<th><sort-btn name="'Author'" col-index="1" cur-col-index="ctrl.query.colIndex" asc="ctrl.query.asc" fn-click="ctrl.sortComplaints"></sort-btn></th>
+								<th><sort-btn name="'Assigned to'" col-index="3" cur-col-index="ctrl.query.colIndex" asc="ctrl.query.asc" fn-click="ctrl.sortComplaints"></sort-btn></th>
+								<th><sort-btn name="'State'" col-index="4" cur-col-index="ctrl.query.colIndex" asc="ctrl.query.asc" fn-click="ctrl.sortComplaints"></sort-btn></th>
 							</tr>
-							<tr ng-repeat="c in cmpls" ng-class="{'text-primary': selectedCmpl.id == c.id}" ng-click="selectCmplRow(c)">
+							<tr ng-repeat="c in ctrl.complaints" ng-class="{'text-primary': ctrl.selectedComplaint.id === c.id}" ng-click="ctrl.selectComplaint(c)">
 								<td>{{$index + 1}}</td>
 								<td><limited-val value="c.text" length="50"></limited-val></td>
 								<td>{{c.insertDate|date:'medium'}}</td>
-								<td>{{c.userCommentId ? 'Comment #' + c.userCommentId: 'Article ' + getArticleName(c.articleId)}}</td>
-								<td>{{getUserName(c.authorId)}}</td>
-								<td>{{getUserName(c.assignedToId)}}</td>
-								<td>{{getCmplStatusCaption(c.status)}}</td></tr>
+								<td>{{c.userCommentId ? 'Comment #' + c.userCommentId: 'Article "' + ctrl.getArticleName(c.articleId) + '"'}}</td>
+								<td>{{ctrl.getUserName(c.authorId)}}</td>
+								<td>{{ctrl.getUserName(c.assignedToId)}}</td>
+								<td>{{ctrl.getComplaintStatusCaption(c.status)}}</td></tr>
 						</table>
-						<pagination pages="pages" cur-page="page" fn-next-page="goToPage"></pagination>
+						<pagination pages="ctrl.pages" cur-page="ctrl.query.page" fn-next-page="ctrl.goToPage"></pagination>
 					</div>
 					<div class="col-xs-12 col-sm-4">
-						<div class="panel panel-info" ng-show="selectedCmpl">
+						<div class="panel panel-info" ng-show="ctrl.selectedComplaint">
 							<div class="panel-heading pointer" data-toggle="collapse" data-target="#complaintInfo">
 								<span class="panel-title">Additional Information</span>
 							</div>
 							<div style="overflow:hidden;" class="panel-body fade in" id="complaintInfo">
 								<ul>
-									<li ng-show="selectedCmpl.userCommentId"><strong>Comment #{{selectedCmpl.userCommentId}}: <span class="text-info" ng-bind-html="getCommentContent()"></span></strong></li>
-									<li ng-show="selectedCmpl.articleId"><strong>Article: </strong><a ui-sref="app.articleview({id:selectedCmpl.articleId})">{{getArticleName()}}</a></li>
+									<li ng-show="ctrl.selectedComplaint.userCommentId"><strong>Comment #{{ctrl.selectedComplaint.userCommentId}}: <span class="text-info" ng-bind-html="ctrl.getCommentContent()"></span></strong></li>
+									<li ng-show="ctrl.selectedComplaint.articleId"><strong>Article: </strong><a ui-sref="app.articleview({id:ctrl.selectedComplaint.articleId})">{{ctrl.getArticleName()}}</a></li>
 								</ul>
 							</div>
 						</div>
@@ -110,6 +107,6 @@
 	</div>
 
 	<div class="container">
-		<loading msg="msg" sending="sending" is-error="isError"></loading>
+		<loading msg="ctrl.msg" ctrl.sending="ctrl.sending" is-error="ctrl.isError"></loading>
 	</div>
 </div>

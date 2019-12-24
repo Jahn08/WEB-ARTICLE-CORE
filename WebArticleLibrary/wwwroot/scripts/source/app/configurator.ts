@@ -16,6 +16,7 @@ import { PropertiesCtrl } from '../controllers/propertiesCtrl';
 import { ArticleEditCtrl } from '../controllers/articleEditCtrl';
 import { ArticleViewCtrl } from '../controllers/articleViewCtrl';
 import { CommentInfoCtrl } from '../controllers/commentInfoCtrl';
+import { ComplaintInfoCtrl } from '../controllers/complaintInfoCtrl';
 
 angular.module(AppSystem.APP_MODULE_NAME, 
         ['ui.router', 'ui.bootstrap', 'ngResource', 'ngCookies', 'ngSanitize'])
@@ -105,7 +106,8 @@ angular.module(AppSystem.APP_MODULE_NAME,
 				views: {
 					'content@': {
 						templateUrl: 'views/ComplaintInfo.html',
-						controller: 'ComplaintInfoCtrl'
+                        controller: ComplaintInfoCtrl,
+						controllerAs: Constants.CONTROLLER_PSEUDONIM
 					}
 				},
 				data: {

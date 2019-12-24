@@ -22,6 +22,7 @@ import { NotificationModalCtrl } from './modals/notificationModalCtrl';
 import { RegistrationModalCtrl } from './modals/registrationModalCtrl';
 import { PasswordMarkForResetModalCtrl } from './modals/passwordMarkForResetModalCtrl';
 import { ResponseModalCtrl } from './modals/responseModalCtrl';
+import { ComplaintInfoCtrl } from './complaintInfoCtrl';
 
 const appModule = AppSystem.appModule;
 
@@ -30,5 +31,5 @@ const appModule = AppSystem.appModule;
     ArticleHistoryModalCtrl, UserInfoCtrl, CommentModalCtrl, UserConfirmationCtrl,
     EmailConfirmationCtrl, ResetPasswordCtrl, PropertiesCtrl, ArticleEditCtrl,
     AmendmentModalCtrl, ComplaintModalCtrl, ResponseModalCtrl, ArticleViewCtrl, 
-    CommentInfoCtrl]
+    CommentInfoCtrl, ComplaintInfoCtrl]
     .forEach(ctrl => appModule.controller(ctrl.name, ctrl));

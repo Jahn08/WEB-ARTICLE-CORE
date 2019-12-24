@@ -10,11 +10,11 @@ class ComplaintRequest extends ApiRequest {
         return this.saveResource(complaint);
     }
 
-    getComplaints(query: IComplaintSearch): IPromise<IComplaintList> {
+    get(query: IComplaintSearch): IPromise<IComplaintList> {
         return this.getResource(query);
     }
 
-    setComplaintStatus(complaintId: number, status: ComplaintStatus, response: string): 
+    setStatus(complaintId: number, status: ComplaintStatus, response: string): 
         IPromise<void> {
         return this.saveResource({
             id: complaintId,
@@ -35,7 +35,7 @@ class ComplaintRequest extends ApiRequest {
         return this.setAssignment(complaintId, false);
     }
 
-    getComplaintStatusCaption(status: ComplaintStatus): string {
+    getStatusCaption(status: ComplaintStatus): string {
         switch (status) {
             case ComplaintStatus.CREATED:
                 return 'created';
@@ -43,6 +43,17 @@ class ComplaintRequest extends ApiRequest {
                 return 'approved';
             case ComplaintStatus.REFUSED:
                 return 'refused';
+            default:
+                return 'none';
+        }
+    }
+
+    getEntityTypeCaption(type: ComplaintEntityType): string {
+        switch (type) {
+            case ComplaintEntityType.ARTICLE:
+                return 'article';
+            case ComplaintEntityType.COMMENT:
+                return 'comment';
             default:
                 return 'none';
         }
@@ -86,7 +97,7 @@ interface IComplaintList extends INameSearchResult<IComplaint> {
 }
 
 enum ComplaintStatus {
-    CREATED= 1,
+    CREATED = 1,
   
     APPROVED = 4,
         
@@ -100,4 +111,4 @@ enum ComplaintEntityType
     ARTICLE
 }
     
-export { ComplaintRequest };
+export { ComplaintRequest, IComplaint, IComplaintSearch, ComplaintStatus, ComplaintEntityType };
