@@ -17,6 +17,7 @@ import { ArticleEditCtrl } from '../controllers/articleEditCtrl';
 import { ArticleViewCtrl } from '../controllers/articleViewCtrl';
 import { CommentInfoCtrl } from '../controllers/commentInfoCtrl';
 import { ComplaintInfoCtrl } from '../controllers/complaintInfoCtrl';
+import { EstimateInfoCtrl } from '../controllers/estimateInfoCtrl';
 
 angular.module(AppSystem.APP_MODULE_NAME, 
         ['ui.router', 'ui.bootstrap', 'ngResource', 'ngCookies', 'ngSanitize'])
@@ -145,7 +146,8 @@ angular.module(AppSystem.APP_MODULE_NAME,
 				views: {
 					'content@': {
 						templateUrl: 'views/EstimateInfo.html',
-						controller: 'EstimateInfoCtrl'
+                        controller: EstimateInfoCtrl,
+						controllerAs: Constants.CONTROLLER_PSEUDONIM
 					}
 				},
 				data: {

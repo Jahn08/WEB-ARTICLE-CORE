@@ -68,17 +68,20 @@ namespace WebArticleLibrary.Controllers
 			switch (colIndex)
 			{
 				case ColumnIndex.DATE:
-					source = asc ? source.OrderBy(s => s.InsertDate) : source.OrderByDescending(s => s.InsertDate);
+					source = asc ? source.OrderBy(s => s.InsertDate) : 
+                        source.OrderByDescending(s => s.InsertDate);
 					break;
 				case ColumnIndex.STATUS:
-					source = asc ? source.OrderByDescending(s => s.Estimate.ToString()) : 
-                        source.OrderBy(s => s.Estimate.ToString());
+					source = asc ? source.OrderBy(s => s.Estimate.ToString()) : 
+                        source.OrderByDescending(s => s.Estimate.ToString());
 					break;
 				case ColumnIndex.ID:
-					source = asc ? source.OrderBy(s => s.Id) : source.OrderByDescending(s => s.Id);
+					source = asc ? source.OrderBy(s => s.Id) : 
+                        source.OrderByDescending(s => s.Id);
 					break;
 				case ColumnIndex.ARTICLE:
-					source = asc ? source.OrderBy(s => s.Article.Name) : source.OrderByDescending(s => s.Article.Name);
+					source = asc ? source.OrderBy(s => s.Article.Name) : 
+                        source.OrderByDescending(s => s.Article.Name);
 					break;
 			}
 

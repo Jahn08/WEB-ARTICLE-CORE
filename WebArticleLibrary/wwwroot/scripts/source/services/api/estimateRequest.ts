@@ -11,7 +11,7 @@ class EstimateRequest extends ApiRequest {
         return this.saveResource({ id: articleId, estimate });
     }
 
-    getEstimates(query: IEstimateSearch): IPromise<INameSearchResult<IEstimate>> {
+    get(query: IEstimateSearch): IPromise<INameSearchResult<IEstimate>> {
         return this.getResource(query);
     }
 
@@ -32,13 +32,13 @@ interface IEstimate extends IArticleEntity {
 }
 
 interface IEstimateSearch extends ISearchQuery {
-    articleName: string;
+    articleName?: string;
 
     userId?: number;
     
     dateStart?: Date;
     
-    dateEnd: string;
+    dateEnd?: string;
     
     estimate?: EstimateType;
 }
@@ -51,4 +51,4 @@ enum EstimateType {
     NEGATIVE
 }
 
-export { EstimateRequest, EstimateType };
+export { EstimateRequest, IEstimate, EstimateType, IEstimateSearch };
