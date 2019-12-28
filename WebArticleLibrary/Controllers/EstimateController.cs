@@ -44,10 +44,7 @@ namespace WebArticleLibrary.Controllers
 				data = data.Where(c => c.Estimate == estimate);
 
 			if (articleName != null)
-			{
-				var filter = articleName.ToUpper();
-				data = data.Where(c => c.Article.Name.ToUpper().Contains(filter));
-			}
+				data = data.Where(c => c.Article.Name.IndexOf(articleName, NO_CASE_COMPARISON) != -1);
 
 			Int32 dataCount = data.Count();
 			var ests = OrderEstimates(data, colIndex, asc)

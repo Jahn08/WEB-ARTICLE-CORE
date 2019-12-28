@@ -258,29 +258,19 @@ namespace WebArticleLibrary.Controllers
 				articles = articles.Where(a => a.Status == status);
 
 			if (!String.IsNullOrEmpty(tags))
-			{
-				tags = tags.ToUpper();
-				articles = articles.Where(a => a.Tags.ToUpper().Contains(tags));
-			}
+				articles = articles.Where(a => a.Tags.IndexOf(tags, NO_CASE_COMPARISON) != -1);
 
 			if (!String.IsNullOrEmpty(text))
-			{
-				text = text.ToUpper();
-				articles = articles.Where(a => (a.Name + a.Description).ToUpper().Contains(text));
-			}
+				articles = articles.Where(a => 
+                    (a.Name + a.Description).IndexOf(text, NO_CASE_COMPARISON) != -1);
 
-			if (assignedTo != null)
-			{
-				assignedTo = assignedTo.ToUpper();
+			if (!String.IsNullOrEmpty(assignedTo))
 				articles = articles.Where(a => a.AssignedToId != null &&
-					(a.AssignedTo.FirstName + a.AssignedTo.LastName + a.AssignedTo.PatronymicName)
-						.ToUpper().Contains(assignedTo));
-			}
+					a.AssignedTo.Login.IndexOf(assignedTo, NO_CASE_COMPARISON) != -1);
 
-			if (author != null)
+			if (!String.IsNullOrEmpty(author))
 			{
-				author = author.ToUpper();
-				var ids = dbContext.User.Where(u => u.Login.ToUpper().Contains(author))
+				var ids = dbContext.User.Where(u => u.Login.IndexOf(author, NO_CASE_COMPARISON) != -1)
                     .Select(u => u.Id);
 				articles = articles.Where(a => ids.Contains(a.AuthorId));
 			}
@@ -380,21 +370,16 @@ namespace WebArticleLibrary.Controllers
 			}
 
 			if (!String.IsNullOrEmpty(tags))
-			{
-				tags = tags.ToUpper();
-				articles = articles.Where(a => a.Tags.ToUpper().Contains(tags));
-			}
+				articles = articles.Where(a => a.Tags.IndexOf(tags, NO_CASE_COMPARISON) != -1);
 
 			if (!String.IsNullOrEmpty(text))
-			{
-				text = text.ToUpper();
-				articles = articles.Where(a => (a.Name + a.Description).ToUpper().Contains(text));
-			}
+				articles = articles.Where(a => 
+                    (a.Name + a.Description).IndexOf(text, NO_CASE_COMPARISON) != -1);
 
 			if (author != null)
 			{
-				author = author.ToUpper();
-				var ids = dbContext.User.Where(u => u.Login.ToUpper().Contains(author)).Select(u => u.Id);
+				var ids = dbContext.User.Where(u => 
+                    u.Login.IndexOf(author, NO_CASE_COMPARISON) != -1).Select(u => u.Id);
 				articles = articles.Where(a => ids.Contains(a.AuthorId));
 			}
 

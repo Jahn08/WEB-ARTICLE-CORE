@@ -83,27 +83,18 @@ namespace WebArticleLibrary.Controllers
 					users = users.Where(u => u.Status == Status);
 
 				if (login != null)
-				{
-					var filterLogin = login.ToUpper();
-					users = users.Where(u => u.Login.ToUpper().Contains(filterLogin));
-				}
+					users = users.Where(u => u.Login.IndexOf(login, NO_CASE_COMPARISON) != -1);
 
 				if (email != null || name != null)
 				{
 					users = users.Where(u => u.ShowPrivateInfo);
 
 					if (email != null)
-					{
-						var filterEmail = email.ToUpper();
-						users = users.Where(u => u.Email.ToUpper().Contains(filterEmail));
-					}
+						users = users.Where(u => u.Email.IndexOf(email, NO_CASE_COMPARISON) != -1);
 
 					if (name != null)
-					{
-						var filterName = name.ToUpper();
-						users = users.Where(u => 
-                            (u.FirstName + u.LastName + u.PatronymicName).ToUpper().Contains(filterName));
-					}
+						users = users.Where(u => (u.FirstName + u.LastName + u.PatronymicName)
+                            .IndexOf(name, NO_CASE_COMPARISON) != -1);
 				}
 
 				users = OrderUsers(users, colIndex, asc);

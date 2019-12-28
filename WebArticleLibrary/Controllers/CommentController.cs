@@ -154,10 +154,7 @@ namespace WebArticleLibrary.Controllers
 				cmnts = cmnts.Where(c => c.Id.ToString().Contains(id));
 
 			if (articleName != null)
-			{
-				var filterVal = articleName.ToUpper();
-				cmnts = cmnts.Where(c => c.Article.Name.ToUpper().Contains(filterVal));
-			}
+				cmnts = cmnts.Where(c => c.Article.Name.IndexOf(articleName, NO_CASE_COMPARISON) != -1);
 
 			Int32 dataCount = cmnts.Count();
 

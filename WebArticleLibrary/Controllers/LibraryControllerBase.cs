@@ -10,6 +10,9 @@ namespace WebArticleLibrary.Controllers
 {
 	public class LibraryControllerBase: ControllerBase
 	{   
+        protected const StringComparison NO_CASE_COMPARISON = 
+            StringComparison.InvariantCultureIgnoreCase;
+
 		protected const Int32 PAGE_LENGTH = 10;
 
 		protected readonly ArticleLibraryContext dbContext;

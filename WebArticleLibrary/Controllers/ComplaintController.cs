@@ -302,29 +302,18 @@ namespace WebArticleLibrary.Controllers
 			}
 
 			if (entity != null)
-			{
-				var filter = entity.ToUpper();
-				data = data.Where(c => (c.UserCommentId == null ? c.Article.Name.ToUpper() :
-					c.UserCommentId.ToString()).Contains(filter));
-			}
+				data = data.Where(c => (c.UserCommentId == null ? c.Article.Name :
+					c.UserCommentId.ToString()).IndexOf(entity, NO_CASE_COMPARISON) != -1);
 
 			if (assignedTo != null)
-			{
-				var filter = assignedTo.ToUpper();
-				data = data.Where(c => c.AssignedToId != null && c.AssignedTo.Login.ToUpper().Contains(filter));
-			}
+				data = data.Where(c => c.AssignedToId != null && 
+                    c.AssignedTo.Login.IndexOf(assignedTo, NO_CASE_COMPARISON) != -1);
 
 			if (author != null)
-			{
-				var filter = author.ToUpper();
-				data = data.Where(c => c.Author.Login.ToUpper().Contains(filter));
-			}
+				data = data.Where(c => c.Author.Login.IndexOf(author, NO_CASE_COMPARISON) != -1);
 
 			if (text != null)
-			{
-				var filter = text.ToUpper();
-				data = data.Where(c => c.Text.ToUpper().Contains(filter));
-			}
+				data = data.Where(c => c.Text.IndexOf(text, NO_CASE_COMPARISON) != -1);
 
 			Int32 dataCount = data.Count();
 			var cmplns = OrderComplaints(data, colIndex, asc)
