@@ -7,9 +7,6 @@ namespace WebArticleLibrary.Model
 	{
 		public ArticleLibraryContext(): base()
 		{
-			//TODO: Dealing with migrations after turning them on later:
-            //Database.SetInitializer(
-            //new MigrateDatabaseToLatestVersion<ArticleLibraryContext, Configuration>());
 		}
 
 		public ArticleLibraryContext(DbContextOptions<ArticleLibraryContext> options): base(options)
