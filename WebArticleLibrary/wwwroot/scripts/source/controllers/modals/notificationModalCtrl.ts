@@ -4,11 +4,20 @@ import { INotification } from "../../services/api/notificationRequest";
 import { ui } from "angular";
 import { AppSystem } from "../../app/system";
 
-@inject(AppSystem.DEPENDENCY_STATE, AppSystem.DEPENDENCY_MODAL_INSTANCE, AppSystem.DEPENDENCY_DIALOG_MODEL)
+interface INotificationDialogModel {
+    notifications: INotification[];
+}
+
+@inject(AppSystem.DEPENDENCY_DIALOG_MODEL, AppSystem.DEPENDENCY_STATE, 
+    AppSystem.DEPENDENCY_MODAL_INSTANCE)
 class NotificationModalCtrl {
-    constructor(private $state: StateService,
-        private $modalInstance: ui.bootstrap.IModalInstanceService,
-        public notifications: INotification[]) { }
+    notifications: INotification[];
+
+    constructor(model: INotificationDialogModel,
+        private $state: StateService,
+        private $modalInstance: ui.bootstrap.IModalInstanceService) {
+            this.notifications = model.notifications;
+        }
 
     toHistory(articleId: number, historyId: number) {
         const url = this.$state.href("app.articleview", { historyId: historyId, id: articleId });
@@ -20,4 +29,4 @@ class NotificationModalCtrl {
     }
 }
 
-export { NotificationModalCtrl };
+export { NotificationModalCtrl, INotificationDialogModel };

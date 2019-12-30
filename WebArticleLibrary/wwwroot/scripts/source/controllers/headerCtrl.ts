@@ -98,8 +98,9 @@ class HeaderCtrl extends BaseCtrl {
         if (!this.notifications)
             return;
 
-        this.processRequest(this.modelOpener.openNotificationModal(this.notifications),
-            async shouldClear => {
+        this.processRequest(this.modelOpener.openNotificationModal({
+            notifications: this.notifications 
+        }), async shouldClear => {
                 if (shouldClear) {
                     const ids = this.notifications.map(val => val.id);
 
