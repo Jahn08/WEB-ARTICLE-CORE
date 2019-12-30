@@ -103,7 +103,7 @@ class ArticleEditCtrl extends BaseCtrl {
 
 		if (this.paramArticleId)
             this.setCurrentUser(authSrv, async ui => {
-                this.initExistentArticle(ui, $timeout);
+                await this.initExistentArticle(ui, $timeout);
                 this.initAmendingMode($scope, $timeout);
             }, $state);
         else

@@ -20,6 +20,10 @@ namespace WebArticleLibrary.Model
 			UserComplaints = new List<UserComplaint>();
 		}
 
+		public static String[] GetTagList(String tags) {
+			return tags == null ? new String[0]: tags.Split(" ");
+		}
+
 		[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 		[Key]
         [DataMember(Name = "id")]

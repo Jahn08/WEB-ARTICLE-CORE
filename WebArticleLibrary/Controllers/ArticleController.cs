@@ -257,8 +257,10 @@ namespace WebArticleLibrary.Controllers
 			if (status != null)
 				articles = articles.Where(a => a.Status == status);
 
-			if (!String.IsNullOrEmpty(tags))
-				articles = articles.Where(a => a.Tags.IndexOf(tags, NO_CASE_COMPARISON) != -1);
+			var tagList = Article.GetTagList(tags);
+			if (tagList.Any())
+				articles = articles.Where(a => 
+					tagList.All(t => a.Tags.IndexOf(t, NO_CASE_COMPARISON) != -1));
 
 			if (!String.IsNullOrEmpty(text))
 				articles = articles.Where(a => 
@@ -369,8 +371,10 @@ namespace WebArticleLibrary.Controllers
 				articles = articles.Where(a => a.InsertDate < date);
 			}
 
-			if (!String.IsNullOrEmpty(tags))
-				articles = articles.Where(a => a.Tags.IndexOf(tags, NO_CASE_COMPARISON) != -1);
+			var tagList = Article.GetTagList(tags);
+			if (tagList.Any())
+				articles = articles.Where(a => 
+					tagList.All(t => a.Tags.IndexOf(t, NO_CASE_COMPARISON) != -1));
 
 			if (!String.IsNullOrEmpty(text))
 				articles = articles.Where(a => 
