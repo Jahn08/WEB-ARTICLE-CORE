@@ -14,7 +14,7 @@ class NotificationRequest extends ApiRequest {
         if (!notificationIds.length)
             return;
 
-        return this.removeResource(notificationIds);
+        return this.removeResource({ ids: notificationIds });
     }		
 }
 

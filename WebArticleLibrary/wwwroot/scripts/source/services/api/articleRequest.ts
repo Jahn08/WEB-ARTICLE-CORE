@@ -33,7 +33,7 @@ class ArticleRequest extends ApiRequest {
     }
 
     remove(articleIds: number[]): IPromise<IArticleList> {
-        return this.removeResource(articleIds);
+        return this.removeResource({ ids: articleIds });
     }
 
     getAllArticles(query?: IArticleSearch): IPromise<IArticleList> {

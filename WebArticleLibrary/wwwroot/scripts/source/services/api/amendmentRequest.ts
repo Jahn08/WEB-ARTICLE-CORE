@@ -15,7 +15,7 @@ class AmmendmentRequest extends ApiRequest {
     }
 
     remove(amendmentIds: number[]): IPromise<void> {
-        return this.removeResource(amendmentIds);
+        return this.removeResource({ ids: amendmentIds });
     }
 
     create(amendment: IAmendment): IPromise<IAmendment> {
