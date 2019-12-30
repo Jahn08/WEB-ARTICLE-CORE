@@ -1,6 +1,6 @@
 import { BaseCtrl } from "./baseCtrl";
 import { ErrorService } from "../services/errorService";
-import { ArticleStatus, Article, ArticleRequest } from "../services/api/articleRequest";
+import { ArticleStatus, IArticle, ArticleRequest, TagConverter } from "../services/api/articleRequest";
 import { IAmendment, AmmendmentRequest } from "../services/api/amendmentRequest";
 import { StateService } from "@uirouter/angularjs";
 import { IUserInfo } from "../services/api/userRequest";
@@ -30,7 +30,7 @@ class ArticleEditCtrl extends BaseCtrl {
     
     editArticleForm: INgModelController;    
 
-    article: Article;
+    article: IArticle;
     
     amendments: IAmendment[];
 
@@ -93,7 +93,11 @@ class ArticleEditCtrl extends BaseCtrl {
 
         this.paramArticleId = $state.params.id;
 
-        this.article = new Article();
+        this.article = {
+            id: 0,
+            name: '',
+            status: ArticleStatus.DRAFT
+        };
 
         this.initCategoryControl();
 
@@ -126,7 +130,7 @@ class ArticleEditCtrl extends BaseCtrl {
         if (this.article.reviewedContent)
             this.article.reviewedContent = this.converterSrv.bytesToStr(this.article.reviewedContent);
 
-        this.tempTags = this.article.hashTags;
+        this.tempTags = TagConverter.getHashTags(this.article.tags);
 
         await this.setControls($timeout);
     }
@@ -259,8 +263,7 @@ class ArticleEditCtrl extends BaseCtrl {
             this.article.content = this.articleContent;
 
         this.tempTags = this.getTags();
-
-        return this.artReq.update(this.article, this.tempTags);
+        return this.artReq.update(this.article, TagConverter.getTagString(this.tempTags));
     }
 
     private get articleContent(): string { return this.articleContentCtrl.html(); }
@@ -347,7 +350,8 @@ class ArticleEditCtrl extends BaseCtrl {
 
     onCategoryChange() {
         const tags = this.getTags();
-        this.editArticleForm.$setValidity('tooManyCategories', !tags || tags.join(' ').length <= 50);
+        this.editArticleForm.$setValidity('tooManyCategories', 
+            !tags || TagConverter.getTagString(tags).length <= 50);
     }
     
     close() {

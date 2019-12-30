@@ -2,13 +2,13 @@ import * as angular from "angular";
 import { StateService } from "@uirouter/core";
 import { BaseCtrl } from "./baseCtrl";
 import { ErrorService } from "../services/errorService";
-import { ArticleRequest, IArticleSearch, Article } from "../services/api/articleRequest";
+import { ArticleRequest, IArticleSearch, IArticle, TagConverter } from "../services/api/articleRequest";
 import { ColumnIndex } from "../services/api/apiRequest";
 import { inject } from "../app/inject";
 import { AppSystem } from "../app/system";
 import * as $ from "jquery";
 
-class SearchedArticle extends Article {
+interface ISearchedArticle extends IArticle {
     authorName?: string;
 }
 
@@ -28,15 +28,13 @@ class ArticleSearchCtrl extends BaseCtrl {
 
     public pages: number[] = [1];
 
-    public articles: SearchedArticle[];
+    public articles: ISearchedArticle[];
 
     public userNames: Record<number, string>;
 
     public categories: string[];
 
     public tags: string[];
-
-    private readonly TAG_SEPARATOR = ' ';
 
     constructor(errorSrv: ErrorService,
         $timeout: angular.ITimeoutService,
@@ -93,7 +91,7 @@ class ArticleSearchCtrl extends BaseCtrl {
         if (pageIndex)
             searchQuery.page = pageIndex;
 
-        searchQuery.tags = this.tags.join(' ');
+        searchQuery.tags = TagConverter.getTagString(this.tags);
 
         this.processRequest(this.articleReq.search(searchQuery), data => {
             const pages = this.buildPageArray(data.articleCount, data.pageLength);
@@ -112,6 +110,8 @@ class ArticleSearchCtrl extends BaseCtrl {
     private buildPageArray(dataLength: number, pageLength: number) {
         return new Array<number>(Math.ceil(dataLength / pageLength));
     }
+
+    getHashTags(art: IArticle): string[] { return TagConverter.getHashTags(art.tags); }
 }
 
 export { ArticleSearchCtrl };

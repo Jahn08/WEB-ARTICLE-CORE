@@ -4,7 +4,7 @@
 	<div ng-show="!ctrl.sending" class="row">
 		<div class="col-xs-12">
 			<h2>{{ctrl.article.name}}</h2>
-			<h4><a ng-repeat="t in ctrl.article.hashTags" ui-sref="app.articlesearch({category:t})">#{{t}} </a></h4>
+			<h4><a ng-repeat="t in ctrl.hashTags" ui-sref="app.articlesearch({category:t})">#{{t}} </a></h4>
 			<div class="bs-callout bs-callout-warning">
 				<div class="media">
 					<div class="media-left">

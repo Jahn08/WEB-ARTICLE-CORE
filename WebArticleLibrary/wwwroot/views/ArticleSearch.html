@@ -72,7 +72,7 @@
 				<li ng-repeat="a in ctrl.articles">
 					<div class="bs-callout bs-callout-info">
 						<h3><a ui-sref="app.articleview({id:a.id})">{{a.name}}</a></h3>
-						<h4><a ng-repeat="t in a.hashTags" ui-sref="app.articlesearch({category:t,author:null})">#{{t}} </a></h4>
+						<h4><a ng-repeat="t in ctrl.getHashTags(a)" ui-sref="app.articlesearch({category:t,author:null})">#{{t}} </a></h4>
 						<span><span class="glyphicon glyphicon-user"></span> <a ui-sref="app.articlesearch({category:null,author:a.authorName})">{{a.authorName}}</a></span> 
 						<span><span class="glyphicon glyphicon-calendar"></span> {{a.insertDate|date:'medium'}}</span>
 						<h5>{{a.description}}</h5>

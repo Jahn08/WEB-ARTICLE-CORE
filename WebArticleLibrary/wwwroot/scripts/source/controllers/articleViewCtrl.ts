@@ -2,7 +2,7 @@ import { BaseCtrl } from "./baseCtrl";
 import { ErrorService } from "../services/errorService";
 import { StateService } from "@uirouter/core";
 import { EstimateRequest, EstimateType } from "../services/api/estimateRequest";
-import { Article, ArticleRequest, ArticleStatus } from "../services/api/articleRequest";
+import { IArticle, ArticleRequest, ArticleStatus, TagConverter } from "../services/api/articleRequest";
 import { ui, ILocationService, IAnchorScrollService, IPromise, ITimeoutService } from "angular";
 import { ModalOpener } from "../app/modalOpener";
 import { ComplaintRequest } from "../services/api/complaintRequest";
@@ -36,7 +36,9 @@ class ArticleViewCtrl extends BaseCtrl {
 
     userId: number;
 
-    article: Article;
+    article: IArticle;
+
+    hashTags: string[];
 
     private userNames: Record<number, string>;
 
@@ -80,6 +82,7 @@ class ArticleViewCtrl extends BaseCtrl {
         this.setCurrentUser(authSrv, async userInfo => {
             const articleData = await this.articleReq.view(articleId, (userInfo || {}).id);
             this.article = articleData.article;
+            this.hashTags = TagConverter.getHashTags(this.article.tags);
             
             if (!userInfo && !this.isArticleApproved())
                 throw new Error('The article has not been published yet');

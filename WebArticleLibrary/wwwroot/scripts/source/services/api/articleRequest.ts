@@ -14,7 +14,7 @@ class ArticleRequest extends ApiRequest {
         super($resource, 'Article');
     }
 
-    update(article: Article, tempTags: string[]): IPromise<void> {
+    update(article: IArticle, tags: string): IPromise<void> {
         if (article.status !== ArticleStatus.ON_EDIT && 
             article.status !== ArticleStatus.ON_REVIEW && 
             article.status !== ArticleStatus.ON_AMENDING)
@@ -23,7 +23,7 @@ class ArticleRequest extends ApiRequest {
             article.reviewedContent = this.converter.strToBytes(article.reviewedContent);
             
         article.content = this.converter.strToBytes(article.content);
-        article.tags = tempTags.join(' ');
+        article.tags = tags;
 
         return this.saveResource(article);
     }
@@ -100,7 +100,7 @@ class ArticleRequest extends ApiRequest {
     }
 }
 
-class Article {
+interface IArticle {
     id: number;
 
     authorId?: number;
@@ -120,17 +120,17 @@ class Article {
     content?: string;
 
     reviewedContent?: string;
+}
 
-    constructor() {
-        this.id = 0,
-        
-        this.name = '';
+class TagConverter {
+    private static readonly TAG_SEPARATOR = ' ';
 
-        this.status = ArticleStatus.DRAFT;
+    static getHashTags(tags: string): string[] { 
+        return tags ? tags.split(this.TAG_SEPARATOR): []; 
     }
 
-    get hashTags(): string[] {
-        return this.tags ? this.tags.split(' '): [];
+    static getTagString(hashTags: string[]): string { 
+        return hashTags.join(this.TAG_SEPARATOR); 
     }
 }
 
@@ -174,11 +174,11 @@ interface IArticleSearch extends ISearchQuery {
 }
 
 interface IArticleList {
-    privateData: Article[];
+    privateData: IArticle[];
 
     privateDataCount: number;
 
-    publicData: Article[];
+    publicData: IArticle[];
 
     publicDataCount: number;
 
@@ -192,7 +192,7 @@ interface IArticleList {
 }
 
 interface IArticleTitles {
-    articles: Article[];
+    articles: IArticle[];
     
     userNames: Record<number, string>
 }
@@ -208,7 +208,7 @@ interface IArticleSearchResult extends IArticleTitles {
 }
 
 interface IArticleView {
-    article: Article;
+    article: IArticle;
 
     updatedDate: Date;
 
@@ -223,4 +223,4 @@ interface IArticleView {
     curEstimate: EstimateType;
 }
 
-export { ArticleRequest, ArticleStatus, Article, IArticleSearch };
+export { ArticleRequest, ArticleStatus, IArticleSearch, IArticle, TagConverter };

@@ -1,4 +1,4 @@
-import { ArticleRequest, ArticleStatus, Article, IArticleSearch } from "../services/api/articleRequest";
+import { ArticleRequest, ArticleStatus, IArticle, IArticleSearch } from "../services/api/articleRequest";
 import { ErrorService } from "../services/errorService";
 import { EnumHelper, AppSystem } from "../app/system";
 import { IUserInfo } from "../services/api/userRequest";
@@ -25,13 +25,13 @@ class ArticleInfoCtrl extends BaseCtrl {
 
     publicQuery: IArticleSearch;
 
-    selectedPrivateArticles: Article[];
+    selectedPrivateArticles: IArticle[];
     
-    selectedArticle: Article;
+    selectedArticle: IArticle;
 
-    privateArticles: Article[];
+    privateArticles: IArticle[];
 
-    publicArticles: Article[];
+    publicArticles: IArticle[];
 
     privateEstimate: number;
 
@@ -155,7 +155,7 @@ class ArticleInfoCtrl extends BaseCtrl {
         });
     }
     
-    selectArticleRow(article: Article) {
+    selectArticleRow(article: IArticle) {
         this.selectedArticle = this.selectedArticle && this.selectedArticle.id === article.id ? null : article;
     }
 
@@ -201,11 +201,11 @@ class ArticleInfoCtrl extends BaseCtrl {
         return this.userNames[userId];
     }
     
-    getCommentCount(art: Article): number {
+    getCommentCount(art: IArticle): number {
         return art ? this.cmntNumber[art.id] : 0;
     }
     
-    getEstimate(art: Article, isPrivate: boolean): number {
+    getEstimate(art: IArticle, isPrivate: boolean): number {
         let est: number;
 
         if (this.estimates) {
@@ -220,18 +220,18 @@ class ArticleInfoCtrl extends BaseCtrl {
         return est;
     }
 
-    isApproved(art: Article): boolean {
+    isApproved(art: IArticle): boolean {
         return art ? art.status === ArticleStatus.APPROVED : false;
     }
 
-    assignArticle(art: Article) {
+    assignArticle(art: IArticle) {
         this.processRequest(this.articleReq.assign(art.id), () => {
             art.assignedToId = this.userInfo.id;
             art.status = ArticleStatus.ON_REVIEW;
         });
     }
 
-    unassignArticle(art: Article) {
+    unassignArticle(art: IArticle) {
         this.processRequest(this.articleReq.unassign(art.id), () => {
             art.assignedToId = null;
             art.status = ArticleStatus.CREATED;
@@ -247,7 +247,7 @@ class ArticleInfoCtrl extends BaseCtrl {
         return this.articleReq.getStatusCaption(artStatus);
     }
 
-    selectPrivateArticleRow(art: Article) {
+    selectPrivateArticleRow(art: IArticle) {
         if (this.hasSelectedPrivateArticle(art.id))
             this.selectedPrivateArticles = this.selectedPrivateArticles.filter(a => a.id !== art.id);
         else
@@ -258,7 +258,7 @@ class ArticleInfoCtrl extends BaseCtrl {
         return this.selectedPrivateArticles.some(val => val.id === id);
     }
 
-    showHistory(art: Article) {
+    showHistory(art: IArticle) {
         const history = this.artHistories[art.id];
 
         if (history)
@@ -270,7 +270,7 @@ class ArticleInfoCtrl extends BaseCtrl {
             });
     };
 
-    openHistoryModal(histories: IHistory[], art: Article) {
+    openHistoryModal(histories: IHistory[], art: IArticle) {
         this.processRequest(this.modalOpener.openArticleHistoryModal({
             histories: histories,
             articleName: art.name,
