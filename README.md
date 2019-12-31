@@ -1,9 +1,9 @@
 
 ![alt text](https://github.com/Jahn08/Angular-MVC-Application/blob/master/WebArticleLibrary/images/indexIcon.ico)
 
-# Angular-MVC-Application
+# Web-Article-Core
 
-A web project based on the Angular framework with WebApi on the server side.
+A web project using the AngularJS framework and based on the functionality of [Web Article Library](https://github.com/Jahn08/WEB-ARTICLE-LIBRARY) rewritten with .NET Core on the server side and Type Script on the client.
 It implements simple logic for creating, storing and maintaining articles. Some features:
 
 * Authentication (through the session storage and cookies)
@@ -16,62 +16,51 @@ It implements simple logic for creating, storing and maintaining articles. Some 
 
 ### Role model
 
-Administrators can review articles if they have taken them over as assignment along with approving the latter and thus making them available for other users reading.
+Administrators can review articles if they have taken them over as assignment. Approving the articles makes them available for other users to read.
 
-They are also responsible for dealing with complaints (either about comments or a whole article).
+Administrators are also responsible for dealing with complaints (either about comments or articles).
 
-Administrators can block other users or make them administrators (as well as return them back to being regular ones).
+Administrators can ban other users or make them into administrators or conversely into regular users.
 
 ## Installing / Getting started
 
-The application is dependent on .NET Framework ([read more](#headPrerequisites)) along with SQL Server ([read more](#headSettingUpDev)).
-
-There is an MSI-installer for the application lying in the folder WebArticleLibrary.Setup/bin/Release. Firstly, the installer lets opt for the names of the application site and its pool on IIS7. Further, components for the connection string should be set up, namely: an SQL Server name, a database name and preferences for logging in the database (user/password or the integrated security mode; in both cases, providing the database is not existent, [the user's rights for the SQL Server should be set properly](#headDatabase)) ([how to configure the connection string manually](#headConfiguration)). The installer virtually repeats [this process](https://technet.microsoft.com/en-us/library/cc772042(v=ws.10).aspx).
+The application is dependent on .NET Core 2.2 ([read more](#headPrerequisites)) along with SQL Server ([read more](#headSettingUpDev)).
 
 The first user registered in the application will be granted administrative rights.
 ## Developing
 
 ### Built with
 
-* [Entity Framework 6.1.3](https://www.nuget.org/packages/EntityFramework/6.1.3)
+* [Entity Framework Core 2.2.6](https://www.nuget.org/packages/Microsoft.EntityFrameworkCore/2.2.6)
 * [Angular 1.6.4](https://www.nuget.org/packages/AngularJS.Core/1.6.4)
 * [Bootstrap 3.4.1](https://www.nuget.org/packages/bootstrap/3.4.1)
 * [Font Awesome 4.7.0](https://www.nuget.org/packages/FontAwesome/4.7.0)
 * [jQuery 2.0.3](https://www.nuget.org/packages/jQuery/2.0.3)
 * [Bootstrap-wysiwyg 1.04](https://www.nuget.org/packages/Bootstrap.Wysiwyg/1.0.4)
 * [Hotkeys 0.8](https://www.nuget.org/packages/jQuery.Hotkeys/0.8.0.20131227)
-* [SignalR 2.2.2](https://www.nuget.org/packages/Microsoft.AspNet.SignalR/2.2.2)
+* [SignalR 2.4.1](https://www.nuget.org/packages/Microsoft.AspNet.SignalR/2.2.2)
 * [Select2](https://www.nuget.org/packages/Select2.js/4.0.3)
 
 ### <a name="headPrerequisites"></a>Prerequisites
 
-* [.NET Framework 4.5.2](https://www.microsoft.com/en-ca/download/details.aspx?id=42642)
-* The project was developed in MS Visual Studio 2015 ([the product page](https://www.visualstudio.com/ru/downloads/?rr=https%3A%2F%2Fwww.microsoft.com%2Fru-ru%2FSoftMicrosoft%2Fvs2015ExpressforW10.aspx)) and adapted to MS Visual Studio 2017 later
-* The installer project is built by [WiX Toolset v3.11](https://github.com/wixtoolset/wix3/releases/tag/wix3111rtm) 
+* [Microsoft .NET Core SDK 2.2.207](https://dotnet.microsoft.com/download/dotnet-core/2.2)
+* The project was developed in Visual Studio Code ([the product page](https://code.visualstudio.com/))
 
 ### <a name="headSettingUpDev"></a>Setting up Dev
-
-Setting up IIS services is a necessity to start developing. In Windows Components there must be the ASP.NET option turned on and other standard options for IIS services. The IIS management console also ought to be included as it gives an opportunity to configure IIS sites by means of graphic interface.
 
 The developer computer has to have an access to MS SQL Server installed to deploy the database ([read more](#headDatabase)).   
 
 ### Deploying / Publishing
 
-To build a new version of the installer [WiX-project](#headPrerequisites), one should take advantage of the next command in the project folder:
-*msbuild /t:Build;CreateInstaller;DeleteTmpFiles Setup.build*. Providing that the default configuration for building is "Release|Any CPU", the command prompt used for the process shouldn't be of the x64 version. Otherwise, there will be a necessity to add the respective platform configuration to the solution. Note, as long as there are new targets added in the Setup.build file and necessary to be included in the process, they have to be listed in the expression too.
 
-After building another version of the installer, the respective MSI-file should come up in the folder WebArticleLibrary.Setup/bin/Release alongside a renewed file cab1.cab. Both of them ought to be stored together as they take part in the process of installing.
-
-Should there any mistakes arise during the processes of installing or uninstalling, the next command might help out with logging such activities:
-*msiexec /i "WebArticleLibrary.Setup.msi" /l\*v "log.log"*
 
 ## <a name="headConfiguration"></a>Configuration
 
-web.config lying in the root catalogue of the main project serves as the general file for configuration. In the file section *appSettings* the next parameters can be set: 
-* *smtpHost, smtpPort, smtpUserName, smtpPassword* for configuring a mail address which will be used to send messages to the users when registering, resetting password, changing email addresses or their statuses being altered
-* *aboutUs, fax, phone, mail, youtubeLink, facebookLink* for storing additional contact information shown in the bottom section of the site
+appsettings.json lying in the root catalogue of the main project serves as the general file for configuration. The next parameters can be set there: 
+* *Host, Port, UserName, Password* in the *SMTP* section for configuring a mail address which will be used to send messages to the users when registering, resetting password, changing email addresses or their statuses being altered
+* *AboutUs, Fax, Phone, Mail, YoutubeLink, FacebookLink* in the *ContactInfo* section for storing additional contact information shown in the bottom section of the site
 
-There is also one more imperative parameter in the same file, but in the section *connectionStrings*, where the connection string to the database should be added (or changed). There are already some default preferences (for instance, integrated security is turned on and therefore it implies the Windows integrated security to log in to SQL Server without writing down any passwords; [read more about connection strings](https://msdn.microsoft.com/en-us/library/jj653752%28v=vs.110%29.aspx)).
+There is also one more imperative parameter in the same file, but in a section *ConnectionStrings*, where a connection string to the database should be added (or changed).
 
 ## Api Reference
 
