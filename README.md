@@ -83,7 +83,7 @@ The api module is available through the base url address by adding the api postf
 
 The project database is based upon [SQL Server 2012](https://www.microsoft.com/en-US/download/details.aspx?id=29062); later versions of the product are also possible to make use of.
 
-The database model is built with Entity Framework 6.1.3. When a database being created automatically, a user account under which the web application works has to have proper rights for the action on the respective SQL Server (the dbcreator role). For instance, if the application registered with the ApplicationPoolIdentity credentials, then such a user should be added to the logins of the SQLServer: for DefaultAppPool the name is *IIS APPPOOL\DefaultAppPool*.
+The database model is built with Entity Framework Core 2.2.6. As long as the database does not exist, it will be created automatically when running the application.
 
 There are 8 tables altogether:
 * **User** stores users' data such as: preferences, email, personal data, etc.
