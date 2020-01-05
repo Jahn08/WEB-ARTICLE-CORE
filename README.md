@@ -64,17 +64,17 @@ There is also one more imperative parameter in the same file, but in a section *
 
 ## Api Reference
 
-The api module is available through the base url address by adding the api postfix and a respective controller along with a method and its parameters. For instance, http://localhost/WebArticleLibrary/api/Article/GetArticleTitles. The external api methods (unnecessary parameters are marked with *?*):
+The api module is available through the base url address by adding the api postfix and a respective controller along with a method and its parameters. For instance, http://localhost/WebArticleLibrary/api/Article/GetArticleTitles. The external public api methods (unnecessary parameters are marked with *?*):
 * **POST Authentication/LogIn** with an object *{ name, password }*, returns a logged in user's data *{ status, id, name, firstName, lastName, patronymicName, email, photo, showPrivateInfo, insertDate }*
 * **POST Authentication/Register** with the object *{ name, password, firstName, lastName, patronymicName?, email }*
 * **GET Authentication/LogOut**
 * **GET Authentication/Confirm** with a parameter *confirmationId*, which is a GUID number formed and sent in a link to a new user's email when registering in the application
-* **GET Info/GetBasicInfo** returns the company's contact data *{ fax, phone, mail,	youtubeLink, facebookLink }* ([how to configure](#headConfiguration))
-* **GET Info/GetAboutUsInfo** returns a short description from the AboutUs page *{ aboutUs }*
-* **GET Article/GetDefaultCategories** returns an array of the names of default article categories existing as constant strings in the system
-* **GET Article/GetArticleTitles** gives two dictionaries and an outcome as an object *{ articles: { id, authorId, name, tags, insertDate, estimate }, userNames: [] }*, where *userNames* is a dictionary with user identificators as keys along with their names as values
-* **GET Article/ViewArticle** accepts two parameters: *id, userId?*. *userId* indicates that the outcome should contain additional information such as related comments, photos, current article rating. The result is *{ article: { id, authorId, assignedToId, name, description, tags, insertDate, status, content }, updatedDate, comments: [{ id, authorId, responseToId, articleId, content, insertDate, status }], userNames: [], userPhotos: [], estimate, curEstimate }*, where *userNames* and *userPhotos* are dictionaries with user identificators as keys along with the respective objects as values
-* **GET Article/SearchArticles** searches articles by means of the next parameters: *author?, tags?* (a part of the string containing categories), *text?* (it's either a part of the description or name field), *dateStart?, dateEnd?* (a date range of when articles were created), *page = 1* (a result page number; the number of items per page is the constant of 10), *colIndex = 7* (an index for a sorting column; possible values: NAME = 0, AUTHOR = 1,	TAGS = 2,	ASSIGNED_TO = 3, STATUS = 4, TEXT = 5, ID = 6, DATE = 7), *asc=false* (a direction of sorting results: ascending or otherwise descending). It returns the object *{ articles: [{ id, name, tags, insertDate, status, description, authorId }], articleCount, pageLength, userNames: [], estimates: [] }*, whereas *userNames* and *estimates* are dictionaries with user identificators as keys along with the respective objects as values
+* **GET ContactInfo** returns the company's contact data *{ fax, phone, mail,	youtubeLink, facebookLink }* ([how to configure](#headConfiguration))
+* **GET ContactInfo/AboutUs** returns a short description from the AboutUs page *{ aboutUs }*
+* **GET Article/Categories** returns an array of names of default article categories existing as constant strings in the system
+* **GET Article/Titles** produces two dictionaries and an object *{ articles: { id, authorId, name, tags, insertDate, estimate }, userNames: [] }*, where *userNames* is a dictionary with user identificators as keys along with their names as values
+* **GET Article/{id}** accepts two parameters: *id, userId?*. *userId* indicates that the outcome should contain additional information such as related comments, photos, current article rating. The result is *{ article: { id, authorId, assignedToId, name, description, tags, insertDate, status, content }, updatedDate, comments: [{ id, authorId, responseToId, articleId, content, insertDate, status }], userNames: [], userPhotos: [], estimate, curEstimate }*, where *userNames* and *userPhotos* are dictionaries with user identificators as keys along with the respective objects as values
+* **GET Article** searches for articles by means of the next parameters: *author?, tags?* (a part of the string containing categories), *text?* (it's either a part of the description or name field), *dateStart?, dateEnd?* (a date range of when articles were created), *page = 1* (a result page number; the number of items per page is the constant of 10), *colIndex = 7* (an index for a sorting column; possible values: NAME = 0, AUTHOR = 1,	TAGS = 2,	ASSIGNED_TO = 3, STATUS = 4, TEXT = 5, ID = 6, DATE = 7), *asc=false* (a direction of sorting results: ascending or otherwise descending). It returns the object *{ articles: [{ id, name, tags, insertDate, status, description, authorId }], articleCount, pageLength, userNames: [], estimates: [] }*, whereas *userNames* and *estimates* are dictionaries with user identificators as keys along with the respective objects as values
 * **POST UserInfo/ReplacePassword** accepts an object *{ newPassword, confirmationId }*
 * **GET UserInfo/ResetPassword** requires a parameter *email* as an email address where a message for resetting password will be sent if the respective user exists in the database
 * **GET UserInfo/ConfirmEmail** requires a parameter *confirmationId*
@@ -83,14 +83,14 @@ The api module is available through the base url address by adding the api postf
 
 The project database is based upon [SQL Server 2012](https://www.microsoft.com/en-US/download/details.aspx?id=29062); later versions of the product are also possible to make use of.
 
-The database model is built with Entity Framework 6.1.3. When a database being created automatically, a user account under which the web application works has to have proper rights for the action on the respective SQL Server (the dbcreator role). For instance, if the application registered with the ApplicationPoolIdentity credentials, then such a user should be added to the logins of the SQLServer: for DefaultAppPool the name is *IIS APPPOOL\DefaultAppPool*.
+The database model is built with Entity Framework Core 2.2.6. As long as the database does not exist, it will be created automatically when running the application.
 
 There are 8 tables altogether:
-* USER stores users' data such as: preferences, email, personal data, etc.
-* ARTICLE keeps all information related to articles
-* USER_COMMENT, USER_COMPLAINT, USER_ESTIMATE are connected to both of the tables preceded and contain respective information (comments for articles, complaints related to either an article or a comment, ratings for articles)
-* AMENDMENT is needed to store amendments corresponding to an article being reviewed
-* ARTICLE_HISTORY contains descriptions of all events related to a particular article
-* USER_NOTIFICATION is made up of data related to events from ARTICLE_HISTORY and connected to a particular user (for instance, notifications for administrators about a new article being waited for a review)
+* **User** stores users' data such as: preferences, email, personal data, etc.
+* **Article** keeps all information related to articles
+* **UserComment, UserComplaint, UserEstimate** are all connected to both of the mentioned tables and contain respective information (comments for articles, complaints related to either an article or a comment, ratings for articles)
+* **Amendment** stores amendments corresponding to an article being reviewed
+* **ArticleHistory** contains descriptions of all events related to a particular article
+* **UserNotification** is made up of data related to events from ArticleHistory and connected to a particular user (for instance, notifications for administrators about a new article being waited for a review)
 
-![alt text](https://github.com/Jahn08/Angular-MVC-Application/blob/master/DB_Diagram.jpg "A database diagram")
+![alt text](https://github.com/Jahn08/WEB-ARTICLE-CORE/blob/master/DB_Diagram.jpg "A database diagram")
