@@ -1,0 +1,54 @@
+version: "3.3"
+services:
+    db:
+        image: webart_mssqlsrv
+        ports:
+            - "1533:1433"
+        environment:
+            - ACCEPT_EULA=Y
+            - DB_SA_PASSWORD_FILE=/run/secrets/DB_SA_PASSWORD
+            - MSSQL_PID=Express            
+        deploy:
+            restart_policy:
+                condition: on-failure
+        secrets:
+            - DB_SA_PASSWORD
+    app:
+        image: webart
+        ports: 
+            - "7443:5443"
+        depends_on:
+            - db
+        environment:
+            - ASPNETCORE_URLS=https://0.0.0.0:5443
+            - Kestrel__Certificates__Default__Path=1.pfx
+            #- SMTP__Host=smtp.mail.com
+            #- SMTP__Port=25
+            #- ContactInfo__AboutUs=A superb team made up of creative people
+            #- ContactInfo__Fax=+9(999)888-77-66
+            #- ContactInfo__Phone=+9(999)888-77-66
+            #- ContactInfo__Mail=Company@mail.com
+            #- ContactInfo__YoutubeLink=http://youtube.com/
+            #- ContactInfo__FacebookLink=http://www.facebook.com/profile.php
+        deploy:
+            restart_policy:
+                condition: on-failure
+                delay: 10s
+                max_attempts: 3
+                window: 20s
+        secrets:
+            - ConnectionStrings__WebArticle
+            - Kestrel__Certificates__Default__Password
+            #- SMTP__UserName
+            #- SMTP__Password
+secrets:
+    ConnectionStrings__WebArticle:
+        external: true
+    Kestrel__Certificates__Default__Password:
+        external: true
+    DB_SA_PASSWORD:
+        external: true
+#    SMTP__UserName:
+#        external: true
+#    SMTP__Password:
+#        external: true
