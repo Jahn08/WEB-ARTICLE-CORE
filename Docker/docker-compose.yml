@@ -22,6 +22,7 @@ services:
         environment:
             - ASPNETCORE_URLS=https://0.0.0.0:5443
             - Kestrel__Certificates__Default__Path=1.pfx
+            #- ConnectionStrings__WebArticle=Server=db;Initial Catalog=weblibrary;User ID=sa;Password=password;
             #- SMTP__Host=smtp.mail.com
             #- SMTP__Port=25
             #- ContactInfo__AboutUs=A superb team made up of creative people

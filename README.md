@@ -52,13 +52,19 @@ The developer computer has to have an access to MS SQL Server installed to deplo
 
 ### Deploying / Publishing
 
-
+The stages to deploy the application in Docker by command prompt:
+1. To build an image for the application run a command in the root folder of the solution where the *Dockerfile* file is available (including the dot at the end): *docker build -t webart .*
+2. To build an image for the database layer run a command in the *Docker/MsSql* folder where the second *Dockerfile* file is present (including the dot at the end): *docker build -t webart_mssqlsrv .*
+3. Providing there is no swarm, it must be initialised: *docker swarm init*
+4. The application relies on secret values. The list of all possible secrets can be found in the *Docker/docker-compose.yml* file, including a secret *DB_SA_PASSWORD* for storing a password for the SA user of MS SQL Server. An environment variable *ASPNETCORE_URLS* is necessary to bind ASP.NET Core to certain URLs (*0.0.0.0* means all IPv4 addresses on a local machine). The rest of the environment variables and secrets in the file represent the [configuration parameters](#headConfiguration) of the application where a section name is separated from its children with two underscores __ . The latter are interchangeable and can be placed either as secrets or environment variables. The secrets are entered the next way: *echo "SECRET_VALUE" | docker secret create SECRET_NAME -*
+5. In the *Docker* directory where the *docker-compose.yml* file lies run a command: *docker stack deploy -c docker-compose.yml webart*
 
 ## <a name="headConfiguration"></a>Configuration
 
 appsettings.json lying in the root catalogue of the main project serves as the general file for configuration. The next parameters can be set there: 
 * *Host, Port, UserName, Password* in the *SMTP* section for configuring a mail address which will be used to send messages to the users when registering, resetting password, changing email addresses or their statuses being altered
 * *AboutUs, Fax, Phone, Mail, YoutubeLink, FacebookLink* in the *ContactInfo* section for storing additional contact information shown in the bottom section of the site
+* The *Kestrel->Certificates->Default* section contains parameters *Path* and *Password* for setting up an SSL certificate.
 
 There is also one more imperative parameter in the same file, but in a section *ConnectionStrings*, where a connection string to the database should be added (or changed).
 
