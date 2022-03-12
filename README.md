@@ -45,10 +45,13 @@ The first user registered in the application will be granted administrative righ
 
 * [Microsoft .NET Core SDK 2.2.207](https://dotnet.microsoft.com/download/dotnet-core/2.2)
 * The project was developed in Visual Studio Code ([the product page](https://code.visualstudio.com/))
+* [Node.JS 14.17.5](https://nodejs.org/dist/latest-v14.x/) (along with Npm 7.20.5)
 
 ### <a name="headSettingUpDev"></a>Setting up Dev
 
-The developer computer has to have an access to MS SQL Server installed to deploy the database ([read more](#headDatabase)).   
+The developer computer has to have an access to MS SQL Server installed to deploy the database ([read more](#headDatabase)).
+
+To restore depdendencies of the project run *npm install*. VS Code suggests restoring packages for all .NET projects on the first run, otherwise it can be done manually by running *[dotnet restore](https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-restore) <project_file_path>*
 
 ### Deploying / Publishing
 
@@ -64,7 +67,7 @@ The stages to deploy the application in Docker by command prompt:
 appsettings.json lying in the root catalogue of the main project serves as the general file for configuration. The next parameters can be set there: 
 * *Host, Port, UserName, Password* in the *SMTP* section for configuring a mail address which will be used to send messages to the users when registering, resetting password, changing email addresses or their statuses being altered
 * *AboutUs, Fax, Phone, Mail, YoutubeLink, FacebookLink* in the *ContactInfo* section for storing additional contact information shown in the bottom section of the site
-* The *Kestrel->Certificates->Default* section contains parameters *Path* and *Password* for setting up an SSL certificate.
+* The *Kestrel->Certificates->Default* section contains parameters *Path* and *Password* for setting up an SSL certificate. The section can be removed for debugging.
 
 There is also one more imperative parameter in the same file, but in a section *ConnectionStrings*, where a connection string to the database should be added (or changed).
 
